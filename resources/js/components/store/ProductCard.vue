@@ -3,14 +3,17 @@
  * ProductCard Component
  * Menampilkan informasi produk dalam format card dengan Airbnb-style design
  * mencakup gambar, nama, kategori, harga, dan status ketersediaan
- * dengan navigasi ke halaman detail produk
+ * dengan navigasi ke halaman detail produk dan add to cart functionality
+ *
+ * @author Zulfikar Hidayatullah
  */
-import { computed } from 'vue'
-import { Link } from '@inertiajs/vue3'
+import { computed, ref } from 'vue'
+import { Link, router } from '@inertiajs/vue3'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Plus, ShoppingCart } from 'lucide-vue-next'
+import { Plus, ShoppingCart, Loader2, Check } from 'lucide-vue-next'
 import { show } from '@/actions/App/Http/Controllers/ProductController'
+import { store } from '@/actions/App/Http/Controllers/CartController'
 
 /**
  * Props definition untuk ProductCard
@@ -39,20 +42,18 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 /**
+ * Loading dan success state untuk add to cart
+ */
+const isAdding = ref(false)
+const showSuccess = ref(false)
+
+/**
  * Generate URL detail produk menggunakan Wayfinder
  * dengan slug sebagai parameter untuk SEO-friendly URL
  */
 const detailUrl = computed(() => {
     return show.url(props.product.slug)
 })
-
-/**
- * Emit events untuk interaksi user
- * - addToCart: ketika user menambahkan produk ke keranjang
- */
-const emit = defineEmits<{
-    addToCart: [productId: number]
-}>()
 
 /**
  * Format harga ke format Rupiah Indonesia
@@ -69,11 +70,31 @@ const formattedPrice = computed(() => {
 
 /**
  * Handle click pada tombol add to cart
- * dengan validasi ketersediaan produk
+ * dengan validasi ketersediaan produk dan Inertia submission
  */
 function handleAddToCart() {
-    if (!props.product.is_available) return
-    emit('addToCart', props.product.id)
+    if (!props.product.is_available || isAdding.value) return
+
+    isAdding.value = true
+    router.post(
+        store.url(),
+        {
+            product_id: props.product.id,
+            quantity: 1,
+        },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                showSuccess.value = true
+                setTimeout(() => {
+                    showSuccess.value = false
+                }, 2000)
+            },
+            onFinish: () => {
+                isAdding.value = false
+            },
+        }
+    )
 }
 
 /**
@@ -176,14 +197,18 @@ const imageUrl = computed(() => {
                     v-if="mode === 'grid'"
                     size="icon"
                     variant="secondary"
-                    :disabled="!product.is_available"
+                    :disabled="!product.is_available || isAdding"
                     class="h-9 w-9 rounded-full bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-50"
+                    :class="{
+                        'bg-green-100 text-green-600 hover:bg-green-100': showSuccess,
+                    }"
                     @click.prevent="handleAddToCart"
                 >
-                    <Plus class="h-5 w-5" />
+                    <Loader2 v-if="isAdding" class="h-5 w-5 animate-spin" />
+                    <Check v-else-if="showSuccess" class="h-5 w-5" />
+                    <Plus v-else class="h-5 w-5" />
                 </Button>
             </div>
         </div>
     </article>
 </template>
-

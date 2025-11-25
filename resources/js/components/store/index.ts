@@ -5,6 +5,7 @@
 
 export { default as ProductCard } from './ProductCard.vue'
 export { default as CartItem } from './CartItem.vue'
+export { default as CartCounter } from './CartCounter.vue'
 export { default as CategoryFilter } from './CategoryFilter.vue'
 export { default as OrderStatusBadge } from './OrderStatusBadge.vue'
 export { default as SearchBar } from './SearchBar.vue'

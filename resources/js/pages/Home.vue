@@ -2,7 +2,8 @@
 /**
  * Home Page - Katalog Produk
  * Menampilkan daftar produk aktif dalam format grid responsive
- * dengan filter kategori, pencarian, empty state, dan navigasi ke halaman login/register
+ * dengan filter kategori, pencarian, empty state, cart counter,
+ * dan navigasi ke halaman login/register
  *
  * @author Zulfikar Hidayatullah
  */
@@ -13,6 +14,7 @@ import ProductCard from '@/components/store/ProductCard.vue'
 import CategoryFilter from '@/components/store/CategoryFilter.vue'
 import SearchBar from '@/components/store/SearchBar.vue'
 import EmptyState from '@/components/store/EmptyState.vue'
+import CartCounter from '@/components/store/CartCounter.vue'
 import { ShoppingBag, X } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 
@@ -65,6 +67,9 @@ interface Props {
     categories: CategoryCollection
     selectedCategory: number | null
     searchQuery: string | null
+    cart?: {
+        total_items: number
+    }
 }
 
 const props = defineProps<Props>()
@@ -73,6 +78,11 @@ const props = defineProps<Props>()
  * Local state untuk search input yang di-sync dengan prop searchQuery
  */
 const localSearchQuery = ref(props.searchQuery ?? '')
+
+/**
+ * Computed untuk cart total items
+ */
+const cartTotalItems = computed(() => props.cart?.total_items ?? 0)
 
 /**
  * Computed property untuk mendapatkan nama kategori yang dipilih
@@ -198,14 +208,6 @@ function handleClearSearch() {
         preserveScroll: true,
     })
 }
-
-/**
- * Handler untuk event add to cart dari ProductCard
- * Saat ini hanya log ke console, akan diimplementasikan di CUST-005
- */
-function handleAddToCart(productId: number) {
-    console.log('Add to cart:', productId)
-}
 </script>
 
 <template>
@@ -226,8 +228,10 @@ function handleAddToCart(productId: number) {
                     <span class="text-xl font-bold text-foreground">Simple Store</span>
                 </div>
 
-                <!-- Auth Navigation -->
+                <!-- Cart Counter & Auth Navigation -->
                 <nav class="flex items-center gap-3">
+                    <CartCounter :count="cartTotalItems" />
+
                     <Link
                         v-if="$page.props.auth.user"
                         :href="dashboard()"
@@ -313,7 +317,6 @@ function handleAddToCart(productId: number) {
                     <ProductCard
                         :product="product"
                         mode="grid"
-                        @add-to-cart="handleAddToCart"
                     />
                 </div>
             </div>
@@ -337,4 +340,3 @@ function handleAddToCart(productId: number) {
         </footer>
     </div>
 </template>
-

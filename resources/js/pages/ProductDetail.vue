@@ -3,14 +3,18 @@
  * ProductDetail Page - Halaman Detail Produk
  * Menampilkan informasi lengkap produk termasuk gambar, deskripsi,
  * harga, dan produk terkait dari kategori yang sama
+ * dengan add to cart functionality menggunakan Inertia
  *
  * @author Zulfikar Hidayatullah
  */
 import { Head, Link, router } from '@inertiajs/vue3'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { home } from '@/routes'
 import { show } from '@/actions/App/Http/Controllers/ProductController'
+import { store as storeCart } from '@/actions/App/Http/Controllers/CartController'
+import { show as showCart } from '@/actions/App/Http/Controllers/CartController'
 import ProductCard from '@/components/store/ProductCard.vue'
+import CartCounter from '@/components/store/CartCounter.vue'
 import PriceDisplay from '@/components/store/PriceDisplay.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -20,7 +24,9 @@ import {
     ChevronRight,
     ArrowLeft,
     Plus,
+    Minus,
     Check,
+    Loader2,
 } from 'lucide-vue-next'
 
 /**
@@ -54,6 +60,9 @@ interface ProductCollection {
 interface Props {
     product: { data: Product }
     relatedProducts: ProductCollection
+    cart?: {
+        total_items: number
+    }
 }
 
 const props = defineProps<Props>()
@@ -62,6 +71,13 @@ const props = defineProps<Props>()
  * Computed property untuk data produk yang di-unwrap dari resource
  */
 const product = computed(() => props.product.data)
+
+/**
+ * Local state untuk quantity selector
+ */
+const quantity = ref(1)
+const isAdding = ref(false)
+const showSuccess = ref(false)
 
 /**
  * Generate URL gambar produk dengan fallback
@@ -86,12 +102,56 @@ const formattedPrice = computed(() => {
 })
 
 /**
+ * Computed untuk cart total items
+ */
+const cartTotalItems = computed(() => props.cart?.total_items ?? 0)
+
+/**
+ * Handler untuk increment quantity
+ */
+function incrementQuantity() {
+    if (quantity.value < 99) {
+        quantity.value++
+    }
+}
+
+/**
+ * Handler untuk decrement quantity
+ */
+function decrementQuantity() {
+    if (quantity.value > 1) {
+        quantity.value--
+    }
+}
+
+/**
  * Handler untuk tombol add to cart
- * Akan diimplementasikan di CUST-005
+ * Menggunakan Inertia router untuk submit ke cart
  */
 function handleAddToCart() {
-    if (!product.value.is_available) return
-    console.log('Add to cart:', product.value.id)
+    if (!product.value.is_available || isAdding.value) return
+
+    isAdding.value = true
+    router.post(
+        storeCart.url(),
+        {
+            product_id: product.value.id,
+            quantity: quantity.value,
+        },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                showSuccess.value = true
+                quantity.value = 1
+                setTimeout(() => {
+                    showSuccess.value = false
+                }, 2000)
+            },
+            onFinish: () => {
+                isAdding.value = false
+            },
+        }
+    )
 }
 
 /**
@@ -99,13 +159,6 @@ function handleAddToCart() {
  */
 function handleBack() {
     router.visit(home())
-}
-
-/**
- * Handler untuk add to cart dari related products
- */
-function handleRelatedAddToCart(productId: number) {
-    console.log('Add to cart from related:', productId)
 }
 </script>
 
@@ -128,8 +181,10 @@ function handleRelatedAddToCart(productId: number) {
                     <span class="text-xl font-bold text-foreground">Simple Store</span>
                 </Link>
 
-                <!-- Auth Navigation -->
+                <!-- Cart Counter & Auth Navigation -->
                 <nav class="flex items-center gap-3">
+                    <CartCounter :count="cartTotalItems" />
+
                     <Link
                         v-if="$page.props.auth.user"
                         href="/dashboard"
@@ -268,16 +323,54 @@ function handleRelatedAddToCart(productId: number) {
                         </p>
                     </div>
 
-                    <!-- Add to Cart Button -->
-                    <div class="mt-auto">
+                    <!-- Quantity Selector & Add to Cart -->
+                    <div class="mt-auto space-y-4">
+                        <!-- Quantity Selector -->
+                        <div class="flex items-center gap-4">
+                            <span class="text-sm font-medium text-foreground">Jumlah:</span>
+                            <div class="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    class="h-9 w-9"
+                                    :disabled="quantity <= 1 || !product.is_available"
+                                    @click="decrementQuantity"
+                                >
+                                    <Minus class="h-4 w-4" />
+                                </Button>
+
+                                <span class="w-12 text-center text-lg font-semibold">
+                                    {{ quantity }}
+                                </span>
+
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    class="h-9 w-9"
+                                    :disabled="quantity >= 99 || !product.is_available"
+                                    @click="incrementQuantity"
+                                >
+                                    <Plus class="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+
+                        <!-- Add to Cart Button -->
                         <Button
                             size="lg"
-                            :disabled="!product.is_available"
+                            :disabled="!product.is_available || isAdding"
+                            :class="{
+                                'bg-green-600 hover:bg-green-600': showSuccess,
+                            }"
                             class="w-full gap-2 text-base"
                             @click="handleAddToCart"
                         >
-                            <Plus class="h-5 w-5" />
-                            {{ product.is_available ? 'Tambah ke Keranjang' : 'Stok Habis' }}
+                            <Loader2 v-if="isAdding" class="h-5 w-5 animate-spin" />
+                            <Check v-else-if="showSuccess" class="h-5 w-5" />
+                            <Plus v-else class="h-5 w-5" />
+                            <span v-if="showSuccess">Ditambahkan ke Keranjang!</span>
+                            <span v-else-if="product.is_available">Tambah ke Keranjang</span>
+                            <span v-else>Stok Habis</span>
                         </Button>
                     </div>
                 </div>
@@ -297,7 +390,6 @@ function handleRelatedAddToCart(productId: number) {
                         <ProductCard
                             :product="relatedProduct"
                             mode="grid"
-                            @add-to-cart="handleRelatedAddToCart"
                         />
                     </div>
                 </div>
@@ -314,4 +406,3 @@ function handleRelatedAddToCart(productId: number) {
         </footer>
     </div>
 </template>
-

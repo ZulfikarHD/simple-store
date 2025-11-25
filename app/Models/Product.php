@@ -91,6 +91,16 @@ class Product extends Model
     }
 
     /**
+     * Mendapatkan semua cart items yang mengandung produk ini
+     *
+     * @return HasMany<CartItem, $this>
+     */
+    public function cartItems(): HasMany
+    {
+        return $this->hasMany(CartItem::class);
+    }
+
+    /**
      * Scope untuk filter produk yang aktif saja
      *
      * @param  \Illuminate\Database\Eloquent\Builder<Product>  $query
