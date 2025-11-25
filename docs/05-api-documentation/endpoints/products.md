@@ -37,11 +37,19 @@ X-Inertia: true
 
 #### Query Parameters
 
-Saat ini tidak ada query parameters. Future enhancements akan include:
-- `category` - Filter by category ID
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `category` | integer | No | Filter produk berdasarkan category ID |
+
+**Future enhancements:**
 - `search` - Search by product name
 - `sort` - Sort by (price, name, created_at)
 - `per_page` - Items per page (default: all)
+
+**Example dengan category filter:**
+```http
+GET /?category=1
+```
 
 #### Response (Inertia)
 
@@ -65,7 +73,19 @@ Saat ini tidak ada query parameters. Future enhancements akan include:
           "is_available": true
         }
       ]
-    }
+    },
+    "categories": {
+      "data": [
+        {
+          "id": 1,
+          "name": "Makanan Berat",
+          "slug": "makanan-berat",
+          "description": "Kategori makanan berat",
+          "products_count": 5
+        }
+      ]
+    },
+    "selectedCategory": null
   },
   "url": "/",
   "version": "...",
@@ -75,6 +95,8 @@ Saat ini tidak ada query parameters. Future enhancements akan include:
 ```
 
 #### Response Fields
+
+**Products:**
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -88,6 +110,22 @@ Saat ini tidak ada query parameters. Future enhancements akan include:
 | `category.id` | integer | Category ID |
 | `category.name` | string | Category name |
 | `is_available` | boolean | Availability status (based on is_active && stock > 0) |
+
+**Categories:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | integer | Category ID (Primary Key) |
+| `name` | string | Category name |
+| `slug` | string | URL-friendly category name |
+| `description` | string\|null | Category description |
+| `products_count` | integer | Jumlah produk aktif dalam kategori |
+
+**Root Props:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `selectedCategory` | integer\|null | ID kategori yang dipilih (dari query param) |
 
 #### Status Codes
 
@@ -110,10 +148,17 @@ curl -X GET "http://localhost:8000/" \
 ```javascript
 import { router } from '@inertiajs/vue3'
 
-// Using Inertia router
+// Using Inertia router - semua produk
 router.visit('/', {
   method: 'get',
   preserveState: false,
+})
+
+// Filter by category
+router.visit('/', {
+  data: { category: 1 },
+  preserveState: true,
+  preserveScroll: true,
 })
 
 // Or using Wayfinder
@@ -165,6 +210,32 @@ interface Category {
 
 interface ProductCollection {
   data: Product[]
+}
+```
+
+### Category Resource Schema
+
+```typescript
+interface CategoryResource {
+  id: number
+  name: string
+  slug: string
+  description: string | null
+  products_count: number
+}
+
+interface CategoryCollection {
+  data: CategoryResource[]
+}
+```
+
+### Home Page Props
+
+```typescript
+interface HomeProps {
+  products: ProductCollection
+  categories: CategoryCollection
+  selectedCategory: number | null
 }
 ```
 
@@ -298,6 +369,14 @@ Route::middleware('throttle:60,1')->group(function () {
 
 ## Changelog
 
+### Version 1.1.0 (2024-11-25)
+
+**Added:**
+- Category filtering via query parameter `category`
+- CategoryResource untuk category data transformation
+- Categories list dengan products_count
+- selectedCategory prop untuk maintain filter state
+
 ### Version 1.0.0 (2024-11-25)
 
 **Added:**
@@ -308,10 +387,9 @@ Route::middleware('throttle:60,1')->group(function () {
 - Availability status computation
 
 **Upcoming:**
-- Pagination support (v1.1.0)
-- Category filtering (v1.1.0 - CUST-002)
+- Pagination support (v1.2.0)
 - Search functionality (v1.2.0 - CUST-003)
-- Sorting options (v1.2.0)
+- Sorting options (v1.3.0)
 
 ---
 
@@ -320,7 +398,9 @@ Route::middleware('throttle:60,1')->group(function () {
 - [Product Model](../../04-technical/database-schema.md#products)
 - [Category Model](../../04-technical/database-schema.md#categories)
 - [ProductResource](../../04-technical/api-resources.md#productresource)
-- [Sprint 1 Documentation](../../07-development/sprint-planning/sprint-1-cust-001.md)
+- [CategoryResource](../../04-technical/api-resources.md#categoryresource)
+- [Sprint 1 - CUST-001](../../07-development/sprint-planning/sprint-1-cust-001.md)
+- [Sprint 1 - CUST-002](../../07-development/sprint-planning/sprint-1-cust-002.md)
 
 ---
 

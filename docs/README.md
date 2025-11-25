@@ -70,7 +70,7 @@ import { ProductCard, CartItem, SearchBar } from '@/components/store'
 - **Current Version**: 0.1.0 (Development)
 - **Last Updated**: 2024-11-25
 - **Project Status**: In Development - Sprint 1
-- **Latest Feature**: ✅ CUST-001 Product Catalog Display (Completed)
+- **Latest Feature**: ✅ CUST-002 Category Filter (Completed)
 
 ---
 

@@ -40,6 +40,7 @@ class ProductCatalogTest extends TestCase
 
     /**
      * Test halaman home merender komponen Home dengan Inertia
+     * dan memiliki props yang diperlukan (products, categories, selectedCategory)
      */
     public function test_home_page_renders_home_component(): void
     {
@@ -47,6 +48,9 @@ class ProductCatalogTest extends TestCase
 
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Home')
+            ->has('products')
+            ->has('categories')
+            ->has('selectedCategory')
         );
     }
 

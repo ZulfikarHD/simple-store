@@ -753,11 +753,83 @@ Komponen Vue yang sudah tersedia di `resources/js/components/store/`:
 |-----------|------|-------------|
 | **ProductCard** | `ProductCard.vue` | Card produk dengan gambar, harga, badge status |
 | **CartItem** | `CartItem.vue` | Item keranjang dengan kontrol kuantitas |
-| **CategoryFilter** | `CategoryFilter.vue` | Filter kategori horizontal scrollable |
+| **CategoryFilter** | `CategoryFilter.vue` | Filter kategori horizontal scrollable dengan products count |
 | **SearchBar** | `SearchBar.vue` | Input pencarian dengan debounce |
 | **OrderStatusBadge** | `OrderStatusBadge.vue` | Badge status pesanan dengan warna |
 | **EmptyState** | `EmptyState.vue` | Empty state dengan ilustrasi |
 | **PriceDisplay** | `PriceDisplay.vue` | Format harga Rupiah dengan diskon |
+
+### CategoryFilter Component
+
+Component untuk menampilkan filter kategori dalam bentuk horizontal scrollable tabs dengan fitur:
+- Button "Semua" untuk menampilkan semua produk
+- Category buttons dengan active state styling
+- Products count badge (optional)
+- Hidden scrollbar dengan CSS
+
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `categories` | `Category[]` | Yes | - | Array kategori dari CategoryResource |
+| `activeCategory` | `number \| null` | No | `null` | ID kategori yang sedang aktif |
+
+**Events:**
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `select` | `number \| null` | Emit ketika kategori dipilih (null untuk semua) |
+
+**Category Interface:**
+
+```typescript
+interface Category {
+    id: number
+    name: string
+    slug: string
+    products_count?: number
+}
+```
+
+**Usage Example:**
+
+```vue
+<script setup lang="ts">
+import { CategoryFilter } from '@/components/store'
+import { router } from '@inertiajs/vue3'
+
+interface Props {
+    categories: { data: Category[] }
+    selectedCategory: number | null
+}
+
+const props = defineProps<Props>()
+
+function handleCategorySelect(categoryId: number | null) {
+    router.visit('/', {
+        data: categoryId ? { category: categoryId } : {},
+        preserveState: true,
+        preserveScroll: true,
+    })
+}
+</script>
+
+<template>
+    <CategoryFilter
+        :categories="categories.data"
+        :active-category="selectedCategory"
+        @select="handleCategorySelect"
+    />
+</template>
+```
+
+**Styling:**
+
+Component menggunakan Tailwind CSS dengan:
+- `bg-primary` dan `text-primary-foreground` untuk active state
+- `bg-secondary` dan `text-secondary-foreground` untuk inactive state
+- `rounded-full` untuk pill-style buttons
+- Hidden scrollbar dengan custom CSS
 
 ### Usage Example
 
