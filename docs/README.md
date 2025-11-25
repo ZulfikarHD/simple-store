@@ -69,8 +69,17 @@ import { ProductCard, CartItem, SearchBar } from '@/components/store'
 
 - **Current Version**: 0.1.0 (Development)
 - **Last Updated**: 2024-11-25
-- **Project Status**: In Development - Sprint 1
-- **Latest Feature**: ✅ CUST-002 Category Filter (Completed)
+- **Project Status**: In Development - Sprint 1 Complete
+- **Latest Feature**: ✅ CUST-003 Product Search & CUST-004 Product Detail (Completed)
+
+### Sprint 1 Progress
+
+| Story | Description | Status |
+|-------|-------------|--------|
+| CUST-001 | Product Catalog | ✅ Completed |
+| CUST-002 | Category Filter | ✅ Completed |
+| CUST-003 | Product Search | ✅ Completed |
+| CUST-004 | Product Detail | ✅ Completed |
 
 ---
 

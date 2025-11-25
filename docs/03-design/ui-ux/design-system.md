@@ -751,13 +751,22 @@ Komponen Vue yang sudah tersedia di `resources/js/components/store/`:
 
 | Component | File | Description |
 |-----------|------|-------------|
-| **ProductCard** | `ProductCard.vue` | Card produk dengan gambar, harga, badge status |
+| **ProductCard** | `ProductCard.vue` | Card produk dengan gambar, harga, badge status, link ke detail |
 | **CartItem** | `CartItem.vue` | Item keranjang dengan kontrol kuantitas |
 | **CategoryFilter** | `CategoryFilter.vue` | Filter kategori horizontal scrollable dengan products count |
-| **SearchBar** | `SearchBar.vue` | Input pencarian dengan debounce |
+| **SearchBar** | `SearchBar.vue` | Input pencarian dengan debounce dan clear button |
 | **OrderStatusBadge** | `OrderStatusBadge.vue` | Badge status pesanan dengan warna |
 | **EmptyState** | `EmptyState.vue` | Empty state dengan ilustrasi |
 | **PriceDisplay** | `PriceDisplay.vue` | Format harga Rupiah dengan diskon |
+
+### Store Pages
+
+Halaman Vue yang tersedia di `resources/js/pages/`:
+
+| Page | File | Description |
+|------|------|-------------|
+| **Home** | `Home.vue` | Katalog produk dengan search, filter kategori, dan grid produk |
+| **ProductDetail** | `ProductDetail.vue` | Detail produk dengan gambar, deskripsi, harga, dan related products |
 
 ### CategoryFilter Component
 
@@ -830,6 +839,117 @@ Component menggunakan Tailwind CSS dengan:
 - `bg-secondary` dan `text-secondary-foreground` untuk inactive state
 - `rounded-full` untuk pill-style buttons
 - Hidden scrollbar dengan custom CSS
+
+### SearchBar Component
+
+Component untuk input pencarian dengan debounce functionality untuk optimasi performa:
+
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `modelValue` | `string` | No | `''` | Value dari input (v-model) |
+| `placeholder` | `string` | No | `'Cari produk...'` | Placeholder text |
+| `debounce` | `number` | No | `300` | Debounce delay dalam ms |
+
+**Events:**
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `update:modelValue` | `string` | Emit ketika value berubah |
+| `search` | `string` | Emit setelah debounce delay |
+
+**Features:**
+- Search icon di sebelah kiri
+- Clear button ketika ada value
+- Debounce untuk mencegah request berlebihan
+- Rounded pill design dengan focus state
+- v-model support untuk two-way binding
+
+**Usage Example:**
+
+```vue
+<script setup lang="ts">
+import { SearchBar } from '@/components/store'
+import { ref } from 'vue'
+
+const searchQuery = ref('')
+
+function handleSearch(term: string) {
+    console.log('Search for:', term)
+}
+</script>
+
+<template>
+    <SearchBar
+        v-model="searchQuery"
+        placeholder="Cari produk..."
+        :debounce="400"
+        @search="handleSearch"
+    />
+</template>
+```
+
+### ProductDetail Page
+
+Halaman detail produk dengan layout responsive dan informasi lengkap:
+
+**Props:**
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `product` | `{ data: Product }` | Data produk dari ProductResource |
+| `relatedProducts` | `{ data: Product[] }` | Array produk terkait |
+
+**Layout Structure:**
+
+```
+Header (Sticky)
+├── Logo & Brand (Link to Home)
+└── Auth Navigation
+
+Main Content
+├── Breadcrumb Navigation (Home > Category > Product)
+├── Back Button
+├── Product Detail Grid (2 columns on lg)
+│   ├── Left: Product Image
+│   │   ├── Image/Placeholder
+│   │   └── Availability Badge
+│   └── Right: Product Info
+│       ├── Category Label
+│       ├── Product Name
+│       ├── Price (Rupiah format)
+│       ├── Availability Status
+│       ├── Description
+│       └── Add to Cart Button
+└── Related Products Section
+    └── ProductCard Grid (4 columns)
+
+Footer
+└── Copyright & Author
+```
+
+**Features:**
+- SEO meta tags dengan product info
+- Breadcrumb navigation untuk navigasi mudah
+- Product image dengan placeholder fallback
+- Availability status badge (Tersedia/Tidak Tersedia)
+- Full description dengan whitespace preservation
+- Add to cart button (ready for CUST-005)
+- Related products dari kategori yang sama (max 4)
+- Back to catalog button
+
+**Usage:**
+
+Page ini di-render oleh `ProductController::show()` dan dapat diakses melalui URL `/products/{slug}`.
+
+```typescript
+// Navigate to product detail using Wayfinder
+import { show } from '@/actions/App/Http/Controllers/ProductController'
+import { router } from '@inertiajs/vue3'
+
+router.visit(show.url('nasi-goreng-spesial'))
+```
 
 ### Usage Example
 
@@ -921,7 +1041,7 @@ Komponen dasar dari shadcn-vue di `resources/js/components/ui/`:
 
 ---
 
-*Document version: 1.1*  
+*Document version: 1.2*  
 *Last updated: November 2024*  
-*Implementation: `resources/css/app.css`, `resources/js/components/store/`*
+*Implementation: `resources/css/app.css`, `resources/js/components/store/`, `resources/js/pages/`*
 

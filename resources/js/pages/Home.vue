@@ -2,17 +2,19 @@
 /**
  * Home Page - Katalog Produk
  * Menampilkan daftar produk aktif dalam format grid responsive
- * dengan filter kategori, empty state, dan navigasi ke halaman login/register
+ * dengan filter kategori, pencarian, empty state, dan navigasi ke halaman login/register
  *
  * @author Zulfikar Hidayatullah
  */
 import { Head, Link, router } from '@inertiajs/vue3'
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { dashboard, login, register } from '@/routes'
 import ProductCard from '@/components/store/ProductCard.vue'
 import CategoryFilter from '@/components/store/CategoryFilter.vue'
+import SearchBar from '@/components/store/SearchBar.vue'
 import EmptyState from '@/components/store/EmptyState.vue'
-import { ShoppingBag } from 'lucide-vue-next'
+import { ShoppingBag, X } from 'lucide-vue-next'
+import { Button } from '@/components/ui/button'
 
 /**
  * Interface untuk data produk dari ProductResource
@@ -62,9 +64,15 @@ interface Props {
     products: ProductCollection
     categories: CategoryCollection
     selectedCategory: number | null
+    searchQuery: string | null
 }
 
 const props = defineProps<Props>()
+
+/**
+ * Local state untuk search input yang di-sync dengan prop searchQuery
+ */
+const localSearchQuery = ref(props.searchQuery ?? '')
 
 /**
  * Computed property untuk mendapatkan nama kategori yang dipilih
@@ -77,30 +85,115 @@ const selectedCategoryName = computed(() => {
 })
 
 /**
- * Computed property untuk page title dinamis berdasarkan kategori
+ * Computed property untuk page title dinamis berdasarkan kategori dan pencarian
  */
 const pageTitle = computed(() => {
+    if (props.searchQuery) {
+        return `Hasil Pencarian "${props.searchQuery}" - Katalog Produk`
+    }
     return selectedCategoryName.value
         ? `${selectedCategoryName.value} - Katalog Produk`
         : 'Katalog Produk'
 })
 
 /**
- * Computed property untuk page description dinamis berdasarkan kategori
+ * Computed property untuk page description dinamis berdasarkan kategori dan pencarian
  */
 const pageDescription = computed(() => {
+    if (props.searchQuery) {
+        return `Menampilkan ${props.products.data.length} hasil pencarian untuk "${props.searchQuery}"`
+    }
     return selectedCategoryName.value
         ? `Temukan berbagai produk ${selectedCategoryName.value.toLowerCase()} berkualitas`
         : 'Temukan berbagai produk berkualitas untuk kebutuhan Anda'
 })
 
 /**
+ * Computed property untuk heading dinamis berdasarkan pencarian atau kategori
+ */
+const pageHeading = computed(() => {
+    if (props.searchQuery) {
+        return `Hasil Pencarian "${props.searchQuery}"`
+    }
+    return selectedCategoryName.value ?? 'Katalog Produk'
+})
+
+/**
+ * Computed property untuk empty state title
+ */
+const emptyStateTitle = computed(() => {
+    if (props.searchQuery) {
+        return `Tidak Ditemukan Hasil untuk "${props.searchQuery}"`
+    }
+    if (selectedCategoryName.value) {
+        return `Tidak Ada Produk ${selectedCategoryName.value}`
+    }
+    return 'Belum Ada Produk'
+})
+
+/**
+ * Computed property untuk empty state description
+ */
+const emptyStateDescription = computed(() => {
+    if (props.searchQuery) {
+        return 'Coba kata kunci lain atau hapus filter pencarian.'
+    }
+    if (selectedCategoryName.value) {
+        return `Belum ada produk dalam kategori ${selectedCategoryName.value.toLowerCase()}. Silakan pilih kategori lain.`
+    }
+    return 'Produk sedang dalam persiapan. Silakan kembali lagi nanti.'
+})
+
+/**
  * Handler untuk event select dari CategoryFilter
- * Navigasi ke halaman dengan query parameter category
+ * Navigasi ke halaman dengan query parameter category, mempertahankan search jika ada
  */
 function handleCategorySelect(categoryId: number | null) {
+    const data: Record<string, string | number> = {}
+    if (categoryId) {
+        data.category = categoryId
+    }
+    if (props.searchQuery) {
+        data.search = props.searchQuery
+    }
     router.visit('/', {
-        data: categoryId ? { category: categoryId } : {},
+        data,
+        preserveState: true,
+        preserveScroll: true,
+    })
+}
+
+/**
+ * Handler untuk event search dari SearchBar
+ * Navigasi ke halaman dengan query parameter search, mempertahankan category jika ada
+ */
+function handleSearch(searchTerm: string) {
+    const data: Record<string, string | number> = {}
+    if (searchTerm) {
+        data.search = searchTerm
+    }
+    if (props.selectedCategory) {
+        data.category = props.selectedCategory
+    }
+    router.visit('/', {
+        data,
+        preserveState: true,
+        preserveScroll: true,
+    })
+}
+
+/**
+ * Handler untuk clear search
+ * Menghapus query parameter search dan kembali ke state sebelumnya
+ */
+function handleClearSearch() {
+    localSearchQuery.value = ''
+    const data: Record<string, number> = {}
+    if (props.selectedCategory) {
+        data.category = props.selectedCategory
+    }
+    router.visit('/', {
+        data,
         preserveState: true,
         preserveScroll: true,
     })
@@ -162,14 +255,40 @@ function handleAddToCart(productId: number) {
 
         <!-- Main Content -->
         <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+            <!-- Search Bar Section -->
+            <div class="mb-6">
+                <SearchBar
+                    v-model="localSearchQuery"
+                    placeholder="Cari produk..."
+                    :debounce="400"
+                    class="max-w-md"
+                    @search="handleSearch"
+                />
+            </div>
+
             <!-- Page Title -->
             <div class="mb-6">
-                <h1 class="text-3xl font-bold tracking-tight text-foreground">
-                    {{ selectedCategoryName ?? 'Katalog Produk' }}
-                </h1>
-                <p class="mt-2 text-muted-foreground">
-                    {{ pageDescription }}
-                </p>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold tracking-tight text-foreground">
+                            {{ pageHeading }}
+                        </h1>
+                        <p class="mt-2 text-muted-foreground">
+                            {{ pageDescription }}
+                        </p>
+                    </div>
+                    <!-- Clear Search Button -->
+                    <Button
+                        v-if="props.searchQuery"
+                        variant="outline"
+                        size="sm"
+                        class="flex items-center gap-2"
+                        @click="handleClearSearch"
+                    >
+                        <X class="h-4 w-4" />
+                        Hapus Pencarian
+                    </Button>
+                </div>
             </div>
 
             <!-- Category Filter -->
@@ -202,9 +321,9 @@ function handleAddToCart(productId: number) {
             <!-- Empty State -->
             <EmptyState
                 v-if="products.data.length === 0"
-                icon="🛒"
-                :title="selectedCategoryName ? `Tidak Ada Produk ${selectedCategoryName}` : 'Belum Ada Produk'"
-                :description="selectedCategoryName ? `Belum ada produk dalam kategori ${selectedCategoryName.toLowerCase()}. Silakan pilih kategori lain.` : 'Produk sedang dalam persiapan. Silakan kembali lagi nanti.'"
+                :icon="props.searchQuery ? '🔍' : '🛒'"
+                :title="emptyStateTitle"
+                :description="emptyStateDescription"
             />
         </main>
 

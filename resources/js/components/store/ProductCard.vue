@@ -3,12 +3,14 @@
  * ProductCard Component
  * Menampilkan informasi produk dalam format card dengan Airbnb-style design
  * mencakup gambar, nama, kategori, harga, dan status ketersediaan
+ * dengan navigasi ke halaman detail produk
  */
 import { computed } from 'vue'
 import { Link } from '@inertiajs/vue3'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Plus, ShoppingCart } from 'lucide-vue-next'
+import { show } from '@/actions/App/Http/Controllers/ProductController'
 
 /**
  * Props definition untuk ProductCard
@@ -28,14 +30,20 @@ interface Props {
         }
         is_available: boolean
     }
-    /** URL untuk detail produk (opsional) */
-    detailUrl?: string
     /** Mode tampilan: grid atau list */
     mode?: 'grid' | 'list'
 }
 
 const props = withDefaults(defineProps<Props>(), {
     mode: 'grid',
+})
+
+/**
+ * Generate URL detail produk menggunakan Wayfinder
+ * dengan slug sebagai parameter untuk SEO-friendly URL
+ */
+const detailUrl = computed(() => {
+    return show.url(props.product.slug)
 })
 
 /**
@@ -88,9 +96,8 @@ const imageUrl = computed(() => {
             'flex flex-row gap-4': mode === 'list',
         }"
     >
-        <!-- Product Image Container -->
-        <component
-            :is="detailUrl ? Link : 'div'"
+        <!-- Product Image Container dengan Link ke Detail -->
+        <Link
             :href="detailUrl"
             class="relative overflow-hidden"
             :class="{
@@ -122,7 +129,7 @@ const imageUrl = computed(() => {
             >
                 Habis
             </Badge>
-        </component>
+        </Link>
 
         <!-- Product Info -->
         <div

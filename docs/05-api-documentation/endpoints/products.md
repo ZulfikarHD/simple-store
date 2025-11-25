@@ -40,15 +40,25 @@ X-Inertia: true
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `category` | integer | No | Filter produk berdasarkan category ID |
+| `search` | string | No | Pencarian berdasarkan nama dan deskripsi produk |
 
 **Future enhancements:**
-- `search` - Search by product name
 - `sort` - Sort by (price, name, created_at)
 - `per_page` - Items per page (default: all)
 
 **Example dengan category filter:**
 ```http
 GET /?category=1
+```
+
+**Example dengan search:**
+```http
+GET /?search=nasi
+```
+
+**Example kombinasi search dan category:**
+```http
+GET /?search=goreng&category=1
 ```
 
 #### Response (Inertia)
@@ -126,6 +136,7 @@ GET /?category=1
 | Field | Type | Description |
 |-------|------|-------------|
 | `selectedCategory` | integer\|null | ID kategori yang dipilih (dari query param) |
+| `searchQuery` | string\|null | Query pencarian yang digunakan (dari query param) |
 
 #### Status Codes
 
@@ -236,6 +247,7 @@ interface HomeProps {
   products: ProductCollection
   categories: CategoryCollection
   selectedCategory: number | null
+  searchQuery: string | null
 }
 ```
 
@@ -369,6 +381,22 @@ Route::middleware('throttle:60,1')->group(function () {
 
 ## Changelog
 
+### Version 1.3.0 (2024-11-25)
+
+**Added:**
+- Product detail endpoint `GET /products/{slug}` (CUST-004)
+- Related products dari kategori yang sama
+- SEO-friendly URL dengan slug binding
+- ProductDetail page props
+
+### Version 1.2.0 (2024-11-25)
+
+**Added:**
+- Search functionality via query parameter `search` (CUST-003)
+- Case-insensitive search di nama dan deskripsi
+- searchQuery prop untuk maintain search state
+- Kombinasi search dengan category filter
+
 ### Version 1.1.0 (2024-11-25)
 
 **Added:**
@@ -387,9 +415,134 @@ Route::middleware('throttle:60,1')->group(function () {
 - Availability status computation
 
 **Upcoming:**
-- Pagination support (v1.2.0)
-- Search functionality (v1.2.0 - CUST-003)
-- Sorting options (v1.3.0)
+- Pagination support (v1.4.0)
+- Sorting options (v1.5.0)
+
+### 2. Get Product Detail
+
+Mengambil detail lengkap produk berdasarkan slug untuk ditampilkan pada halaman detail produk.
+
+#### Request
+
+```http
+GET /products/{slug}
+Accept: application/json
+X-Inertia: true
+```
+
+#### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `slug` | string | Yes | URL-friendly product identifier |
+
+**Example:**
+```http
+GET /products/nasi-goreng-spesial
+```
+
+#### Response (Inertia)
+
+```json
+{
+  "component": "ProductDetail",
+  "props": {
+    "product": {
+      "data": {
+        "id": 1,
+        "name": "Nasi Goreng Spesial",
+        "slug": "nasi-goreng-spesial",
+        "description": "Nasi goreng dengan telur, ayam, dan sayuran segar",
+        "price": 25000,
+        "image": "products/nasi-goreng.jpg",
+        "category": {
+          "id": 1,
+          "name": "Makanan Berat",
+          "slug": "makanan-berat"
+        },
+        "is_available": true
+      }
+    },
+    "relatedProducts": {
+      "data": [
+        {
+          "id": 2,
+          "name": "Mie Goreng Spesial",
+          "slug": "mie-goreng-spesial",
+          "description": "Mie goreng dengan telur dan sayuran",
+          "price": 22000,
+          "image": "products/mie-goreng.jpg",
+          "category": {
+            "id": 1,
+            "name": "Makanan Berat"
+          },
+          "is_available": true
+        }
+      ]
+    }
+  },
+  "url": "/products/nasi-goreng-spesial",
+  "version": "..."
+}
+```
+
+#### Response Fields
+
+**Product Detail:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | integer | Product ID (Primary Key) |
+| `name` | string | Product name |
+| `slug` | string | URL-friendly product name |
+| `description` | string\|null | Full product description |
+| `price` | float | Product price dalam Rupiah |
+| `image` | string\|null | Image path relative ke storage |
+| `category` | object\|null | Category information (eager loaded) |
+| `is_available` | boolean | Availability status |
+
+**Related Products:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data` | array | Array of related products (max 4) |
+
+#### Status Codes
+
+| Code | Description |
+|------|-------------|
+| 200 | Success - Product retrieved |
+| 404 | Product not found atau tidak aktif |
+| 500 | Server Error |
+
+#### Example Request (JavaScript)
+
+```javascript
+import { router } from '@inertiajs/vue3'
+import { show } from '@/actions/App/Http/Controllers/ProductController'
+
+// Using Wayfinder
+router.visit(show.url('nasi-goreng-spesial'))
+
+// Or direct URL
+router.visit('/products/nasi-goreng-spesial')
+```
+
+#### Business Rules
+
+1. **Active Products Only**
+   - Hanya produk dengan `is_active = true` yang accessible
+   - Produk inactive return 404
+
+2. **Related Products**
+   - Maksimal 4 produk dari kategori yang sama
+   - Exclude current product dari related
+   - Hanya produk aktif yang ditampilkan
+   - Ordered by latest (newest first)
+
+3. **SEO Considerations**
+   - URL menggunakan slug untuk SEO-friendly
+   - Meta tags dengan product info
 
 ---
 
@@ -401,6 +554,8 @@ Route::middleware('throttle:60,1')->group(function () {
 - [CategoryResource](../../04-technical/api-resources.md#categoryresource)
 - [Sprint 1 - CUST-001](../../07-development/sprint-planning/sprint-1-cust-001.md)
 - [Sprint 1 - CUST-002](../../07-development/sprint-planning/sprint-1-cust-002.md)
+- [Sprint 1 - CUST-003](../../07-development/sprint-planning/sprint-1-cust-003.md)
+- [Sprint 1 - CUST-004](../../07-development/sprint-planning/sprint-1-cust-004.md)
 
 ---
 

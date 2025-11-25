@@ -124,6 +124,22 @@ class Product extends Model
     }
 
     /**
+     * Scope untuk pencarian produk berdasarkan nama dan deskripsi
+     * dengan case-insensitive matching menggunakan LIKE operator
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<Product>  $query
+     * @param  string  $term  Kata kunci pencarian
+     * @return \Illuminate\Database\Eloquent\Builder<Product>
+     */
+    public function scopeSearch($query, string $term)
+    {
+        return $query->where(function ($q) use ($term) {
+            $q->where('name', 'like', "%{$term}%")
+                ->orWhere('description', 'like', "%{$term}%");
+        });
+    }
+
+    /**
      * Memeriksa apakah produk tersedia untuk dibeli
      */
     public function isAvailable(): bool
