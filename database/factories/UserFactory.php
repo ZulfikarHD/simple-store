@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
+ * Factory untuk model User dengan dukungan
+ * pembuatan user admin dan customer untuk testing
+ *
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
  */
 class UserFactory extends Factory
@@ -28,10 +31,13 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
+            'role' => 'customer',
+            'phone' => fake()->phoneNumber(),
+            'address' => fake()->address(),
             'remember_token' => Str::random(10),
-            'two_factor_secret' => Str::random(10),
-            'two_factor_recovery_codes' => Str::random(10),
-            'two_factor_confirmed_at' => now(),
+            'two_factor_secret' => null,
+            'two_factor_recovery_codes' => null,
+            'two_factor_confirmed_at' => null,
         ];
     }
 
@@ -54,6 +60,26 @@ class UserFactory extends Factory
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
             'two_factor_confirmed_at' => null,
+        ]);
+    }
+
+    /**
+     * State untuk membuat user dengan role admin
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'admin',
+        ]);
+    }
+
+    /**
+     * State untuk membuat user dengan role customer
+     */
+    public function customer(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'customer',
         ]);
     }
 }
