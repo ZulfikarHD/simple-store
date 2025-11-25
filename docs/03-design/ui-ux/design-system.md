@@ -2,6 +2,9 @@
 
 Design system ini terinspirasi dari Airbnb dengan fokus pada kesederhanaan, kejelasan, dan pengalaman pengguna yang menyenangkan. Warna biru digunakan sebagai primary color untuk memberikan kesan profesional, terpercaya, dan modern.
 
+> **📁 Implementation:** `resources/css/app.css`  
+> **🧩 Components:** `resources/js/components/store/`
+
 ---
 
 ## 🎨 Design Philosophy
@@ -32,97 +35,70 @@ Design system ini terinspirasi dari Airbnb dengan fokus pada kesederhanaan, keje
 
 ## 🔵 Color Palette
 
-### Primary Colors (Blue Spectrum)
+### Implementation
+
+Warna didefinisikan dalam `resources/css/app.css` menggunakan CSS variables yang terintegrasi dengan Tailwind CSS v4:
 
 ```css
-/* CSS Variables untuk Tailwind v4 */
-@theme {
-  /* Primary Blue - Main Brand Color */
-  --color-primary-50: oklch(0.97 0.01 240);   /* #f0f7ff */
-  --color-primary-100: oklch(0.93 0.03 240);  /* #e0efff */
-  --color-primary-200: oklch(0.86 0.06 240);  /* #b3d4ff */
-  --color-primary-300: oklch(0.76 0.10 240);  /* #80b8ff */
-  --color-primary-400: oklch(0.65 0.15 240);  /* #4d9aff */
-  --color-primary-500: oklch(0.55 0.20 240);  /* #1a7cff - Main */
-  --color-primary-600: oklch(0.48 0.20 240);  /* #0066e6 */
-  --color-primary-700: oklch(0.40 0.18 240);  /* #0052bf */
-  --color-primary-800: oklch(0.32 0.15 240);  /* #003d99 */
-  --color-primary-900: oklch(0.25 0.12 240);  /* #002966 */
+/* Light Mode - resources/css/app.css */
+:root {
+    /* Primary - Blue (Main Brand Color) */
+    --primary: hsl(217 91% 60%);
+    --primary-foreground: hsl(0 0% 100%);
+    
+    /* Secondary */
+    --secondary: hsl(210 40% 96%);
+    --secondary-foreground: hsl(222 47% 11%);
+    
+    /* Destructive */
+    --destructive: hsl(0 84% 60%);
+    --destructive-foreground: hsl(0 0% 98%);
+}
+
+/* Dark Mode */
+.dark {
+    --primary: hsl(217 91% 65%);
+    --primary-foreground: hsl(222 47% 6%);
 }
 ```
 
-| Name | Value | Hex Approx | Usage |
-|------|-------|------------|-------|
-| Primary 50 | `oklch(0.97 0.01 240)` | #F0F7FF | Backgrounds, hover states |
-| Primary 100 | `oklch(0.93 0.03 240)` | #E0EFFF | Light backgrounds |
-| Primary 200 | `oklch(0.86 0.06 240)` | #B3D4FF | Borders, dividers |
-| Primary 300 | `oklch(0.76 0.10 240)` | #80B8FF | Disabled states |
-| Primary 400 | `oklch(0.65 0.15 240)` | #4D9AFF | Hover states |
-| **Primary 500** | `oklch(0.55 0.20 240)` | **#1A7CFF** | **Primary buttons, links** |
-| Primary 600 | `oklch(0.48 0.20 240)` | #0066E6 | Active states |
-| Primary 700 | `oklch(0.40 0.18 240)` | #0052BF | Dark accents |
-| Primary 800 | `oklch(0.32 0.15 240)` | #003D99 | Very dark accents |
-| Primary 900 | `oklch(0.25 0.12 240)` | #002966 | Text on light backgrounds |
+### Brand Colors (Extended)
 
-### Neutral Colors
+Untuk penggunaan yang lebih spesifik, tersedia brand colors dalam Tailwind utilities:
 
 ```css
-@theme {
-  /* Neutrals - Clean & Minimal */
-  --color-neutral-50: oklch(0.98 0 0);   /* #FAFAFA */
-  --color-neutral-100: oklch(0.96 0 0);  /* #F5F5F5 */
-  --color-neutral-200: oklch(0.92 0 0);  /* #EEEEEE */
-  --color-neutral-300: oklch(0.85 0 0);  /* #DDDDDD */
-  --color-neutral-400: oklch(0.70 0 0);  /* #AAAAAA */
-  --color-neutral-500: oklch(0.55 0 0);  /* #777777 */
-  --color-neutral-600: oklch(0.43 0 0);  /* #555555 */
-  --color-neutral-700: oklch(0.32 0 0);  /* #333333 */
-  --color-neutral-800: oklch(0.22 0 0);  /* #222222 */
-  --color-neutral-900: oklch(0.13 0 0);  /* #111111 */
-}
+/* @theme di app.css */
+--color-brand-50: oklch(0.97 0.01 240);   /* Lightest */
+--color-brand-500: oklch(0.55 0.20 240);  /* Main */
+--color-brand-900: oklch(0.25 0.12 240);  /* Darkest */
 ```
 
-### Semantic Colors
+### Tailwind Usage
 
-```css
-@theme {
-  /* Success - Green */
-  --color-success-50: oklch(0.96 0.03 145);
-  --color-success-500: oklch(0.60 0.18 145);  /* #22C55E */
-  --color-success-700: oklch(0.45 0.15 145);
+```html
+<!-- Primary (recommended) -->
+<button class="bg-primary text-primary-foreground">Button</button>
 
-  /* Warning - Amber */
-  --color-warning-50: oklch(0.97 0.03 85);
-  --color-warning-500: oklch(0.75 0.15 85);   /* #F59E0B */
-  --color-warning-700: oklch(0.55 0.13 85);
-
-  /* Error - Red */
-  --color-error-50: oklch(0.97 0.02 25);
-  --color-error-500: oklch(0.60 0.22 25);     /* #EF4444 */
-  --color-error-700: oklch(0.45 0.18 25);
-
-  /* Info - Cyan */
-  --color-info-50: oklch(0.96 0.02 200);
-  --color-info-500: oklch(0.65 0.15 200);     /* #06B6D4 */
-  --color-info-700: oklch(0.50 0.13 200);
-}
+<!-- Brand colors (for custom needs) -->
+<div class="bg-brand-50">Light background</div>
+<div class="bg-brand-500 text-white">Brand color</div>
 ```
 
 ### Color Usage Guidelines
 
-| Context | Color | Example |
-|---------|-------|---------|
-| Primary Actions | Primary 500 | "Tambah ke Keranjang", "Pesan Sekarang" |
-| Secondary Actions | Neutral 700 | "Batal", "Kembali" |
-| Success States | Success 500 | "Pesanan Berhasil", badges |
-| Warning States | Warning 500 | "Stok Terbatas" |
-| Error States | Error 500 | Validation errors, "Gagal" |
-| Links | Primary 600 | Text links, breadcrumbs |
-| Body Text | Neutral 700 | Paragraphs, descriptions |
-| Headings | Neutral 900 | H1, H2, H3 |
-| Placeholder | Neutral 400 | Input placeholders |
-| Borders | Neutral 200 | Cards, inputs, dividers |
-| Backgrounds | Neutral 50/100 | Page backgrounds, cards |
+| Context | Tailwind Class | Example |
+|---------|----------------|---------|
+| Primary Actions | `bg-primary text-primary-foreground` | "Tambah ke Keranjang" |
+| Secondary Actions | `bg-secondary text-secondary-foreground` | "Batal", "Kembali" |
+| Destructive | `bg-destructive text-destructive-foreground` | "Hapus", "Batalkan" |
+| Success States | `bg-green-100 text-green-700` | "Pesanan Berhasil" |
+| Warning States | `bg-yellow-100 text-yellow-700` | "Stok Terbatas" |
+| Error States | `bg-red-100 text-red-700` | Validation errors |
+| Links | `text-primary hover:underline` | Text links |
+| Body Text | `text-foreground` | Paragraphs |
+| Muted Text | `text-muted-foreground` | Secondary info |
+| Borders | `border-border` | Cards, inputs |
+| Backgrounds | `bg-background` / `bg-card` | Page, cards |
 
 ---
 
@@ -767,6 +743,90 @@ Gunakan shadows secara minimal untuk menciptakan depth tanpa berlebihan.
 
 ---
 
+## 🧩 Vue Components
+
+### Store Components
+
+Komponen Vue yang sudah tersedia di `resources/js/components/store/`:
+
+| Component | File | Description |
+|-----------|------|-------------|
+| **ProductCard** | `ProductCard.vue` | Card produk dengan gambar, harga, badge status |
+| **CartItem** | `CartItem.vue` | Item keranjang dengan kontrol kuantitas |
+| **CategoryFilter** | `CategoryFilter.vue` | Filter kategori horizontal scrollable |
+| **SearchBar** | `SearchBar.vue` | Input pencarian dengan debounce |
+| **OrderStatusBadge** | `OrderStatusBadge.vue` | Badge status pesanan dengan warna |
+| **EmptyState** | `EmptyState.vue` | Empty state dengan ilustrasi |
+| **PriceDisplay** | `PriceDisplay.vue` | Format harga Rupiah dengan diskon |
+
+### Usage Example
+
+```vue
+<script setup lang="ts">
+import { 
+    ProductCard, 
+    CategoryFilter, 
+    SearchBar,
+    EmptyState 
+} from '@/components/store'
+
+const products = ref([])
+const categories = ref([])
+const selectedCategory = ref(null)
+const searchQuery = ref('')
+</script>
+
+<template>
+    <!-- Search Bar -->
+    <SearchBar 
+        v-model="searchQuery" 
+        placeholder="Cari produk..."
+        @search="handleSearch" 
+    />
+
+    <!-- Category Filter -->
+    <CategoryFilter 
+        :categories="categories" 
+        :active-category="selectedCategory"
+        @select="handleCategorySelect" 
+    />
+
+    <!-- Product Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <ProductCard 
+            v-for="product in products"
+            :key="product.id"
+            :product="product" 
+            @add-to-cart="handleAddToCart" 
+        />
+    </div>
+
+    <!-- Empty State -->
+    <EmptyState 
+        v-if="products.length === 0"
+        icon="🔍"
+        title="Produk tidak ditemukan"
+        description="Coba kata kunci lain atau lihat semua kategori"
+        action-label="Lihat Semua"
+        @action="clearFilters"
+    />
+</template>
+```
+
+### UI Components (shadcn-vue)
+
+Komponen dasar dari shadcn-vue di `resources/js/components/ui/`:
+
+- **Button** - Primary, Secondary, Outline, Ghost, Destructive variants
+- **Badge** - Default, Secondary, Destructive, Outline, Success, Warning, Info variants
+- **Card** - Card container dengan header, content, footer
+- **Input** - Text input dengan validation states
+- **Dialog** - Modal dialog
+- **Sheet** - Side panel / bottom sheet
+- **Skeleton** - Loading placeholder
+
+---
+
 ## 📚 Resources
 
 ### Design Inspiration
@@ -778,6 +838,7 @@ Gunakan shadows secara minimal untuk menciptakan depth tanpa berlebihan.
 ### Tools
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Heroicons](https://heroicons.com/)
+- [Lucide Icons](https://lucide.dev/) - Icon library yang digunakan
 - [Coolors](https://coolors.co/) - Color palette generator
 - [Contrast Checker](https://webaim.org/resources/contrastchecker/)
 
@@ -785,4 +846,10 @@ Gunakan shadows secara minimal untuk menciptakan depth tanpa berlebihan.
 - [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans)
 - [DM Sans](https://fonts.google.com/specimen/DM+Sans)
 - [Inter](https://fonts.google.com/specimen/Inter)
+
+---
+
+*Document version: 1.1*  
+*Last updated: November 2024*  
+*Implementation: `resources/css/app.css`, `resources/js/components/store/`*
 

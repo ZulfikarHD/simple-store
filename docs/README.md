@@ -12,7 +12,7 @@ Selamat datang di dokumentasi aplikasi F&B Web App. Aplikasi ini merupakan platf
 - [API Documentation](05-api-documentation/api-overview.md)
 
 ### Untuk Designer
-- [Design System](03-design/ui-ux/design-system.md)
+- [Design System](03-design/ui-ux/design-system.md) ⭐ **Updated dengan Vue Components**
 - [Wireframes](03-design/ui-ux/wireframes/)
 - [Mockups](03-design/ui-ux/mockups/)
 - [User Flows](03-design/ui-ux/user-flows.md)
@@ -37,8 +37,31 @@ Selamat datang di dokumentasi aplikasi F&B Web App. Aplikasi ini merupakan platf
 | Backend | Laravel 12 (PHP 8.4) |
 | Frontend | Vue.js 3 + Inertia.js v2 |
 | Styling | Tailwind CSS v4 |
+| UI Components | shadcn-vue + Custom Store Components |
 | Database | SQLite (Development) |
 | Payment | WhatsApp API Integration |
+
+## Store Components
+
+Komponen Vue siap pakai untuk F&B store:
+
+```
+resources/js/components/store/
+├── ProductCard.vue      # Card produk
+├── CartItem.vue         # Item keranjang
+├── CategoryFilter.vue   # Filter kategori
+├── SearchBar.vue        # Search dengan debounce
+├── OrderStatusBadge.vue # Badge status pesanan
+├── EmptyState.vue       # Empty state
+├── PriceDisplay.vue     # Format harga Rupiah
+└── index.ts             # Export semua components
+```
+
+**Quick Import:**
+
+```vue
+import { ProductCard, CartItem, SearchBar } from '@/components/store'
+```
 
 ---
 
