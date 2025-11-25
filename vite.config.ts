@@ -24,4 +24,17 @@ export default defineConfig({
             },
         }),
     ],
+
+    // Dev Enable this, Prod Comment This
+    server: {
+        host: '0.0.0.0', // Listen on all network interfaces
+        port: 5173,
+        hmr: {
+            host: '10.30.11.65', // Use the server's IP for HMR
+            port: 5173,
+        },
+        cors: {
+            origin: true, // Allow all origins during development
+        },
+    },
 });
