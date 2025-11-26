@@ -3,7 +3,7 @@
  * ProductDetail Page - Halaman Detail Produk
  * Menampilkan informasi lengkap produk termasuk gambar, deskripsi,
  * harga, dan produk terkait dari kategori yang sama
- * dengan add to cart functionality menggunakan Inertia
+ * dengan add to cart functionality dan mobile bottom navigation
  *
  * @author Zulfikar Hidayatullah
  */
@@ -16,6 +16,7 @@ import { show as showCart } from '@/actions/App/Http/Controllers/CartController'
 import ProductCard from '@/components/store/ProductCard.vue'
 import CartCounter from '@/components/store/CartCounter.vue'
 import PriceDisplay from '@/components/store/PriceDisplay.vue'
+import UserBottomNav from '@/components/mobile/UserBottomNav.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -446,8 +447,8 @@ function handleBack() {
             </section>
         </main>
 
-        <!-- Footer -->
-        <footer class="mt-12 border-t border-border bg-muted/30 sm:mt-16">
+        <!-- Footer - Hidden on mobile -->
+        <footer class="mt-12 hidden border-t border-border bg-muted/30 sm:mt-16 md:block">
             <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
                 <div class="text-center text-sm text-muted-foreground">
                     <p>&copy; {{ new Date().getFullYear() }} Simple Store. Dibuat oleh Zulfikar Hidayatullah.</p>
@@ -455,9 +456,9 @@ function handleBack() {
             </div>
         </footer>
 
-        <!-- Mobile Sticky Add to Cart Footer -->
+        <!-- Mobile Sticky Add to Cart Footer - positioned above bottom nav -->
         <div
-            class="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:hidden"
+            class="fixed inset-x-0 bottom-16 z-40 border-t border-border bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:hidden"
         >
             <div class="mx-auto max-w-7xl">
                 <!-- Price & Quantity Row -->
@@ -514,5 +515,8 @@ function handleBack() {
                 </Button>
             </div>
         </div>
+
+        <!-- Mobile Bottom Navigation -->
+        <UserBottomNav />
     </div>
 </template>

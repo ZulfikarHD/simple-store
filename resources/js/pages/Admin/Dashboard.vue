@@ -8,10 +8,12 @@
  * - Active products count
  * - Recent orders list
  * - Browser notifications untuk pesanan baru
+ * - Mobile redirect ke halaman orders (order-centric view)
  *
  * @author Zulfikar Hidayatullah
  */
 import { onMounted } from 'vue'
+import { router } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -23,6 +25,7 @@ import { Head, Link } from '@inertiajs/vue3'
 import { dashboard } from '@/routes/admin'
 import { index as productsIndex } from '@/routes/admin/products'
 import { index as categoriesIndex } from '@/routes/admin/categories'
+import { index as ordersIndex } from '@/routes/admin/orders'
 import { useOrderNotifications } from '@/composables/useOrderNotifications'
 import {
     ShoppingBag,
@@ -46,8 +49,21 @@ const {
     watchPendingOrders,
 } = useOrderNotifications()
 
+/**
+ * Mobile detection dan redirect ke orders view
+ * Admin pada mobile sebaiknya langsung melihat pesanan
+ */
+function checkMobileAndRedirect(): void {
+    const isMobile = window.innerWidth < 768
+    if (isMobile) {
+        router.visit(ordersIndex().url, { replace: true })
+    }
+}
+
 onMounted(() => {
     watchPendingOrders()
+    // Redirect ke orders page pada mobile untuk order-centric experience
+    checkMobileAndRedirect()
 })
 
 interface OrderItem {

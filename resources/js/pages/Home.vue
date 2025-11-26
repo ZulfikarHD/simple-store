@@ -4,7 +4,8 @@
  * Menampilkan daftar produk aktif dalam format grid responsive
  * dengan filter kategori, pencarian, empty state, cart counter,
  * dan navigasi ke halaman login/register
- * Optimasi untuk mobile dengan hamburger menu dan touch-friendly buttons
+ * Optimasi untuk mobile dengan hamburger menu, touch-friendly buttons,
+ * dan bottom navigation untuk mobile app experience
  *
  * @author Zulfikar Hidayatullah
  */
@@ -17,6 +18,7 @@ import CategoryFilter from '@/components/store/CategoryFilter.vue'
 import SearchBar from '@/components/store/SearchBar.vue'
 import EmptyState from '@/components/store/EmptyState.vue'
 import CartCounter from '@/components/store/CartCounter.vue'
+import UserBottomNav from '@/components/mobile/UserBottomNav.vue'
 import { ShoppingBag, X, Menu } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 
@@ -398,13 +400,19 @@ function handleClearSearch() {
             />
         </main>
 
-        <!-- Footer -->
-        <footer class="border-t border-border bg-muted/30">
+        <!-- Footer - Hidden on mobile karena ada bottom nav -->
+        <footer class="hidden border-t border-border bg-muted/30 md:block">
             <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div class="text-center text-sm text-muted-foreground">
                     <p>&copy; {{ new Date().getFullYear() }} Simple Store. Dibuat oleh Zulfikar Hidayatullah.</p>
                 </div>
             </div>
         </footer>
+
+        <!-- Bottom padding untuk mobile nav -->
+        <div class="h-20 md:hidden" />
+
+        <!-- Mobile Bottom Navigation -->
+        <UserBottomNav />
     </div>
 </template>

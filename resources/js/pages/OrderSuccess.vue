@@ -2,7 +2,7 @@
 /**
  * Order Success Page - Halaman Konfirmasi Pesanan
  * Menampilkan detail pesanan yang berhasil dibuat
- * dengan tombol untuk redirect ke WhatsApp
+ * dengan tombol untuk redirect ke WhatsApp dan bottom navigation
  *
  * @author Zulfikar Hidayatullah
  */
@@ -10,6 +10,7 @@ import { Head, Link } from '@inertiajs/vue3'
 import { computed, onMounted, ref } from 'vue'
 import { home } from '@/routes'
 import CartCounter from '@/components/store/CartCounter.vue'
+import UserBottomNav from '@/components/mobile/UserBottomNav.vue'
 import { Button } from '@/components/ui/button'
 import {
     ShoppingBag,
@@ -328,14 +329,20 @@ onMounted(() => {
             </div>
         </main>
 
-        <!-- Footer -->
-        <footer class="mt-16 border-t border-border bg-muted/30">
+        <!-- Footer - Hidden on mobile -->
+        <footer class="mt-16 hidden border-t border-border bg-muted/30 md:block">
             <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div class="text-center text-sm text-muted-foreground">
                     <p>&copy; {{ new Date().getFullYear() }} Simple Store. Dibuat oleh Zulfikar Hidayatullah.</p>
                 </div>
             </div>
         </footer>
+
+        <!-- Bottom padding untuk mobile nav -->
+        <div class="h-20 md:hidden" />
+
+        <!-- Mobile Bottom Navigation -->
+        <UserBottomNav />
     </div>
 </template>
 

@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\StoreSettingController;
+use App\Http\Controllers\Api\OrderApiController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ProductController;
@@ -24,6 +26,10 @@ Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout.sho
 Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
 
+// Account routes untuk profil dan riwayat pesanan user
+Route::get('/account', [AccountController::class, 'index'])->name('account.index');
+Route::get('/account/orders', [AccountController::class, 'orders'])->name('account.orders');
+
 // Admin routes dengan auth middleware untuk proteksi akses
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -37,6 +43,10 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     // Store settings routes untuk konfigurasi toko
     Route::get('/settings', [StoreSettingController::class, 'index'])->name('settings.index');
     Route::patch('/settings', [StoreSettingController::class, 'update'])->name('settings.update');
+
+    // API routes untuk mobile alert system (polling pending orders)
+    Route::get('/api/orders/pending', [OrderApiController::class, 'pendingOrders'])->name('api.orders.pending');
+    Route::patch('/api/orders/{order}/quick-status', [OrderApiController::class, 'quickStatusUpdate'])->name('api.orders.quickStatus');
 });
 
 require __DIR__.'/settings.php';

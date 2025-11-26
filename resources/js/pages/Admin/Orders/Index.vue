@@ -2,10 +2,13 @@
 /**
  * Admin Orders Index Page
  * Menampilkan daftar pesanan dengan fitur pagination, search, dan filter, yaitu:
- * - Tabel data pesanan dengan kolom order number, customer, total, status, tanggal
+ * - Card view untuk mobile dengan quick actions
+ * - Tabel data pesanan untuk desktop dengan kolom order number, customer, total, status, tanggal
  * - Search bar untuk pencarian berdasarkan order number, nama customer, atau nomor telepon
  * - Filter dropdown untuk status pesanan dan date range
  * - Pagination untuk navigasi halaman
+ *
+ * @author Zulfikar Hidayatullah
  */
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,6 +16,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import PriceDisplay from '@/components/store/PriceDisplay.vue'
+import OrderCard from '@/components/admin/OrderCard.vue'
 import { type BreadcrumbItem } from '@/types'
 import { Head, Link, router, usePage } from '@inertiajs/vue3'
 import { dashboard } from '@/routes/admin'
@@ -27,6 +31,8 @@ import {
     Phone,
     Calendar,
     Package,
+    SlidersHorizontal,
+    X,
 } from 'lucide-vue-next'
 import { ref, watch, computed } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
@@ -43,10 +49,12 @@ interface Order {
     order_number: string
     customer_name: string
     customer_phone: string
+    customer_address?: string
     total: number
     status: string
     items: OrderItem[]
     created_at: string
+    waiting_minutes?: number
 }
 
 interface PaginationLink {
@@ -96,6 +104,23 @@ const search = ref(props.filters.search || '')
 const status = ref(props.filters.status || '')
 const startDate = ref(props.filters.start_date || '')
 const endDate = ref(props.filters.end_date || '')
+
+// Mobile filter visibility
+const showMobileFilter = ref(false)
+
+/**
+ * Toggle mobile filter visibility
+ */
+function toggleMobileFilter() {
+    showMobileFilter.value = !showMobileFilter.value
+}
+
+/**
+ * Computed untuk cek apakah ada filter aktif
+ */
+const hasActiveFilters = computed(() => {
+    return search.value || status.value || startDate.value || endDate.value
+})
 
 /**
  * Debounced search function untuk menghindari request berlebihan
@@ -243,8 +268,97 @@ function openWhatsApp(phone: string) {
                 {{ flashError }}
             </div>
 
-            <!-- Filters Card -->
-            <Card>
+            <!-- Mobile Search Bar + Filter Toggle -->
+            <div class="flex gap-2 md:hidden">
+                <div class="relative flex-1">
+                    <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                        v-model="search"
+                        type="text"
+                        placeholder="Cari pesanan..."
+                        class="h-11 pl-10"
+                    />
+                </div>
+                <Button
+                    variant="outline"
+                    size="icon"
+                    class="h-11 w-11 shrink-0"
+                    :class="{ 'bg-primary text-primary-foreground': hasActiveFilters }"
+                    @click="toggleMobileFilter"
+                >
+                    <SlidersHorizontal class="h-4 w-4" />
+                </Button>
+            </div>
+
+            <!-- Mobile Filter Panel (Collapsible) -->
+            <Transition
+                enter-active-class="transition-all duration-200 ease-out"
+                enter-from-class="opacity-0 -translate-y-2"
+                enter-to-class="opacity-100 translate-y-0"
+                leave-active-class="transition-all duration-150 ease-in"
+                leave-from-class="opacity-100 translate-y-0"
+                leave-to-class="opacity-0 -translate-y-2"
+            >
+                <Card v-if="showMobileFilter" class="md:hidden">
+                    <CardContent class="p-4">
+                        <div class="flex flex-col gap-3">
+                            <!-- Status Filter -->
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-sm font-medium">Status</label>
+                                <select
+                                    v-model="status"
+                                    class="h-11 rounded-md border border-input bg-background px-3 text-base"
+                                    @change="applyFilters"
+                                >
+                                    <option value="">Semua Status</option>
+                                    <option
+                                        v-for="(label, value) in statuses"
+                                        :key="value"
+                                        :value="value"
+                                    >
+                                        {{ label }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Date Range -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="flex flex-col gap-1.5">
+                                    <label class="text-sm font-medium">Dari Tanggal</label>
+                                    <Input
+                                        v-model="startDate"
+                                        type="date"
+                                        class="h-11"
+                                        @change="applyFilters"
+                                    />
+                                </div>
+                                <div class="flex flex-col gap-1.5">
+                                    <label class="text-sm font-medium">Sampai Tanggal</label>
+                                    <Input
+                                        v-model="endDate"
+                                        type="date"
+                                        class="h-11"
+                                        @change="applyFilters"
+                                    />
+                                </div>
+                            </div>
+
+                            <!-- Reset Button -->
+                            <Button
+                                variant="outline"
+                                class="h-11"
+                                @click="resetFilters"
+                            >
+                                <X class="mr-2 h-4 w-4" />
+                                Reset Filter
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </Transition>
+
+            <!-- Desktop Filters Card -->
+            <Card class="hidden md:block">
                 <CardHeader>
                     <CardTitle class="flex items-center gap-2 text-base">
                         <Filter class="h-4 w-4" />
@@ -315,8 +429,61 @@ function openWhatsApp(phone: string) {
                 </CardContent>
             </Card>
 
-            <!-- Orders Table -->
-            <Card>
+            <!-- Mobile Order Cards View -->
+            <div class="flex flex-col gap-3 md:hidden">
+                <OrderCard
+                    v-for="order in orders.data"
+                    :key="order.id"
+                    :order="order"
+                    :statuses="statuses"
+                />
+
+                <!-- Mobile Empty State -->
+                <Card v-if="orders.data.length === 0">
+                    <CardContent class="py-12">
+                        <div class="flex flex-col items-center justify-center text-center">
+                            <ShoppingBag class="mb-4 h-12 w-12 text-muted-foreground/50" />
+                            <p class="text-lg font-medium text-muted-foreground">
+                                Belum ada pesanan
+                            </p>
+                            <p class="mt-1 text-sm text-muted-foreground">
+                                Pesanan customer akan muncul di sini
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Mobile Pagination -->
+                <div
+                    v-if="orders.last_page > 1"
+                    class="flex items-center justify-between rounded-lg border bg-card p-3"
+                >
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        class="h-10 w-10 p-0"
+                        :disabled="orders.current_page === 1"
+                        @click="goToPage(orders.links[0]?.url)"
+                    >
+                        <ChevronLeft class="h-4 w-4" />
+                    </Button>
+                    <span class="text-sm text-muted-foreground">
+                        {{ orders.current_page }} / {{ orders.last_page }}
+                    </span>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        class="h-10 w-10 p-0"
+                        :disabled="orders.current_page === orders.last_page"
+                        @click="goToPage(orders.links[orders.links.length - 1]?.url)"
+                    >
+                        <ChevronRight class="h-4 w-4" />
+                    </Button>
+                </div>
+            </div>
+
+            <!-- Desktop Orders Table -->
+            <Card class="hidden md:block">
                 <CardContent class="p-0">
                     <div class="overflow-x-auto">
                         <table class="w-full">
@@ -440,7 +607,7 @@ function openWhatsApp(phone: string) {
                         </table>
                     </div>
 
-                    <!-- Pagination -->
+                    <!-- Desktop Pagination -->
                     <div
                         v-if="orders.last_page > 1"
                         class="flex items-center justify-between border-t px-4 py-3"

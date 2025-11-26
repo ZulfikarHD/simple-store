@@ -2,7 +2,7 @@
 /**
  * Checkout Page - Halaman Checkout
  * Menampilkan form data customer dan ringkasan pesanan
- * dengan validasi real-time dan integrasi WhatsApp
+ * dengan validasi real-time, integrasi WhatsApp, dan bottom navigation
  *
  * @author Zulfikar Hidayatullah
  */
@@ -12,6 +12,7 @@ import { computed, ref } from 'vue'
 import { home, show as showCart } from '@/routes/cart'
 import { store as checkoutStore } from '@/actions/App/Http/Controllers/CheckoutController'
 import CartCounter from '@/components/store/CartCounter.vue'
+import UserBottomNav from '@/components/mobile/UserBottomNav.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -356,14 +357,20 @@ function formatPrice(price: number): string {
             </Form>
         </main>
 
-        <!-- Footer -->
-        <footer class="mt-16 border-t border-border bg-muted/30">
+        <!-- Footer - Hidden on mobile -->
+        <footer class="mt-16 hidden border-t border-border bg-muted/30 md:block">
             <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div class="text-center text-sm text-muted-foreground">
                     <p>&copy; {{ new Date().getFullYear() }} Simple Store. Dibuat oleh Zulfikar Hidayatullah.</p>
                 </div>
             </div>
         </footer>
+
+        <!-- Bottom padding untuk mobile nav -->
+        <div class="h-20 md:hidden" />
+
+        <!-- Mobile Bottom Navigation -->
+        <UserBottomNav />
     </div>
 </template>
 

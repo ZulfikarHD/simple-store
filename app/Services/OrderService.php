@@ -30,6 +30,7 @@ class OrderService
      * - Pencarian berdasarkan order number, nama customer, atau nomor telepon
      * - Filter berdasarkan status order
      * - Filter berdasarkan tanggal (date range)
+     * - Termasuk waiting_minutes untuk urgency indicators
      *
      * @param  array<string, mixed>  $filters  Parameter filter dari request
      * @return LengthAwarePaginator<Order>
@@ -67,7 +68,30 @@ class OrderService
 
         $perPage = (int) ($filters['per_page'] ?? 10);
 
-        return $query->paginate($perPage)->withQueryString();
+        $paginated = $query->paginate($perPage)->withQueryString();
+
+        // Transform data untuk menambahkan waiting_minutes
+        $paginated->through(function (Order $order) {
+            return [
+                'id' => $order->id,
+                'order_number' => $order->order_number,
+                'customer_name' => $order->customer_name,
+                'customer_phone' => $order->customer_phone,
+                'customer_address' => $order->customer_address,
+                'total' => $order->total,
+                'status' => $order->status,
+                'items' => $order->items->map(fn ($item) => [
+                    'id' => $item->id,
+                    'product_name' => $item->product_name,
+                    'quantity' => $item->quantity,
+                    'subtotal' => $item->subtotal,
+                ]),
+                'created_at' => $order->created_at->toISOString(),
+                'waiting_minutes' => $order->created_at->diffInMinutes(now()),
+            ];
+        });
+
+        return $paginated;
     }
 
     /**

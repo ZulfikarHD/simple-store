@@ -2,7 +2,7 @@
 /**
  * Cart Page - Halaman Keranjang Belanja
  * Menampilkan daftar item di keranjang dengan kontrol quantity,
- * total harga, dan tombol checkout
+ * total harga, dan tombol checkout dengan mobile bottom navigation
  *
  * @author Zulfikar Hidayatullah
  */
@@ -13,6 +13,7 @@ import { show as checkoutShow } from '@/actions/App/Http/Controllers/CheckoutCon
 import CartItem from '@/components/store/CartItem.vue'
 import CartCounter from '@/components/store/CartCounter.vue'
 import EmptyState from '@/components/store/EmptyState.vue'
+import UserBottomNav from '@/components/mobile/UserBottomNav.vue'
 import { Button } from '@/components/ui/button'
 import {
     ShoppingBag,
@@ -223,10 +224,10 @@ const formattedSubtotal = computed(() => {
             </div>
         </main>
 
-        <!-- Mobile Sticky Checkout Footer -->
+        <!-- Mobile Sticky Checkout Footer - positioned above bottom nav -->
         <div
             v-if="!isEmpty"
-            class="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 lg:hidden"
+            class="fixed inset-x-0 bottom-16 z-40 border-t border-border bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:bottom-0 lg:hidden"
         >
             <div class="mx-auto max-w-7xl">
                 <div class="mb-3 flex items-center justify-between">
@@ -245,14 +246,17 @@ const formattedSubtotal = computed(() => {
             </div>
         </div>
 
-        <!-- Footer -->
-        <footer class="mt-16 border-t border-border bg-muted/30">
+        <!-- Footer - Hidden on mobile -->
+        <footer class="mt-16 hidden border-t border-border bg-muted/30 md:block">
             <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div class="text-center text-sm text-muted-foreground">
                     <p>&copy; {{ new Date().getFullYear() }} Simple Store. Dibuat oleh Zulfikar Hidayatullah.</p>
                 </div>
             </div>
         </footer>
+
+        <!-- Mobile Bottom Navigation -->
+        <UserBottomNav />
     </div>
 </template>
 
