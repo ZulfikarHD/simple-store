@@ -35,4 +35,17 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | WhatsApp Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Konfigurasi untuk integrasi WhatsApp Business
+    | Nomor telepon digunakan untuk redirect ke WhatsApp saat checkout
+    |
+    */
+    'whatsapp' => [
+        'phone_number' => env('WHATSAPP_PHONE_NUMBER', '6281234567890'),
+    ],
+
 ];

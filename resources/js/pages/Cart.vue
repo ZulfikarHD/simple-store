@@ -9,6 +9,7 @@
 import { Head, Link } from '@inertiajs/vue3'
 import { computed } from 'vue'
 import { home } from '@/routes'
+import { show as checkoutShow } from '@/actions/App/Http/Controllers/CheckoutController'
 import CartItem from '@/components/store/CartItem.vue'
 import CartCounter from '@/components/store/CartCounter.vue'
 import EmptyState from '@/components/store/EmptyState.vue'
@@ -17,6 +18,7 @@ import {
     ShoppingBag,
     ArrowLeft,
     ShoppingCart,
+    ArrowRight,
 } from 'lucide-vue-next'
 
 /**
@@ -199,12 +201,15 @@ const formattedSubtotal = computed(() => {
                         </div>
 
                         <!-- Checkout Button -->
+                        <Link :href="checkoutShow()">
                         <Button
                             size="lg"
                             class="mt-6 w-full gap-2"
                         >
                             Lanjut ke Checkout
+                                <ArrowRight class="h-4 w-4" />
                         </Button>
+                        </Link>
 
                         <!-- Continue Shopping Link -->
                         <Link

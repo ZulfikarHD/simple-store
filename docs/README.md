@@ -67,10 +67,10 @@ import { ProductCard, CartItem, SearchBar } from '@/components/store'
 
 ## Project Status
 
-- **Current Version**: 0.1.0 (Development)
-- **Last Updated**: 2024-11-25
-- **Project Status**: In Development - Sprint 1 Complete
-- **Latest Feature**: ✅ CUST-003 Product Search & CUST-004 Product Detail (Completed)
+- **Current Version**: 0.2.0 (Development)
+- **Last Updated**: 2024-11-26
+- **Project Status**: In Development - Sprint 2 Complete
+- **Latest Feature**: ✅ CUST-009 Order Confirmation & WhatsApp Integration (Completed)
 
 ### Sprint 1 Progress
 
@@ -80,6 +80,16 @@ import { ProductCard, CartItem, SearchBar } from '@/components/store'
 | CUST-002 | Category Filter | ✅ Completed |
 | CUST-003 | Product Search | ✅ Completed |
 | CUST-004 | Product Detail | ✅ Completed |
+
+### Sprint 2 Progress
+
+| Story | Description | Status |
+|-------|-------------|--------|
+| CUST-005 | Add Products to Cart | ✅ Completed |
+| CUST-006 | View and Manage Cart | ✅ Completed |
+| CUST-007 | Checkout Form | ✅ Completed |
+| CUST-008 | WhatsApp Integration | ✅ Completed |
+| CUST-009 | Order Confirmation | ✅ Completed |
 
 ---
 

@@ -168,7 +168,7 @@ class CartService
                     'quantity' => $item->quantity,
                     'subtotal' => $item->subtotal,
                 ];
-            }),
+            })->values()->all(), // Konversi ke array untuk konsistensi
             'total_items' => $cart->total_items,
             'subtotal' => $cart->subtotal,
             'formatted_subtotal' => $cart->formatted_subtotal,

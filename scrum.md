@@ -73,45 +73,45 @@
     - "Add to Cart" button
   - Story Points: 2
 
-#### Sprint 2: Shopping Cart & Checkout (Week 2-3)
+#### Sprint 2: Shopping Cart & Checkout (Week 2-3) ✅ COMPLETED
 
-- **CUST-005:** As a customer, I want to add products to cart
+- **CUST-005:** ✅ As a customer, I want to add products to cart
   - Acceptance Criteria:
-    - Add to cart functionality
-    - Cart counter in header
-    - Success notification
+    - ✅ Add to cart functionality
+    - ✅ Cart counter in header
+    - ✅ Success notification
   - Story Points: 5
 
-- **CUST-006:** As a customer, I want to view and manage my cart
+- **CUST-006:** ✅ As a customer, I want to view and manage my cart
   - Acceptance Criteria:
-    - Cart page showing all items
-    - Adjust quantities (+/-)
-    - Remove items
-    - Show subtotal and total
+    - ✅ Cart page showing all items
+    - ✅ Adjust quantities (+/-)
+    - ✅ Remove items
+    - ✅ Show subtotal and total
   - Story Points: 5
 
-- **CUST-007:** As a customer, I want to checkout my order
+- **CUST-007:** ✅ As a customer, I want to checkout my order
   - Acceptance Criteria:
-    - Checkout form (name, phone, address)
-    - Order notes field
-    - Order summary display
-    - Form validation
+    - ✅ Checkout form (name, phone, address)
+    - ✅ Order notes field
+    - ✅ Order summary display
+    - ✅ Form validation
   - Story Points: 5
 
-- **CUST-008:** As a customer, I want to complete order via WhatsApp
+- **CUST-008:** ✅ As a customer, I want to complete order via WhatsApp
   - Acceptance Criteria:
-    - "Send to WhatsApp" button
-    - Generate formatted message with order details
-    - Open WhatsApp with pre-filled message
-    - Save order to database
+    - ✅ "Send to WhatsApp" button
+    - ✅ Generate formatted message with order details
+    - ✅ Open WhatsApp with pre-filled message
+    - ✅ Save order to database
   - Story Points: 5
 
-- **CUST-009:** As a customer, I want to see my order confirmation
+- **CUST-009:** ✅ As a customer, I want to see my order confirmation
   - Acceptance Criteria:
-    - Success page after order placed
-    - Display order number
-    - Show order details
-    - Clear cart after order
+    - ✅ Success page after order placed
+    - ✅ Display order number
+    - ✅ Show order details
+    - ✅ Clear cart after order
   - Story Points: 1
 
 ---
@@ -269,9 +269,10 @@
 **Story Points:** 16  
 **Stories:** DEV-001, DEV-002, DEV-003, CUST-001, CUST-002, CUST-003, CUST-004
 
-### Sprint 2 (Week 2-3): Shopping & Checkout
+### Sprint 2 (Week 2-3): Shopping & Checkout ✅ COMPLETED
 **Goal:** Customer can add to cart and checkout via WhatsApp  
 **Story Points:** 16  
+**Status:** ✅ All stories completed on 2024-11-26  
 **Stories:** CUST-005, CUST-006, CUST-007, CUST-008, CUST-009
 
 ### Sprint 3 (Week 3-4): Admin Product Management
