@@ -16,6 +16,8 @@ import PriceDisplay from '@/components/store/PriceDisplay.vue'
 import { type BreadcrumbItem } from '@/types'
 import { Head } from '@inertiajs/vue3'
 import { dashboard } from '@/routes/admin'
+import { index as productsIndex } from '@/routes/admin/products'
+import { index as categoriesIndex } from '@/routes/admin/categories'
 import {
     ShoppingBag,
     Clock,
@@ -23,6 +25,7 @@ import {
     Package,
     Users,
     Calendar,
+    FolderTree,
 } from 'lucide-vue-next'
 
 interface OrderItem {
@@ -298,31 +301,31 @@ function formatNumber(value: number): string {
                 </Card>
             </div>
 
-            <!-- Quick Actions (Optional) -->
+            <!-- Quick Actions -->
             <Card>
                 <CardHeader>
                     <CardTitle>Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div class="flex flex-wrap gap-3">
-                        <Badge
-                            variant="outline"
-                            class="cursor-pointer px-4 py-2 hover:bg-accent"
-                        >
-                            View All Orders
-                        </Badge>
-                        <Badge
-                            variant="outline"
-                            class="cursor-pointer px-4 py-2 hover:bg-accent"
-                        >
-                            Manage Products
-                        </Badge>
-                        <Badge
-                            variant="outline"
-                            class="cursor-pointer px-4 py-2 hover:bg-accent"
-                        >
-                            View Reports
-                        </Badge>
+                        <Link :href="productsIndex().url">
+                            <Badge
+                                variant="outline"
+                                class="cursor-pointer px-4 py-2 hover:bg-accent"
+                            >
+                                <Package class="mr-2 h-4 w-4" />
+                                Kelola Produk
+                            </Badge>
+                        </Link>
+                        <Link :href="categoriesIndex().url">
+                            <Badge
+                                variant="outline"
+                                class="cursor-pointer px-4 py-2 hover:bg-accent"
+                            >
+                                <FolderTree class="mr-2 h-4 w-4" />
+                                Kelola Kategori
+                            </Badge>
+                        </Link>
                     </div>
                 </CardContent>
             </Card>

@@ -12,9 +12,11 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes/admin';
+import { index as productsIndex } from '@/routes/admin/products';
+import { index as categoriesIndex } from '@/routes/admin/categories';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Package, FolderTree } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -22,6 +24,16 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Produk',
+        href: productsIndex(),
+        icon: Package,
+    },
+    {
+        title: 'Kategori',
+        href: categoriesIndex(),
+        icon: FolderTree,
     },
 ];
 

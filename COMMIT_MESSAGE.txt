@@ -1,0 +1,200 @@
+feat(admin): implementasi manajemen produk dan kategori
+
+Implementasi lengkap Sprint 3 untuk admin panel F&B Web App dengan fitur manajemen produk dan kategori, yaitu: CRUD operations, filtering, search, pagination, image upload, dan constraint validation.
+
+## Backend Changes
+
+### Services
+- Add ProductService dengan methods untuk CRUD operations, yaitu:
+  - getFilteredProducts() dengan pagination, search, dan filter
+  - createProduct() dengan image upload handling
+  - updateProduct() dengan partial image update
+  - deleteProduct() dengan constraint check untuk prevent delete produk di order aktif
+- Add CategoryService dengan methods untuk CRUD operations, antara lain:
+  - getAllCategories() dengan product count dan sort order
+  - createCategory() dengan auto sort_order generation
+  - updateCategory() dengan image handling
+  - deleteCategory() dengan constraint check untuk prevent delete kategori yang memiliki produk
+
+### Controllers
+- Add ProductController resource controller dengan dependency injection ProductService
+- Add CategoryController resource controller dengan dependency injection CategoryService
+- Implement Inertia response untuk Vue pages
+- Add flash message support untuk success/error feedback
+
+### Form Requests
+- Add StoreProductRequest untuk validasi create produk dengan rules, antara lain:
+  - Required: name, price, stock, category_id
+  - Optional: description, image, is_active, is_featured
+  - Image validation: mimes jpeg,png,jpg,webp, max 2MB
+- Add UpdateProductRequest untuk validasi update produk
+- Add StoreCategoryRequest untuk validasi create kategori dengan unique name constraint
+- Add UpdateCategoryRequest untuk validasi update dengan ignore self pada unique rule
+- Custom error messages dalam Bahasa Indonesia untuk semua validations
+
+## Frontend Changes
+
+### Pages
+- Add Products/Index.vue dengan fitur, yaitu:
+  - Data table dengan responsive layout
+  - Search bar dengan debounce 300ms menggunakan useDebounceFn
+  - Filter dropdown untuk kategori dan status
+  - Pagination dengan prev/next navigation
+  - Delete confirmation dialog
+  - Flash message display
+- Add Products/Create.vue untuk form tambah produk dengan:
+  - 2-column layout (main content + sidebar)
+  - Image upload dengan preview dan remove button
+  - Form validation dengan error display per field
+  - Loading state untuk submit button
+- Add Products/Edit.vue untuk form edit produk dengan:
+  - Pre-filled data dari existing product
+  - Existing image display dengan option untuk replace
+  - Same validation sebagai create form
+- Add Categories/Index.vue dengan:
+  - Modal form untuk inline create/edit
+  - Product count display per kategori
+  - Sort order display
+  - Delete button disabled jika kategori memiliki produk
+  - Constraint validation message
+- Add Categories/Create.vue dan Edit.vue untuk dedicated pages (alternatif modal)
+
+### Components & Utilities
+- Update AppSidebar.vue dengan menu items:
+  - Produk (Package icon)
+  - Kategori (FolderTree icon)
+- Update Dashboard.vue dengan Quick Actions links ke Products dan Categories
+- Add flash message support di HandleInertiaRequests middleware
+
+### Routing
+- Add resource routes untuk products dan categories di admin group
+- Generate Wayfinder routes untuk type-safe navigation
+- Update admin routes export dengan products dan categories modules
+
+## Testing
+
+### Feature Tests
+- Add ProductControllerTest dengan 14 tests mencakup:
+  - Authorization protection (guest redirect)
+  - List products dengan pagination
+  - Search by name functionality
+  - Filter by category dan status
+  - Create product dengan dan tanpa image
+  - Form validation testing
+  - Edit product dengan pre-filled data
+  - Delete dengan constraint check
+  - Storage fake untuk image upload testing
+- Add CategoryControllerTest dengan 15 tests mencakup:
+  - Authorization protection
+  - List categories dengan product count
+  - Create category dengan auto sort_order
+  - Unique name validation
+  - Edit category dengan ignore self untuk unique
+  - Delete dengan constraint check (products count)
+  - Sort order functionality
+  - Image upload scenarios
+
+Test Results: 29 tests, 209 assertions - All passing ✅
+
+## Documentation
+
+### User Documentation
+- Add docs/06-user-guides/admin-guide.md dengan panduan lengkap, antara lain:
+  - Akses admin panel dan navigasi
+  - Dashboard overview explanation
+  - Manajemen produk: view, search, filter, create, edit, delete
+  - Manajemen kategori: view, create, edit, delete, sort order
+  - Best practices untuk admin operations
+  - Troubleshooting common issues
+  - Indonesian formal writing style sesuai cursor rules
+
+### Development Documentation
+- Add docs/07-development/sprint-planning/sprint-3-admin-002-006.md dengan:
+  - User stories dan acceptance criteria
+  - Technical implementation details
+  - Architecture decisions dan patterns used
+  - Test coverage dan results
+  - Performance considerations
+  - Security implementations
+  - Known limitations dan future improvements
+  - Lessons learned
+- Update docs/README.md dengan Sprint 3 completion status
+
+## Database Changes
+
+Tidak ada migration baru, menggunakan existing schema:
+- products table dengan relasi ke categories dan order_items
+- categories table dengan relasi ke products
+- Constraint validation di application level untuk referential integrity
+
+## Code Quality
+
+### Linting & Formatting
+- Laravel Pint: 10 files formatted, 8 style issues fixed
+- TypeScript: No type errors, proper interface definitions
+- Indonesian inline documentation mengikuti cursor rules
+
+### Best Practices Applied
+- Service pattern untuk business logic separation
+- Form Request validation dengan custom messages
+- Resource controllers untuk RESTful design
+- Eloquent scopes untuk reusable queries
+- Component composition dengan shadcn-vue
+- TypeScript untuk type safety
+- Comprehensive testing dengan factories
+- Responsive design dengan Tailwind utilities
+
+## Breaking Changes
+
+Tidak ada breaking changes
+
+## Performance Improvements
+
+- Eager loading dengan with('category') untuk prevent N+1 queries
+- withCount('products') untuk efficient counting
+- Debounced search untuk reduce server requests
+- Query scopes untuk reusable dan optimized queries
+- Pagination untuk large datasets
+
+## Security Enhancements
+
+- Form Request validation untuk semua inputs
+- File upload validation (type, size, mime)
+- Unique constraints pada database level
+- Eloquent ORM untuk SQL injection prevention
+- Auth dan verified middleware untuk route protection
+- Image cleanup saat delete/update untuk prevent orphan files
+
+## Stories Completed
+
+- ✅ ADMIN-002: View All Products (3 SP)
+- ✅ ADMIN-003: Add New Products (5 SP)
+- ✅ ADMIN-004: Edit Products (3 SP)
+- ✅ ADMIN-005: Delete Products (2 SP)
+- ✅ ADMIN-006: Manage Categories (5 SP)
+
+Total: 18 Story Points
+
+## Related Issues
+
+Closes #ADMIN-002, #ADMIN-003, #ADMIN-004, #ADMIN-005, #ADMIN-006
+
+## Deployment Notes
+
+1. Run migrations (tidak ada new migrations)
+2. Build frontend assets: `yarn build`
+3. Clear cache: `php artisan optimize:clear`
+4. Regenerate Wayfinder routes: `php artisan wayfinder:generate`
+5. Create storage symlink jika belum: `php artisan storage:link`
+6. Set proper permissions untuk storage/app/public/products/ dan categories/
+
+## Reviewer Notes
+
+- Semua tests passing (29 tests, 209 assertions)
+- Documentation complete dan comprehensive
+- Code style consistent dengan project standards
+- Indonesian documentation mengikuti cursor rules
+- UI responsive dan supports dark mode
+- Flash messages untuk user feedback
+- Constraint validation untuk data integrity
+

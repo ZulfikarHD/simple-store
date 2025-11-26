@@ -50,6 +50,10 @@ class HandleInertiaRequests extends Middleware
             'cart' => fn () => [
                 'total_items' => app(CartService::class)->getTotalItems(),
             ],
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+            ],
         ];
     }
 }
