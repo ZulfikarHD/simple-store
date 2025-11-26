@@ -14,9 +14,10 @@ import {
 import { dashboard } from '@/routes/admin';
 import { index as productsIndex } from '@/routes/admin/products';
 import { index as categoriesIndex } from '@/routes/admin/categories';
+import { index as ordersIndex } from '@/routes/admin/orders';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Package, FolderTree } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Package, FolderTree, ShoppingBag } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -24,6 +25,11 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Pesanan',
+        href: ordersIndex(),
+        icon: ShoppingBag,
     },
     {
         title: 'Produk',

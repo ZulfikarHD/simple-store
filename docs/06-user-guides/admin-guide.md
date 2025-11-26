@@ -1,7 +1,7 @@
 # Admin Guide - F&B Web App
 
 **Zulfikar Hidayatullah**  
-**Version**: 1.0.0  
+**Version**: 1.1.0  
 **Last Updated**: 2025-11-26
 
 ## Overview
@@ -24,6 +24,11 @@ Admin Guide merupakan panduan lengkap untuk administrator dalam mengelola aplika
   - [Menambah Kategori Baru](#menambah-kategori-baru)
   - [Mengedit Kategori](#mengedit-kategori)
   - [Menghapus Kategori](#menghapus-kategori)
+- [Manajemen Pesanan](#manajemen-pesanan)
+  - [Melihat Daftar Pesanan](#melihat-daftar-pesanan)
+  - [Melihat Detail Pesanan](#melihat-detail-pesanan)
+  - [Update Status Pesanan](#update-status-pesanan)
+  - [Komunikasi dengan Customer](#komunikasi-dengan-customer)
 - [Best Practices](#best-practices)
 - [Troubleshooting](#troubleshooting)
 
@@ -46,6 +51,7 @@ Admin Guide merupakan panduan lengkap untuk administrator dalam mengelola aplika
 Admin panel memiliki sidebar navigasi yang mencakup menu-menu berikut:
 
 - **Dashboard**: Overview statistik dan pesanan terbaru
+- **Pesanan**: Manajemen dan monitoring pesanan customer
 - **Produk**: Manajemen produk F&B
 - **Kategori**: Manajemen kategori produk
 
@@ -455,6 +461,162 @@ Sebelum menghapus kategori dengan produk:
 
 ---
 
+## Manajemen Pesanan
+
+Fitur manajemen pesanan memungkinkan admin untuk melihat, memantau, dan mengupdate status pesanan customer dengan tracking timestamps yang lengkap.
+
+### Melihat Daftar Pesanan
+
+#### Akses Halaman Pesanan
+
+1. Dari sidebar, klik menu **Pesanan**
+2. Halaman akan menampilkan tabel daftar pesanan dengan pagination
+
+#### Kolom Tabel Pesanan
+
+Tabel menampilkan informasi pesanan, antara lain:
+
+- **No. Pesanan**: Order number unik (format: ORD-YYYYMMDD-XXXXX), clickable ke detail
+- **Customer**: Nama dan nomor telepon customer (clickable ke WhatsApp)
+- **Total**: Total harga pesanan dalam format Rupiah
+- **Items**: Badge jumlah item dalam pesanan
+- **Status**: Badge status dengan color coding:
+  - Kuning: Menunggu (Pending)
+  - Biru: Dikonfirmasi (Confirmed)
+  - Ungu: Diproses (Preparing)
+  - Cyan: Siap (Ready)
+  - Hijau: Dikirim (Delivered)
+  - Merah: Dibatalkan (Cancelled)
+- **Tanggal**: Waktu pemesanan
+- **Aksi**: Tombol Detail untuk melihat informasi lengkap
+
+#### Filter dan Pencarian
+
+**Search Bar**
+- Ketik untuk mencari berdasarkan:
+  - Order number
+  - Nama customer
+  - Nomor telepon customer
+- Pencarian otomatis dengan debounce (300ms)
+
+**Filter Status**
+- Pilih status dari dropdown filter
+- Menampilkan pesanan dengan status yang dipilih
+- Pilih kosong untuk semua status
+
+**Filter Tanggal**
+- **Tanggal Mulai**: Filter pesanan dari tanggal tertentu
+- **Tanggal Akhir**: Filter pesanan sampai tanggal tertentu
+- Berguna untuk melihat pesanan dalam rentang waktu tertentu
+
+**Reset Filter**
+- Klik tombol **Reset** untuk menghapus semua filter
+- Mengembalikan tampilan ke semua pesanan
+
+#### Pagination
+
+- Default: 10 pesanan per halaman
+- Navigasi: Tombol Previous/Next
+- Informasi: "Menampilkan X - Y dari Z pesanan"
+
+---
+
+### Melihat Detail Pesanan
+
+#### Akses Detail Pesanan
+
+1. Di halaman Pesanan, cari pesanan yang ingin dilihat
+2. Klik order number atau tombol **Detail** pada row pesanan
+3. Halaman detail akan menampilkan informasi lengkap
+
+#### Informasi yang Ditampilkan
+
+**Card Informasi Customer:**
+- Nama customer
+- Nomor telepon (clickable ke WhatsApp)
+- Alamat lengkap
+- Catatan pesanan (jika ada)
+
+**Card Detail Pesanan:**
+- Tabel item pesanan dengan kolom:
+  - Produk: Nama produk dan catatan item (jika ada)
+  - Harga: Harga satuan
+  - Qty: Jumlah item
+  - Subtotal: Harga × Quantity
+- Order Summary:
+  - Subtotal semua item
+  - Ongkos kirim
+  - **Total** keseluruhan
+
+**Card Timeline Status:**
+- Menampilkan riwayat perubahan status dengan timestamps:
+  - Pesanan Dibuat (created_at)
+  - Dikonfirmasi (confirmed_at)
+  - Sedang Diproses (preparing_at)
+  - Siap Dikirim (ready_at)
+  - Terkirim (delivered_at)
+  - Dibatalkan (cancelled_at) - termasuk alasan pembatalan
+
+---
+
+### Update Status Pesanan
+
+#### Flow Status Pesanan
+
+Status pesanan mengikuti alur sebagai berikut:
+
+1. **Menunggu (Pending)** - Pesanan baru masuk, menunggu konfirmasi admin
+2. **Dikonfirmasi (Confirmed)** - Admin sudah konfirmasi pesanan
+3. **Diproses (Preparing)** - Pesanan sedang diproses/dimasak
+4. **Siap (Ready)** - Pesanan siap untuk dikirim/diambil
+5. **Dikirim (Delivered)** - Pesanan sudah dikirim ke customer
+6. **Dibatalkan (Cancelled)** - Pesanan dibatalkan (memerlukan alasan)
+
+#### Langkah Update Status
+
+1. Di halaman Detail Pesanan, lihat card **Update Status**
+2. Pilih status baru dari dropdown
+3. Jika memilih **Dibatalkan**, field alasan pembatalan akan muncul (wajib diisi)
+4. Klik tombol **Update Status**
+5. Dialog konfirmasi akan muncul
+6. Klik **Ya, Update** untuk konfirmasi atau **Batal** untuk membatalkan
+
+#### Timestamp Logging
+
+Setiap perubahan status akan dicatat dengan timestamp otomatis:
+- `confirmed_at` - Waktu dikonfirmasi
+- `preparing_at` - Waktu mulai diproses
+- `ready_at` - Waktu pesanan siap
+- `delivered_at` - Waktu dikirim
+- `cancelled_at` - Waktu dibatalkan
+
+#### Pembatalan Pesanan
+
+Ketika membatalkan pesanan:
+- **Alasan pembatalan wajib diisi** (maksimal 1000 karakter)
+- Contoh alasan: "Stok habis", "Customer membatalkan", "Alamat tidak valid"
+- Alasan akan ditampilkan di timeline dan detail pesanan
+- **Tindakan pembatalan tidak dapat dibatalkan**
+
+---
+
+### Komunikasi dengan Customer
+
+#### WhatsApp Integration
+
+Admin dapat langsung menghubungi customer melalui WhatsApp:
+
+1. Di halaman daftar pesanan, klik nomor telepon customer
+2. Atau di halaman detail, klik nomor telepon di card Customer Info
+3. WhatsApp akan terbuka dengan chat baru ke customer
+4. Gunakan untuk:
+   - Konfirmasi pesanan
+   - Klarifikasi alamat
+   - Informasi estimasi pengiriman
+   - Notifikasi perubahan status
+
+---
+
 ## Best Practices
 
 ### Manajemen Produk
@@ -505,6 +667,28 @@ Sebelum menghapus kategori dengan produk:
    - Tulis deskripsi singkat untuk clarity
    - Bantu customer memahami isi kategori
    - Contoh: "Makanan utama untuk kenyang dan berenergi"
+
+### Manajemen Pesanan
+
+1. **Respon Cepat Pesanan Baru**
+   - Monitor pending orders secara berkala
+   - Konfirmasi pesanan dalam waktu maksimal 15 menit
+   - Hubungi customer jika ada klarifikasi yang diperlukan
+
+2. **Update Status Tepat Waktu**
+   - Update status sesuai progress aktual
+   - Jangan skip tahapan status (misal: langsung dari Pending ke Ready)
+   - Timestamp membantu tracking SLA
+
+3. **Pembatalan dengan Bijak**
+   - Tulis alasan pembatalan yang jelas dan sopan
+   - Hubungi customer sebelum membatalkan
+   - Tawarkan alternatif jika memungkinkan
+
+4. **Komunikasi Proaktif**
+   - Informasikan customer jika ada delay
+   - Konfirmasi alamat untuk pesanan dengan nilai besar
+   - Follow up setelah delivered untuk feedback
 
 ### Operasional Harian
 
@@ -598,6 +782,42 @@ Sebelum menghapus kategori dengan produk:
 - Refresh halaman jika tidak berfungsi
 - Clear cache dan cookies
 
+### Masalah Pesanan
+
+**Problem**: Pesanan tidak muncul di daftar  
+**Solution**:
+- Cek filter yang aktif (status, tanggal)
+- Reset semua filter untuk melihat semua pesanan
+- Pastikan pesanan sudah berhasil disimpan dari sisi customer
+
+**Problem**: Tidak bisa update status pesanan  
+**Solution**:
+- Pastikan sudah login dengan akun admin
+- Cek koneksi internet
+- Refresh halaman dan coba lagi
+- Hubungi developer jika masalah persisten
+
+**Problem**: Status tidak berubah setelah update  
+**Solution**:
+- Tunggu beberapa detik untuk proses
+- Refresh halaman untuk melihat perubahan
+- Cek apakah ada error message yang muncul
+- Pastikan status yang dipilih valid
+
+**Problem**: Tidak bisa membatalkan pesanan  
+**Solution**:
+- Pastikan alasan pembatalan sudah diisi
+- Alasan minimal harus ada isi (tidak boleh kosong)
+- Maksimal 1000 karakter untuk alasan
+- Refresh dan coba lagi jika form tidak responsif
+
+**Problem**: WhatsApp tidak terbuka saat klik nomor telepon  
+**Solution**:
+- Pastikan format nomor telepon benar
+- Cek apakah browser memblokir popup
+- Coba buka manual dengan mengetik wa.me/[nomor]
+- Gunakan aplikasi WhatsApp desktop jika ada
+
 ---
 
 ## Kontak Support
@@ -616,6 +836,12 @@ Jika mengalami masalah yang tidak dapat diselesaikan dengan panduan ini, silakan
 ---
 
 ## Changelog
+
+### Version 1.1.0 (2025-11-26)
+- Tambah dokumentasi lengkap manajemen pesanan
+- Update sidebar navigation dengan menu Pesanan
+- Tambah best practices manajemen pesanan
+- Tambah troubleshooting masalah pesanan
 
 ### Version 1.0.0 (2025-11-26)
 - Initial release admin guide
