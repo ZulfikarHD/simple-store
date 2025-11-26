@@ -67,10 +67,10 @@ import { ProductCard, CartItem, SearchBar } from '@/components/store'
 
 ## Project Status
 
-- **Current Version**: 0.3.0 (Development)
-- **Last Updated**: 2024-11-26
-- **Project Status**: In Development - Sprint 3 Completed
-- **Latest Feature**: ✅ Sprint 3 - Admin Product & Category Management (All Stories Completed)
+- **Current Version**: 0.4.0 (Development)
+- **Last Updated**: 2025-11-26
+- **Project Status**: In Development - Sprint 4 In Progress
+- **Latest Feature**: ✅ Sprint 4 - Order Management & Store Settings (ADMIN-007 to ADMIN-010)
 
 ### Sprint 1 Progress
 
@@ -101,6 +101,15 @@ import { ProductCard, CartItem, SearchBar } from '@/components/store'
 | ADMIN-004 | Edit Products | ✅ Completed |
 | ADMIN-005 | Delete Products | ✅ Completed |
 | ADMIN-006 | Manage Categories | ✅ Completed |
+
+### Sprint 4 Progress
+
+| Story | Description | Status |
+|-------|-------------|--------|
+| ADMIN-007 | View All Orders | ✅ Completed |
+| ADMIN-008 | View Order Details | ✅ Completed |
+| ADMIN-009 | Update Order Status | ✅ Completed |
+| ADMIN-010 | Configure Store Settings | ✅ Completed |
 
 ---
 

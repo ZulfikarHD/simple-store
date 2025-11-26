@@ -15,9 +15,10 @@ import { dashboard } from '@/routes/admin';
 import { index as productsIndex } from '@/routes/admin/products';
 import { index as categoriesIndex } from '@/routes/admin/categories';
 import { index as ordersIndex } from '@/routes/admin/orders';
+import { index as settingsIndex } from '@/routes/admin/settings';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Package, FolderTree, ShoppingBag } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Package, FolderTree, ShoppingBag, Settings } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -40,6 +41,11 @@ const mainNavItems: NavItem[] = [
         title: 'Kategori',
         href: categoriesIndex(),
         icon: FolderTree,
+    },
+    {
+        title: 'Pengaturan',
+        href: settingsIndex(),
+        icon: Settings,
     },
 ];
 

@@ -1,12 +1,12 @@
 # Admin Guide - F&B Web App
 
 **Zulfikar Hidayatullah**  
-**Version**: 1.1.0  
+**Version**: 1.2.0  
 **Last Updated**: 2025-11-26
 
 ## Overview
 
-Admin Guide merupakan panduan lengkap untuk administrator dalam mengelola aplikasi F&B Web App, yaitu: manajemen produk, kategori, dan monitoring pesanan. Panduan ini mencakup langkah-langkah detail untuk setiap operasi administratif yang tersedia di dalam sistem.
+Admin Guide merupakan panduan lengkap untuk administrator dalam mengelola aplikasi F&B Web App, yaitu: manajemen produk, kategori, monitoring pesanan, dan pengaturan toko. Panduan ini mencakup langkah-langkah detail untuk setiap operasi administratif yang tersedia di dalam sistem.
 
 ---
 
@@ -29,6 +29,11 @@ Admin Guide merupakan panduan lengkap untuk administrator dalam mengelola aplika
   - [Melihat Detail Pesanan](#melihat-detail-pesanan)
   - [Update Status Pesanan](#update-status-pesanan)
   - [Komunikasi dengan Customer](#komunikasi-dengan-customer)
+- [Pengaturan Toko](#pengaturan-toko)
+  - [Informasi Toko](#informasi-toko)
+  - [Pengaturan WhatsApp](#pengaturan-whatsapp)
+  - [Jam Operasional](#jam-operasional)
+  - [Pengaturan Delivery](#pengaturan-delivery)
 - [Best Practices](#best-practices)
 - [Troubleshooting](#troubleshooting)
 
@@ -617,6 +622,158 @@ Admin dapat langsung menghubungi customer melalui WhatsApp:
 
 ---
 
+## Pengaturan Toko
+
+Fitur pengaturan toko memungkinkan admin untuk mengkonfigurasi informasi dasar toko, nomor WhatsApp bisnis, jam operasional, dan pengaturan delivery yang akan digunakan di seluruh sistem aplikasi.
+
+### Akses Halaman Pengaturan
+
+1. Dari sidebar, klik menu **Pengaturan**
+2. Halaman akan menampilkan form pengaturan toko dengan beberapa section
+
+---
+
+### Informasi Toko
+
+Section ini digunakan untuk mengatur informasi dasar toko yang akan ditampilkan ke customer.
+
+#### Form Fields
+
+1. **Nama Toko** (Required)
+   - Input nama toko yang akan ditampilkan
+   - Maksimal 255 karakter
+   - Contoh: "Warung Makan Enak"
+
+2. **Alamat Toko** (Optional)
+   - Textarea untuk alamat lengkap toko
+   - Maksimal 1000 karakter
+   - Digunakan untuk informasi di halaman checkout
+
+3. **Nomor Telepon Toko** (Optional)
+   - Input nomor telepon toko
+   - Maksimal 50 karakter
+   - Contoh: "021-1234567"
+
+---
+
+### Pengaturan WhatsApp
+
+Section ini digunakan untuk mengkonfigurasi nomor WhatsApp bisnis yang akan menerima pesanan dari customer.
+
+#### Form Fields
+
+**Nomor WhatsApp Bisnis** (Required)
+- Input nomor WhatsApp dalam format internasional
+- Tanpa tanda + di depan
+- Contoh: "6281234567890" (bukan "+6281234567890")
+
+#### Penjelasan Format Nomor
+
+Nomor WhatsApp harus dalam format berikut:
+- Kode negara Indonesia: 62
+- Nomor tanpa angka 0 di depan
+- Contoh: 081234567890 → 6281234567890
+
+---
+
+### Jam Operasional
+
+Section ini digunakan untuk mengatur jam buka dan tutup toko untuk setiap hari dalam seminggu.
+
+#### Konfigurasi Per Hari
+
+Untuk setiap hari (Senin - Minggu), tersedia pengaturan berikut:
+
+1. **Status Buka/Tutup** (Checkbox)
+   - Centang: Toko buka pada hari tersebut
+   - Tidak centang: Toko tutup pada hari tersebut
+
+2. **Jam Buka** (Time Input)
+   - Input waktu buka toko
+   - Format: HH:MM (24 jam)
+   - Contoh: "08:00"
+
+3. **Jam Tutup** (Time Input)
+   - Input waktu tutup toko
+   - Format: HH:MM (24 jam)
+   - Contoh: "21:00"
+
+#### Contoh Konfigurasi
+
+| Hari | Status | Jam Buka | Jam Tutup |
+|------|--------|----------|-----------|
+| Senin | Buka | 08:00 | 21:00 |
+| Selasa | Buka | 08:00 | 21:00 |
+| Rabu | Buka | 08:00 | 21:00 |
+| Kamis | Buka | 08:00 | 21:00 |
+| Jumat | Buka | 08:00 | 21:00 |
+| Sabtu | Buka | 09:00 | 22:00 |
+| Minggu | Tutup | - | - |
+
+---
+
+### Pengaturan Delivery
+
+Section ini digunakan untuk mengatur biaya pengiriman, minimum order, dan area pengiriman yang dilayani.
+
+#### Form Fields
+
+1. **Biaya Pengiriman (Rp)** (Required)
+   - Input biaya pengiriman dalam Rupiah
+   - Hanya angka, tanpa separator
+   - Minimal: 0 (gratis ongkir)
+   - Contoh: 15000
+
+2. **Minimum Order (Rp)** (Required)
+   - Input minimum total order
+   - Hanya angka, tanpa separator
+   - Minimal: 0 (tidak ada minimum)
+   - Contoh: 50000
+
+3. **Area Pengiriman** (Optional)
+   - Daftar area yang dilayani pengiriman
+   - Klik tombol **+** untuk menambah area baru
+   - Klik tombol **X** pada badge untuk menghapus area
+   - Contoh area: "Jakarta Selatan", "Jakarta Pusat", "Bekasi"
+
+#### Menambah Area Pengiriman
+
+1. Ketik nama area di input field
+2. Tekan **Enter** atau klik tombol **+**
+3. Area akan ditambahkan sebagai badge
+
+#### Menghapus Area Pengiriman
+
+1. Klik tombol **X** pada badge area yang ingin dihapus
+2. Area akan langsung terhapus dari daftar
+
+---
+
+### Menyimpan Pengaturan
+
+Setelah mengisi atau mengubah pengaturan:
+
+1. Review semua field yang telah diisi
+2. Klik tombol **Simpan Pengaturan**
+3. Tunggu proses penyimpanan
+4. Pesan sukses akan muncul jika berhasil
+
+#### Validasi
+
+Sistem akan melakukan validasi sebelum menyimpan:
+
+- **Nama Toko**: Wajib diisi, maksimal 255 karakter
+- **Alamat Toko**: Maksimal 1000 karakter
+- **Nomor Telepon**: Maksimal 50 karakter
+- **WhatsApp**: Wajib diisi, maksimal 20 karakter
+- **Jam Operasional**: Wajib diisi untuk semua hari
+- **Biaya Pengiriman**: Wajib diisi, tidak boleh negatif
+- **Minimum Order**: Wajib diisi, tidak boleh negatif
+
+Error message akan ditampilkan di bawah field yang bermasalah jika validasi gagal.
+
+---
+
 ## Best Practices
 
 ### Manajemen Produk
@@ -689,6 +846,23 @@ Admin dapat langsung menghubungi customer melalui WhatsApp:
    - Informasikan customer jika ada delay
    - Konfirmasi alamat untuk pesanan dengan nilai besar
    - Follow up setelah delivered untuk feedback
+
+### Pengaturan Toko
+
+1. **Update Informasi Secara Berkala**
+   - Perbarui informasi toko jika ada perubahan alamat atau kontak
+   - Pastikan nomor WhatsApp selalu aktif dan responsive
+   - Review jam operasional jika ada perubahan jadwal
+
+2. **Konfigurasi Delivery yang Tepat**
+   - Tentukan biaya pengiriman yang kompetitif namun mengcover operasional
+   - Set minimum order yang reasonable untuk customer
+   - Update area pengiriman sesuai kapasitas delivery
+
+3. **Monitoring Jam Operasional**
+   - Tutup toko pada hari libur dengan mengubah status ke "Tutup"
+   - Sesuaikan jam buka/tutup dengan kondisi aktual toko
+   - Informasikan customer jika ada perubahan jam operasional mendadak
 
 ### Operasional Harian
 
@@ -818,6 +992,35 @@ Admin dapat langsung menghubungi customer melalui WhatsApp:
 - Coba buka manual dengan mengetik wa.me/[nomor]
 - Gunakan aplikasi WhatsApp desktop jika ada
 
+### Masalah Pengaturan Toko
+
+**Problem**: Pengaturan tidak tersimpan  
+**Solution**:
+- Pastikan semua field required sudah diisi
+- Cek validasi error di bawah masing-masing field
+- Pastikan format nomor WhatsApp benar (tanpa tanda +)
+- Refresh halaman dan coba lagi
+
+**Problem**: Nomor WhatsApp tidak berfungsi di checkout  
+**Solution**:
+- Pastikan format nomor tanpa tanda + di depan
+- Gunakan format: 6281234567890 (kode negara 62)
+- Hindari spasi atau karakter khusus
+- Test dengan klik nomor WhatsApp di halaman pesanan
+
+**Problem**: Jam operasional tidak sesuai  
+**Solution**:
+- Pastikan checkbox "Buka" dicentang untuk hari yang dimaksud
+- Cek apakah jam buka lebih kecil dari jam tutup
+- Format waktu harus HH:MM (24 jam)
+- Simpan ulang pengaturan setelah perubahan
+
+**Problem**: Area pengiriman tidak bisa ditambah  
+**Solution**:
+- Pastikan nama area tidak kosong
+- Tekan Enter atau klik tombol + setelah mengetik
+- Cek apakah area sudah ada dalam daftar (tidak boleh duplikat)
+
 ---
 
 ## Kontak Support
@@ -836,6 +1039,15 @@ Jika mengalami masalah yang tidak dapat diselesaikan dengan panduan ini, silakan
 ---
 
 ## Changelog
+
+### Version 1.2.0 (2025-11-26)
+- Tambah dokumentasi lengkap pengaturan toko
+- Informasi toko (nama, alamat, telepon)
+- Pengaturan WhatsApp bisnis
+- Jam operasional per hari
+- Pengaturan delivery (biaya, minimum order, area)
+- Tambah best practices pengaturan toko
+- Tambah troubleshooting masalah pengaturan
 
 ### Version 1.1.0 (2025-11-26)
 - Tambah dokumentasi lengkap manajemen pesanan

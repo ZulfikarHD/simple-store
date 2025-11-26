@@ -172,40 +172,44 @@
     - Assign products to categories
   - Story Points: 5
 
-#### Sprint 4: Order Management (Week 4-5)
+#### Sprint 4: Order Management (Week 4-5) ✅ COMPLETED
 
-- **ADMIN-007:** As an admin, I want to view all orders
+- **ADMIN-007:** ✅ As an admin, I want to view all orders
   - Acceptance Criteria:
-    - Orders table with pagination
-    - Show order number, customer, total, status, date
-    - Filter by status and date
-    - Search by customer or order number
+    - ✅ Orders table with pagination
+    - ✅ Show order number, customer, total, status, date
+    - ✅ Filter by status and date
+    - ✅ Search by customer or order number
   - Story Points: 5
+  - Status: ✅ Completed on 2024-11-26
 
-- **ADMIN-008:** As an admin, I want to view order details
+- **ADMIN-008:** ✅ As an admin, I want to view order details
   - Acceptance Criteria:
-    - Click order to see full details
-    - Display customer info, items, total
-    - Show order status and timestamps
+    - ✅ Click order to see full details
+    - ✅ Display customer info, items, total
+    - ✅ Show order status and timestamps
   - Story Points: 3
+  - Status: ✅ Completed on 2024-11-26
 
-- **ADMIN-009:** As an admin, I want to update order status
+- **ADMIN-009:** ✅ As an admin, I want to update order status
   - Acceptance Criteria:
-    - Status dropdown (Pending, Confirmed, Preparing, Ready, Delivered, Cancelled)
-    - Update status with confirmation
-    - Log status changes with timestamp
+    - ✅ Status dropdown (Pending, Confirmed, Preparing, Ready, Delivered, Cancelled)
+    - ✅ Update status with confirmation
+    - ✅ Log status changes with timestamp
   - Story Points: 3
+  - Status: ✅ Completed on 2024-11-26
 
-#### Sprint 5: Settings & Configuration (Week 5-6)
+#### Sprint 5: Settings & Configuration (Week 5-6) ⏳ IN PROGRESS
 
-- **ADMIN-010:** As an admin, I want to configure store settings
+- **ADMIN-010:** ✅ As an admin, I want to configure store settings
   - Acceptance Criteria:
-    - Store name, address, contact
-    - WhatsApp business number
-    - Operating hours
-    - Delivery areas/fees
-    - Save settings
+    - ✅ Store name, address, contact
+    - ✅ WhatsApp business number
+    - ✅ Operating hours
+    - ✅ Delivery areas/fees
+    - ✅ Save settings
   - Story Points: 5
+  - Status: ✅ Completed on 2024-11-26
 
 - **ADMIN-011:** As an admin, I want to manage admin users
   - Acceptance Criteria:
@@ -284,15 +288,17 @@
 **Status:** 🚀 Started on 2024-11-26 (1/6 stories completed)
 **Stories:** ADMIN-001 ✅, ADMIN-002, ADMIN-003, ADMIN-004, ADMIN-005, ADMIN-006
 
-### Sprint 4 (Week 4-5): Admin Order Management
+### Sprint 4 (Week 4-5): Admin Order Management ✅ COMPLETED
 **Goal:** Admin can view and manage orders  
 **Story Points:** 11  
-**Stories:** ADMIN-007, ADMIN-008, ADMIN-009
+**Status:** ✅ All stories completed on 2024-11-26  
+**Stories:** ADMIN-007 ✅, ADMIN-008 ✅, ADMIN-009 ✅
 
-### Sprint 5 (Week 5-6): Settings & Configuration
+### Sprint 5 (Week 5-6): Settings & Configuration ⏳ IN PROGRESS
 **Goal:** Admin can configure store settings  
 **Story Points:** 8  
-**Stories:** ADMIN-010, ADMIN-011
+**Status:** 🚀 Started on 2024-11-26 (1/2 stories completed)
+**Stories:** ADMIN-010 ✅, ADMIN-011
 
 ### Sprint 6 (Week 6-7): Testing & Polish
 **Goal:** App is tested, optimized, and ready for deployment  
