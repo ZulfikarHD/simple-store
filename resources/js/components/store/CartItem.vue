@@ -128,87 +128,109 @@ function handleRemove() {
 
 <template>
     <div
-        class="flex items-center gap-4 rounded-xl bg-card p-4 transition-opacity"
+        class="flex flex-col gap-3 rounded-lg bg-card p-3 transition-opacity sm:flex-row sm:items-center sm:gap-4 sm:rounded-xl sm:p-4"
         :class="{ 'opacity-50': isRemoving }"
     >
-        <!-- Product Image -->
-        <div class="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-muted">
-            <img
-                v-if="imageUrl"
-                :src="imageUrl"
-                :alt="item.product.name"
-                class="h-full w-full object-cover"
-                loading="lazy"
-            />
-            <div
-                v-else
-                class="flex h-full w-full items-center justify-center"
-            >
-                <span class="text-2xl">🛒</span>
+        <!-- Top Row: Image, Info & Remove (Mobile) -->
+        <div class="flex items-start gap-3 sm:contents">
+            <!-- Product Image -->
+            <div class="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted sm:h-20 sm:w-20">
+                <img
+                    v-if="imageUrl"
+                    :src="imageUrl"
+                    :alt="item.product.name"
+                    class="h-full w-full object-cover"
+                    loading="lazy"
+                />
+                <div
+                    v-else
+                    class="flex h-full w-full items-center justify-center"
+                >
+                    <span class="text-xl sm:text-2xl">🛒</span>
+                </div>
             </div>
-        </div>
 
-        <!-- Product Info -->
-        <div class="flex flex-1 flex-col gap-1">
-            <h4 class="line-clamp-1 font-semibold text-foreground">
-                {{ item.product.name }}
-            </h4>
-            <p class="text-sm text-muted-foreground">
-                {{ formattedPrice }}
-            </p>
-            <!-- Availability Warning -->
-            <p
-                v-if="!item.product.is_available"
-                class="text-xs text-destructive"
-            >
-                Produk tidak tersedia
-            </p>
-        </div>
+            <!-- Product Info -->
+            <div class="flex flex-1 flex-col gap-0.5 sm:gap-1">
+                <h4 class="line-clamp-2 text-sm font-semibold text-foreground sm:line-clamp-1 sm:text-base">
+                    {{ item.product.name }}
+                </h4>
+                <p class="text-sm text-muted-foreground">
+                    {{ formattedPrice }}
+                </p>
+                <!-- Availability Warning -->
+                <p
+                    v-if="!item.product.is_available"
+                    class="text-xs text-destructive"
+                >
+                    Produk tidak tersedia
+                </p>
+            </div>
 
-        <!-- Quantity Controls -->
-        <div class="flex items-center gap-2">
-            <Button
-                variant="outline"
-                size="icon"
-                class="h-8 w-8"
-                :disabled="item.quantity <= 1 || isUpdating"
-                @click="handleDecrement"
-            >
-                <Loader2 v-if="isUpdating" class="h-4 w-4 animate-spin" />
-                <Minus v-else class="h-4 w-4" />
-            </Button>
-
-            <span class="w-8 text-center font-medium">
-                {{ item.quantity }}
-            </span>
-
-            <Button
-                variant="outline"
-                size="icon"
-                class="h-8 w-8"
-                :disabled="isUpdating"
-                @click="handleIncrement"
-            >
-                <Loader2 v-if="isUpdating" class="h-4 w-4 animate-spin" />
-                <Plus v-else class="h-4 w-4" />
-            </Button>
-        </div>
-
-        <!-- Subtotal & Remove -->
-        <div class="flex flex-col items-end gap-2">
-            <p class="font-bold text-primary">
-                {{ formattedSubtotal }}
-            </p>
+            <!-- Remove Button - Mobile Only -->
             <Button
                 variant="ghost"
                 size="icon"
-                class="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                class="h-9 w-9 shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive sm:hidden"
                 :disabled="isRemoving"
+                aria-label="Hapus item"
                 @click="handleRemove"
             >
                 <Loader2 v-if="isRemoving" class="h-4 w-4 animate-spin" />
                 <Trash2 v-else class="h-4 w-4" />
             </Button>
+        </div>
+
+        <!-- Bottom Row: Quantity & Subtotal (Mobile) -->
+        <div class="flex items-center justify-between gap-3 sm:contents">
+            <!-- Quantity Controls - Touch-friendly 44px -->
+            <div class="flex items-center gap-1.5 sm:gap-2">
+                <Button
+                    variant="outline"
+                    size="icon"
+                    class="h-10 w-10 sm:h-8 sm:w-8"
+                    :disabled="item.quantity <= 1 || isUpdating"
+                    aria-label="Kurangi jumlah"
+                    @click="handleDecrement"
+                >
+                    <Loader2 v-if="isUpdating" class="h-4 w-4 animate-spin" />
+                    <Minus v-else class="h-4 w-4" />
+                </Button>
+
+                <span class="w-8 text-center font-medium">
+                    {{ item.quantity }}
+                </span>
+
+                <Button
+                    variant="outline"
+                    size="icon"
+                    class="h-10 w-10 sm:h-8 sm:w-8"
+                    :disabled="isUpdating"
+                    aria-label="Tambah jumlah"
+                    @click="handleIncrement"
+                >
+                    <Loader2 v-if="isUpdating" class="h-4 w-4 animate-spin" />
+                    <Plus v-else class="h-4 w-4" />
+                </Button>
+            </div>
+
+            <!-- Subtotal & Remove (Desktop) -->
+            <div class="flex flex-col items-end gap-2">
+                <p class="text-base font-bold text-primary sm:text-lg">
+                    {{ formattedSubtotal }}
+                </p>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    class="hidden h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive sm:flex"
+                    :disabled="isRemoving"
+                    aria-label="Hapus item"
+                    @click="handleRemove"
+                >
+                    <Loader2 v-if="isRemoving" class="h-4 w-4 animate-spin" />
+                    <Trash2 v-else class="h-4 w-4" />
+                </Button>
+            </div>
         </div>
     </div>
 </template>

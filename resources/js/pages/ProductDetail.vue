@@ -30,6 +30,15 @@ import {
 } from 'lucide-vue-next'
 
 /**
+ * Interface untuk status stok dari backend
+ */
+interface StockStatus {
+    status: 'in_stock' | 'low_stock' | 'out_of_stock' | 'unavailable'
+    label: string
+    stock: number
+}
+
+/**
  * Interface untuk data produk dari ProductResource
  */
 interface Product {
@@ -39,12 +48,14 @@ interface Product {
     description?: string | null
     price: number
     image?: string | null
+    stock?: number
     category?: {
         id: number
         name: string
         slug: string
     }
     is_available: boolean
+    stock_status?: StockStatus
 }
 
 /**
@@ -170,38 +181,38 @@ function handleBack() {
     </Head>
 
     <div class="min-h-screen bg-background">
-        <!-- Header Navigation -->
+        <!-- Header Navigation - Mobile Optimized -->
         <header class="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+            <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                 <!-- Logo & Brand -->
-                <Link :href="home()" class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                        <ShoppingBag class="h-5 w-5 text-primary-foreground" />
+                <Link :href="home()" class="flex items-center gap-2 sm:gap-3">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary sm:h-10 sm:w-10">
+                        <ShoppingBag class="h-4 w-4 text-primary-foreground sm:h-5 sm:w-5" />
                     </div>
-                    <span class="text-xl font-bold text-foreground">Simple Store</span>
+                    <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
                 </Link>
 
-                <!-- Cart Counter & Auth Navigation -->
-                <nav class="flex items-center gap-3">
+                <!-- Cart Counter & Auth Navigation - Hidden auth on mobile -->
+                <nav class="flex items-center gap-2 sm:gap-3">
                     <CartCounter :count="cartTotalItems" />
 
                     <Link
                         v-if="$page.props.auth.user"
                         href="/dashboard"
-                        class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                        class="hidden rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
                     >
                         Dashboard
                     </Link>
                     <template v-else>
                         <Link
                             href="/login"
-                            class="rounded-lg px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                            class="hidden rounded-lg px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent sm:inline-flex"
                         >
                             Masuk
                         </Link>
                         <Link
                             href="/register"
-                            class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                            class="hidden rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
                         >
                             Daftar
                         </Link>
@@ -210,43 +221,43 @@ function handleBack() {
             </div>
         </header>
 
-        <!-- Main Content -->
-        <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-            <!-- Breadcrumb Navigation -->
-            <nav class="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
-                <Link :href="home()" class="hover:text-foreground transition-colors">
+        <!-- Main Content - Mobile Optimized dengan padding untuk sticky footer -->
+        <main class="mx-auto max-w-7xl px-4 pb-28 pt-6 sm:px-6 sm:pb-8 sm:pt-8 lg:px-8">
+            <!-- Breadcrumb Navigation - Hidden on mobile -->
+            <nav class="mb-4 hidden items-center gap-2 text-sm text-muted-foreground sm:mb-6 sm:flex">
+                <Link :href="home()" class="transition-colors hover:text-foreground">
                     Beranda
                 </Link>
                 <ChevronRight class="h-4 w-4" />
                 <template v-if="product.category">
                     <Link
                         :href="`/?category=${product.category.id}`"
-                        class="hover:text-foreground transition-colors"
+                        class="transition-colors hover:text-foreground"
                     >
                         {{ product.category.name }}
                     </Link>
                     <ChevronRight class="h-4 w-4" />
                 </template>
-                <span class="text-foreground font-medium truncate max-w-[200px]">
+                <span class="max-w-[200px] truncate font-medium text-foreground">
                     {{ product.name }}
                 </span>
             </nav>
 
-            <!-- Back Button -->
+            <!-- Back Button - Touch-friendly -->
             <Button
                 variant="ghost"
-                size="sm"
-                class="mb-6 flex items-center gap-2"
+                size="default"
+                class="mb-4 flex h-11 items-center gap-2 sm:mb-6 sm:h-9"
                 @click="handleBack"
             >
                 <ArrowLeft class="h-4 w-4" />
                 Kembali ke Katalog
             </Button>
 
-            <!-- Product Detail Section -->
-            <div class="grid gap-8 lg:grid-cols-2">
+            <!-- Product Detail Section - Mobile Optimized -->
+            <div class="grid gap-6 lg:grid-cols-2 lg:gap-8">
                 <!-- Product Image -->
-                <div class="relative overflow-hidden rounded-2xl border border-border bg-card">
+                <div class="relative overflow-hidden rounded-xl border border-border bg-card sm:rounded-2xl">
                     <div class="aspect-square">
                         <img
                             v-if="imageUrl"
@@ -258,15 +269,29 @@ function handleBack() {
                             v-else
                             class="flex h-full w-full items-center justify-center bg-muted"
                         >
-                            <ShoppingCart class="h-24 w-24 text-muted-foreground/50" />
+                            <ShoppingCart class="h-16 w-16 text-muted-foreground/50 sm:h-24 sm:w-24" />
                         </div>
                     </div>
 
-                    <!-- Availability Badge -->
+                    <!-- Stock Status Badge on Image -->
                     <Badge
-                        v-if="!product.is_available"
+                        v-if="product.stock_status && (product.stock_status.status === 'out_of_stock' || product.stock_status.status === 'unavailable')"
                         variant="destructive"
-                        class="absolute left-4 top-4 text-sm"
+                        class="absolute left-3 top-3 text-xs sm:left-4 sm:top-4 sm:text-sm"
+                    >
+                        {{ product.stock_status.label }}
+                    </Badge>
+                    <Badge
+                        v-else-if="product.stock_status?.status === 'low_stock'"
+                        class="absolute left-3 top-3 bg-amber-100 text-xs text-amber-700 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400 sm:left-4 sm:top-4 sm:text-sm"
+                    >
+                        Stok Terbatas
+                    </Badge>
+                    <!-- Fallback -->
+                    <Badge
+                        v-else-if="!product.is_available"
+                        variant="destructive"
+                        class="absolute left-3 top-3 text-xs sm:left-4 sm:top-4 sm:text-sm"
                     >
                         Stok Habis
                     </Badge>
@@ -277,28 +302,43 @@ function handleBack() {
                     <!-- Category -->
                     <p
                         v-if="product.category"
-                        class="mb-2 text-sm font-medium uppercase tracking-wider text-muted-foreground"
+                        class="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground sm:mb-2 sm:text-sm"
                     >
                         {{ product.category.name }}
                     </p>
 
                     <!-- Product Name -->
-                    <h1 class="mb-4 text-3xl font-bold tracking-tight text-foreground lg:text-4xl">
+                    <h1 class="mb-3 text-2xl font-bold tracking-tight text-foreground sm:mb-4 sm:text-3xl lg:text-4xl">
                         {{ product.name }}
                     </h1>
 
                     <!-- Price -->
-                    <div class="mb-6">
-                        <p class="text-3xl font-bold text-primary">
+                    <div class="mb-4 sm:mb-6">
+                        <p class="text-2xl font-bold text-primary sm:text-3xl">
                             {{ formattedPrice }}
                         </p>
                     </div>
 
-                    <!-- Availability Status -->
-                    <div class="mb-6 flex items-center gap-2">
+                    <!-- Stock Status - Enhanced dengan multiple states -->
+                    <div class="mb-4 flex flex-wrap items-center gap-2 sm:mb-6">
+                        <!-- Stock Status Badge -->
                         <div
+                            v-if="product.stock_status"
                             :class="[
-                                'flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium',
+                                'flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium',
+                                product.stock_status.status === 'in_stock' && 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                                product.stock_status.status === 'low_stock' && 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+                                (product.stock_status.status === 'out_of_stock' || product.stock_status.status === 'unavailable') && 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                            ]"
+                        >
+                            <Check v-if="product.stock_status.status === 'in_stock'" class="h-4 w-4" />
+                            <span>{{ product.stock_status.label }}</span>
+                        </div>
+                        <!-- Fallback untuk backward compatibility -->
+                        <div
+                            v-else
+                            :class="[
+                                'flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium',
                                 product.is_available
                                     ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                                     : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
@@ -307,24 +347,32 @@ function handleBack() {
                             <Check v-if="product.is_available" class="h-4 w-4" />
                             <span>{{ product.is_available ? 'Tersedia' : 'Tidak Tersedia' }}</span>
                         </div>
+
+                        <!-- Stock Count (only for low stock) -->
+                        <span
+                            v-if="product.stock_status?.status === 'low_stock'"
+                            class="text-xs text-amber-600 dark:text-amber-400"
+                        >
+                            (Sisa {{ product.stock_status.stock }} unit)
+                        </span>
                     </div>
 
                     <!-- Description -->
-                    <div class="mb-8">
-                        <h2 class="mb-3 text-lg font-semibold text-foreground">Deskripsi</h2>
+                    <div class="mb-6 sm:mb-8">
+                        <h2 class="mb-2 text-base font-semibold text-foreground sm:mb-3 sm:text-lg">Deskripsi</h2>
                         <p
                             v-if="product.description"
-                            class="leading-relaxed text-muted-foreground whitespace-pre-line"
+                            class="whitespace-pre-line text-sm leading-relaxed text-muted-foreground sm:text-base"
                         >
                             {{ product.description }}
                         </p>
-                        <p v-else class="text-muted-foreground italic">
+                        <p v-else class="text-sm italic text-muted-foreground sm:text-base">
                             Belum ada deskripsi untuk produk ini.
                         </p>
                     </div>
 
-                    <!-- Quantity Selector & Add to Cart -->
-                    <div class="mt-auto space-y-4">
+                    <!-- Quantity Selector - Hidden on mobile (moved to sticky footer) -->
+                    <div class="mt-auto hidden space-y-4 sm:block">
                         <!-- Quantity Selector -->
                         <div class="flex items-center gap-4">
                             <span class="text-sm font-medium text-foreground">Jumlah:</span>
@@ -332,8 +380,9 @@ function handleBack() {
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    class="h-9 w-9"
+                                    class="h-10 w-10"
                                     :disabled="quantity <= 1 || !product.is_available"
+                                    aria-label="Kurangi jumlah"
                                     @click="decrementQuantity"
                                 >
                                     <Minus class="h-4 w-4" />
@@ -346,8 +395,9 @@ function handleBack() {
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    class="h-9 w-9"
+                                    class="h-10 w-10"
                                     :disabled="quantity >= 99 || !product.is_available"
+                                    aria-label="Tambah jumlah"
                                     @click="incrementQuantity"
                                 >
                                     <Plus class="h-4 w-4" />
@@ -362,7 +412,7 @@ function handleBack() {
                             :class="{
                                 'bg-green-600 hover:bg-green-600': showSuccess,
                             }"
-                            class="w-full gap-2 text-base"
+                            class="h-12 w-full gap-2 text-base"
                             @click="handleAddToCart"
                         >
                             <Loader2 v-if="isAdding" class="h-5 w-5 animate-spin" />
@@ -397,12 +447,72 @@ function handleBack() {
         </main>
 
         <!-- Footer -->
-        <footer class="mt-16 border-t border-border bg-muted/30">
-            <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <footer class="mt-12 border-t border-border bg-muted/30 sm:mt-16">
+            <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
                 <div class="text-center text-sm text-muted-foreground">
                     <p>&copy; {{ new Date().getFullYear() }} Simple Store. Dibuat oleh Zulfikar Hidayatullah.</p>
                 </div>
             </div>
         </footer>
+
+        <!-- Mobile Sticky Add to Cart Footer -->
+        <div
+            class="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:hidden"
+        >
+            <div class="mx-auto max-w-7xl">
+                <!-- Price & Quantity Row -->
+                <div class="mb-3 flex items-center justify-between">
+                    <p class="text-lg font-bold text-primary">
+                        {{ formattedPrice }}
+                    </p>
+                    <!-- Quantity Selector -->
+                    <div class="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            class="h-10 w-10"
+                            :disabled="quantity <= 1 || !product.is_available"
+                            aria-label="Kurangi jumlah"
+                            @click="decrementQuantity"
+                        >
+                            <Minus class="h-4 w-4" />
+                        </Button>
+
+                        <span class="w-10 text-center text-lg font-semibold">
+                            {{ quantity }}
+                        </span>
+
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            class="h-10 w-10"
+                            :disabled="quantity >= 99 || !product.is_available"
+                            aria-label="Tambah jumlah"
+                            @click="incrementQuantity"
+                        >
+                            <Plus class="h-4 w-4" />
+                        </Button>
+                    </div>
+                </div>
+
+                <!-- Add to Cart Button -->
+                <Button
+                    size="lg"
+                    :disabled="!product.is_available || isAdding"
+                    :class="{
+                        'bg-green-600 hover:bg-green-600': showSuccess,
+                    }"
+                    class="h-12 w-full gap-2 text-base"
+                    @click="handleAddToCart"
+                >
+                    <Loader2 v-if="isAdding" class="h-5 w-5 animate-spin" />
+                    <Check v-else-if="showSuccess" class="h-5 w-5" />
+                    <Plus v-else class="h-5 w-5" />
+                    <span v-if="showSuccess">Ditambahkan!</span>
+                    <span v-else-if="product.is_available">Tambah ke Keranjang</span>
+                    <span v-else>Stok Habis</span>
+                </Button>
+            </div>
+        </div>
     </div>
 </template>

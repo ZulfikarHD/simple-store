@@ -164,4 +164,43 @@ class Product extends Model
     {
         return 'Rp '.number_format($this->price, 0, ',', '.');
     }
+
+    /**
+     * Mendapatkan status stok produk dengan kategorisasi
+     * untuk menampilkan badge yang sesuai pada frontend
+     *
+     * @return array{status: string, label: string, stock: int}
+     */
+    public function getStockStatusAttribute(): array
+    {
+        if (! $this->is_active) {
+            return [
+                'status' => 'unavailable',
+                'label' => 'Tidak Tersedia',
+                'stock' => 0,
+            ];
+        }
+
+        if ($this->stock <= 0) {
+            return [
+                'status' => 'out_of_stock',
+                'label' => 'Habis',
+                'stock' => 0,
+            ];
+        }
+
+        if ($this->stock <= 5) {
+            return [
+                'status' => 'low_stock',
+                'label' => 'Stok Terbatas',
+                'stock' => $this->stock,
+            ];
+        }
+
+        return [
+            'status' => 'in_stock',
+            'label' => 'Tersedia',
+            'stock' => $this->stock,
+        ];
+    }
 }

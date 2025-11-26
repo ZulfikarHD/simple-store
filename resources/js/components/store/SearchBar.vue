@@ -69,23 +69,24 @@ function clearSearch() {
     <div class="relative">
         <!-- Search Icon -->
         <Search
-            class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground sm:left-4"
         />
 
-        <!-- Search Input -->
+        <!-- Search Input - Touch-friendly dengan min height 44px -->
         <Input
             v-model="localValue"
             type="search"
             :placeholder="placeholder"
-            class="h-10 rounded-full border-muted bg-secondary/50 pl-10 pr-10 focus:bg-background"
+            class="h-11 rounded-full border-muted bg-secondary/50 pl-10 pr-11 text-base focus:bg-background sm:h-10 sm:pl-11 sm:pr-10 sm:text-sm"
         />
 
-        <!-- Clear Button -->
+        <!-- Clear Button - Touch-friendly 44px -->
         <Button
             v-if="localValue"
             variant="ghost"
             size="icon"
-            class="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2 rounded-full"
+            class="absolute right-0.5 top-1/2 h-10 w-10 -translate-y-1/2 rounded-full sm:right-1 sm:h-8 sm:w-8"
+            aria-label="Hapus pencarian"
             @click="clearSearch"
         >
             <X class="h-4 w-4" />

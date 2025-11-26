@@ -16,8 +16,17 @@ import { show } from '@/actions/App/Http/Controllers/ProductController'
 import { store } from '@/actions/App/Http/Controllers/CartController'
 
 /**
+ * Interface untuk status stok dari backend
+ */
+interface StockStatus {
+    status: 'in_stock' | 'low_stock' | 'out_of_stock' | 'unavailable'
+    label: string
+    stock: number
+}
+
+/**
  * Props definition untuk ProductCard
- * dengan struktur data produk yang lengkap
+ * dengan struktur data produk yang lengkap termasuk stock_status
  */
 interface Props {
     product: {
@@ -27,11 +36,13 @@ interface Props {
         description?: string | null
         price: number
         image?: string | null
+        stock?: number
         category?: {
             id: number
             name: string
         }
         is_available: boolean
+        stock_status?: StockStatus
     }
     /** Mode tampilan: grid atau list */
     mode?: 'grid' | 'list'
@@ -142,28 +153,46 @@ const imageUrl = computed(() => {
                 <ShoppingCart class="h-8 w-8 text-muted-foreground" />
             </div>
 
-            <!-- Availability Badge -->
+            <!-- Stock Status Badge - Enhanced dengan multiple states -->
             <Badge
-                v-if="!product.is_available"
+                v-if="product.stock_status"
+                :variant="
+                    product.stock_status.status === 'out_of_stock' || product.stock_status.status === 'unavailable'
+                        ? 'destructive'
+                        : product.stock_status.status === 'low_stock'
+                          ? 'secondary'
+                          : 'default'
+                "
+                :class="[
+                    'absolute left-2 top-2 text-[10px] sm:left-3 sm:top-3 sm:text-xs',
+                    product.stock_status.status === 'in_stock' && 'bg-green-100 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400',
+                    product.stock_status.status === 'low_stock' && 'bg-amber-100 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400',
+                ]"
+            >
+                {{ product.stock_status.label }}
+            </Badge>
+            <!-- Fallback untuk backward compatibility -->
+            <Badge
+                v-else-if="!product.is_available"
                 variant="destructive"
-                class="absolute left-3 top-3"
+                class="absolute left-2 top-2 text-[10px] sm:left-3 sm:top-3 sm:text-xs"
             >
                 Habis
             </Badge>
         </Link>
 
-        <!-- Product Info -->
+        <!-- Product Info - Optimized untuk mobile -->
         <div
             class="flex flex-1 flex-col"
             :class="{
-                'p-4': mode === 'grid',
+                'p-3 sm:p-4': mode === 'grid',
                 'py-1': mode === 'list',
             }"
         >
             <!-- Category Label -->
             <p
                 v-if="product.category"
-                class="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground"
+                class="mb-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground sm:mb-1 sm:text-xs"
             >
                 {{ product.category.name }}
             </p>
@@ -172,43 +201,44 @@ const imageUrl = computed(() => {
             <h3
                 class="font-semibold text-foreground"
                 :class="{
-                    'mb-2 line-clamp-2 text-base': mode === 'grid',
+                    'mb-1.5 line-clamp-2 text-sm sm:mb-2 sm:text-base': mode === 'grid',
                     'mb-1 line-clamp-1 text-sm': mode === 'list',
                 }"
             >
                 {{ product.name }}
             </h3>
 
-            <!-- Description (grid mode only) -->
+            <!-- Description (grid mode only, hidden pada mobile kecil) -->
             <p
                 v-if="product.description && mode === 'grid'"
-                class="mb-3 line-clamp-2 text-sm text-muted-foreground"
+                class="mb-2 line-clamp-2 hidden text-xs text-muted-foreground sm:mb-3 sm:block sm:text-sm"
             >
                 {{ product.description }}
             </p>
 
-            <!-- Price & Action -->
-            <div class="mt-auto flex items-center justify-between gap-2">
-                <p class="text-lg font-bold text-primary">
-                    {{ formattedPrice }}
-                </p>
+                <!-- Price & Action - Touch-friendly dengan min 44px -->
+                <div class="mt-auto flex items-center justify-between gap-2">
+                    <p class="text-base font-bold text-primary sm:text-lg">
+                        {{ formattedPrice }}
+                    </p>
 
-                <Button
-                    v-if="mode === 'grid'"
-                    size="icon"
-                    variant="secondary"
-                    :disabled="!product.is_available || isAdding"
-                    class="h-9 w-9 rounded-full bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-50"
-                    :class="{
-                        'bg-green-100 text-green-600 hover:bg-green-100': showSuccess,
-                    }"
-                    @click.prevent="handleAddToCart"
-                >
-                    <Loader2 v-if="isAdding" class="h-5 w-5 animate-spin" />
-                    <Check v-else-if="showSuccess" class="h-5 w-5" />
-                    <Plus v-else class="h-5 w-5" />
-                </Button>
-            </div>
+                    <Button
+                        v-if="mode === 'grid'"
+                        size="icon"
+                        variant="secondary"
+                        :disabled="!product.is_available || isAdding"
+                        class="h-11 w-11 shrink-0 rounded-full bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-50"
+                        :class="{
+                            'bg-green-100 text-green-600 hover:bg-green-100': showSuccess,
+                        }"
+                        aria-label="Tambah ke keranjang"
+                        @click.prevent="handleAddToCart"
+                    >
+                        <Loader2 v-if="isAdding" class="h-5 w-5 animate-spin" />
+                        <Check v-else-if="showSuccess" class="h-5 w-5" />
+                        <Plus v-else class="h-5 w-5" />
+                    </Button>
+                </div>
         </div>
     </article>
 </template>

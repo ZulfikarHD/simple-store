@@ -7,17 +7,23 @@
  * - Total sales keseluruhan
  * - Active products count
  * - Recent orders list
+ * - Browser notifications untuk pesanan baru
+ *
+ * @author Zulfikar Hidayatullah
  */
+import { onMounted } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { OrderStatusBadge } from '@/components/store'
 import PriceDisplay from '@/components/store/PriceDisplay.vue'
 import { type BreadcrumbItem } from '@/types'
-import { Head } from '@inertiajs/vue3'
+import { Head, Link } from '@inertiajs/vue3'
 import { dashboard } from '@/routes/admin'
 import { index as productsIndex } from '@/routes/admin/products'
 import { index as categoriesIndex } from '@/routes/admin/categories'
+import { useOrderNotifications } from '@/composables/useOrderNotifications'
 import {
     ShoppingBag,
     Clock,
@@ -26,7 +32,23 @@ import {
     Users,
     Calendar,
     FolderTree,
+    Bell,
+    BellOff,
 } from 'lucide-vue-next'
+
+/**
+ * Setup browser notifications untuk pesanan baru
+ */
+const {
+    isSupported: notificationSupported,
+    notificationPermission,
+    requestPermission,
+    watchPendingOrders,
+} = useOrderNotifications()
+
+onMounted(() => {
+    watchPendingOrders()
+})
 
 interface OrderItem {
     id: number
@@ -326,6 +348,34 @@ function formatNumber(value: number): string {
                                 Kelola Kategori
                             </Badge>
                         </Link>
+
+                        <!-- Notification Permission Button -->
+                        <Button
+                            v-if="notificationSupported && notificationPermission !== 'granted'"
+                            variant="outline"
+                            size="sm"
+                            class="gap-2"
+                            @click="requestPermission"
+                        >
+                            <Bell class="h-4 w-4" />
+                            Aktifkan Notifikasi
+                        </Button>
+                        <Badge
+                            v-else-if="notificationSupported && notificationPermission === 'granted'"
+                            variant="secondary"
+                            class="px-4 py-2"
+                        >
+                            <Bell class="mr-2 h-4 w-4 text-green-600" />
+                            Notifikasi Aktif
+                        </Badge>
+                        <Badge
+                            v-else-if="notificationSupported && notificationPermission === 'denied'"
+                            variant="destructive"
+                            class="px-4 py-2"
+                        >
+                            <BellOff class="mr-2 h-4 w-4" />
+                            Notifikasi Diblokir
+                        </Badge>
                     </div>
                 </CardContent>
             </Card>

@@ -17,7 +17,7 @@ class ProductResource extends JsonResource
     /**
      * Transform the resource into an array.
      * Mengubah data produk menjadi format yang sesuai untuk frontend
-     * dengan penambahan field is_available untuk status ketersediaan
+     * dengan penambahan field is_available dan stock_status untuk indikator stok
      *
      * @return array<string, mixed>
      */
@@ -30,11 +30,13 @@ class ProductResource extends JsonResource
             'description' => $this->description,
             'price' => (float) $this->price,
             'image' => $this->image,
+            'stock' => $this->stock,
             'category' => $this->whenLoaded('category', fn () => [
                 'id' => $this->category->id,
                 'name' => $this->category->name,
             ]),
             'is_available' => $this->isAvailable(),
+            'stock_status' => $this->stock_status,
         ];
     }
 }

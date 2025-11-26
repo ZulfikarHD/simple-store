@@ -94,38 +94,38 @@ function formatPrice(price: number): string {
     </Head>
 
     <div class="min-h-screen bg-background">
-        <!-- Header Navigation -->
+        <!-- Header Navigation - Mobile Optimized -->
         <header class="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+            <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                 <!-- Logo & Brand -->
-                <Link href="/" class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                        <ShoppingBag class="h-5 w-5 text-primary-foreground" />
+                <Link href="/" class="flex items-center gap-2 sm:gap-3">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary sm:h-10 sm:w-10">
+                        <ShoppingBag class="h-4 w-4 text-primary-foreground sm:h-5 sm:w-5" />
                     </div>
-                    <span class="text-xl font-bold text-foreground">Simple Store</span>
+                    <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
                 </Link>
 
-                <!-- Cart Counter & Auth -->
-                <nav class="flex items-center gap-3">
+                <!-- Cart Counter & Auth - Hidden auth on mobile -->
+                <nav class="flex items-center gap-2 sm:gap-3">
                     <CartCounter :count="cart.total_items" />
 
                     <Link
                         v-if="$page.props.auth.user"
                         href="/dashboard"
-                        class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                        class="hidden rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
                     >
                         Dashboard
                     </Link>
                     <template v-else>
                         <Link
                             href="/login"
-                            class="rounded-lg px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                            class="hidden rounded-lg px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent sm:inline-flex"
                         >
                             Masuk
                         </Link>
                         <Link
                             href="/register"
-                            class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                            class="hidden rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
                         >
                             Daftar
                         </Link>
@@ -134,49 +134,49 @@ function formatPrice(price: number): string {
             </div>
         </header>
 
-        <!-- Main Content -->
-        <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-            <!-- Back Button -->
+        <!-- Main Content - Mobile Optimized -->
+        <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+            <!-- Back Button - Touch-friendly -->
             <Link
                 :href="showCart()"
-                class="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                class="mb-4 inline-flex h-11 items-center gap-2 rounded-lg px-3 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:mb-6 sm:h-auto sm:px-0"
             >
                 <ArrowLeft class="h-4 w-4" />
                 Kembali ke Keranjang
             </Link>
 
-            <!-- Page Title -->
-            <div class="mb-8">
-                <h1 class="text-3xl font-bold tracking-tight text-foreground">
+            <!-- Page Title - Responsive -->
+            <div class="mb-6 sm:mb-8">
+                <h1 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                     Checkout
                 </h1>
-                <p class="mt-2 text-muted-foreground">
+                <p class="mt-1 text-sm text-muted-foreground sm:mt-2 sm:text-base">
                     Lengkapi data pengiriman untuk melanjutkan pesanan
                 </p>
             </div>
 
-            <!-- Checkout Form -->
+            <!-- Checkout Form - Mobile Optimized -->
             <Form
                 v-bind="checkoutStore.form()"
                 #default="{ errors, processing, hasErrors }"
-                class="grid gap-8 lg:grid-cols-3"
+                class="grid gap-6 lg:grid-cols-3 lg:gap-8"
             >
                 <!-- Form Fields -->
-                <div class="lg:col-span-2 space-y-6">
+                <div class="space-y-4 sm:space-y-6 lg:col-span-2">
                     <!-- Error Alert -->
                     <div
                         v-if="hasErrors && errors.checkout"
-                        class="rounded-lg border border-destructive/50 bg-destructive/10 p-4"
+                        class="rounded-lg border border-destructive/50 bg-destructive/10 p-3 sm:p-4"
                     >
                         <div class="flex items-center gap-2 text-destructive">
-                            <AlertCircle class="h-5 w-5" />
-                            <span class="font-medium">{{ errors.checkout }}</span>
+                            <AlertCircle class="h-5 w-5 shrink-0" />
+                            <span class="text-sm font-medium sm:text-base">{{ errors.checkout }}</span>
                         </div>
                     </div>
 
                     <!-- Data Penerima Section -->
-                    <div class="rounded-xl border border-border bg-card p-6">
-                        <h2 class="mb-6 flex items-center gap-2 text-lg font-semibold text-foreground">
+                    <div class="rounded-lg border border-border bg-card p-4 sm:rounded-xl sm:p-6">
+                        <h2 class="mb-4 flex items-center gap-2 text-base font-semibold text-foreground sm:mb-6 sm:text-lg">
                             <User class="h-5 w-5 text-primary" />
                             Data Penerima
                         </h2>
@@ -184,12 +184,13 @@ function formatPrice(price: number): string {
                         <div class="space-y-4">
                             <!-- Nama Lengkap -->
                             <div class="space-y-2">
-                                <Label for="customer_name">Nama Lengkap *</Label>
+                                <Label for="customer_name" class="text-sm sm:text-base">Nama Lengkap *</Label>
                                 <Input
                                     id="customer_name"
                                     name="customer_name"
                                     type="text"
                                     placeholder="Masukkan nama lengkap"
+                                    class="h-11 text-base sm:h-10 sm:text-sm"
                                     :aria-invalid="!!errors.customer_name"
                                 />
                                 <p v-if="errors.customer_name" class="text-sm text-destructive">
@@ -199,15 +200,16 @@ function formatPrice(price: number): string {
 
                             <!-- Nomor Telepon -->
                             <div class="space-y-2">
-                                <Label for="customer_phone">
-                                    <Phone class="h-4 w-4" />
+                                <Label for="customer_phone" class="text-sm sm:text-base">
                                     Nomor Telepon (WhatsApp) *
                                 </Label>
                                 <Input
                                     id="customer_phone"
                                     name="customer_phone"
                                     type="tel"
+                                    inputmode="tel"
                                     placeholder="08xxxxxxxxxx"
+                                    class="h-11 text-base sm:h-10 sm:text-sm"
                                     :aria-invalid="!!errors.customer_phone"
                                 />
                                 <p v-if="errors.customer_phone" class="text-sm text-destructive">
@@ -221,8 +223,8 @@ function formatPrice(price: number): string {
                     </div>
 
                     <!-- Alamat Pengiriman Section -->
-                    <div class="rounded-xl border border-border bg-card p-6">
-                        <h2 class="mb-6 flex items-center gap-2 text-lg font-semibold text-foreground">
+                    <div class="rounded-lg border border-border bg-card p-4 sm:rounded-xl sm:p-6">
+                        <h2 class="mb-4 flex items-center gap-2 text-base font-semibold text-foreground sm:mb-6 sm:text-lg">
                             <MapPin class="h-5 w-5 text-primary" />
                             Alamat Pengiriman
                         </h2>
@@ -230,13 +232,13 @@ function formatPrice(price: number): string {
                         <div class="space-y-4">
                             <!-- Alamat Lengkap -->
                             <div class="space-y-2">
-                                <Label for="customer_address">Alamat Lengkap *</Label>
+                                <Label for="customer_address" class="text-sm sm:text-base">Alamat Lengkap *</Label>
                                 <textarea
                                     id="customer_address"
                                     name="customer_address"
                                     rows="4"
                                     placeholder="Masukkan alamat lengkap dengan RT/RW, kelurahan, kecamatan, kota, dan kode pos"
-                                    class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                    class="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-3 text-base shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 sm:py-2 sm:text-sm"
                                     :aria-invalid="!!errors.customer_address"
                                 ></textarea>
                                 <p v-if="errors.customer_address" class="text-sm text-destructive">
@@ -246,8 +248,7 @@ function formatPrice(price: number): string {
 
                             <!-- Catatan -->
                             <div class="space-y-2">
-                                <Label for="notes">
-                                    <FileText class="h-4 w-4" />
+                                <Label for="notes" class="text-sm sm:text-base">
                                     Catatan (Opsional)
                                 </Label>
                                 <textarea
@@ -255,7 +256,7 @@ function formatPrice(price: number): string {
                                     name="notes"
                                     rows="3"
                                     placeholder="Catatan tambahan untuk pesanan (misal: warna, ukuran, patokan alamat, dll)"
-                                    class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                    class="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-3 text-base shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 sm:py-2 sm:text-sm"
                                     :aria-invalid="!!errors.notes"
                                 ></textarea>
                                 <p v-if="errors.notes" class="text-sm text-destructive">

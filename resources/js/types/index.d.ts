@@ -15,6 +15,8 @@ export interface NavItem {
     href: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon;
     isActive?: boolean;
+    /** Badge count untuk notifikasi */
+    badge?: number;
 }
 
 export type AppPageProps<
@@ -24,6 +26,8 @@ export type AppPageProps<
     quote: { message: string; author: string };
     auth: Auth;
     sidebarOpen: boolean;
+    /** Jumlah pesanan pending untuk notifikasi admin */
+    pending_orders_count?: number;
 };
 
 export interface User {

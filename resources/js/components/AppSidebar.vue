@@ -1,4 +1,11 @@
 <script setup lang="ts">
+/**
+ * AppSidebar Component
+ * Sidebar admin panel dengan navigation dan badge notifikasi pesanan
+ *
+ * @author Zulfikar Hidayatullah
+ */
+import { computed } from 'vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -17,11 +24,23 @@ import { index as categoriesIndex } from '@/routes/admin/categories';
 import { index as ordersIndex } from '@/routes/admin/orders';
 import { index as settingsIndex } from '@/routes/admin/settings';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { BookOpen, Folder, LayoutGrid, Package, FolderTree, ShoppingBag, Settings } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
-const mainNavItems: NavItem[] = [
+const page = usePage();
+
+/**
+ * Computed untuk mendapatkan jumlah pesanan pending dari shared props
+ */
+const pendingOrdersCount = computed(() => {
+    return (page.props as { pending_orders_count?: number }).pending_orders_count ?? 0;
+});
+
+/**
+ * Main navigation items dengan badge untuk pesanan
+ */
+const mainNavItems = computed<NavItem[]>(() => [
     {
         title: 'Dashboard',
         href: dashboard(),
@@ -31,6 +50,7 @@ const mainNavItems: NavItem[] = [
         title: 'Pesanan',
         href: ordersIndex(),
         icon: ShoppingBag,
+        badge: pendingOrdersCount.value,
     },
     {
         title: 'Produk',
@@ -47,7 +67,7 @@ const mainNavItems: NavItem[] = [
         href: settingsIndex(),
         icon: Settings,
     },
-];
+]);
 
 const footerNavItems: NavItem[] = [
     {

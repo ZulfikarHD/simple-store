@@ -4,6 +4,7 @@
  * Menampilkan daftar produk aktif dalam format grid responsive
  * dengan filter kategori, pencarian, empty state, cart counter,
  * dan navigasi ke halaman login/register
+ * Optimasi untuk mobile dengan hamburger menu dan touch-friendly buttons
  *
  * @author Zulfikar Hidayatullah
  */
@@ -16,7 +17,7 @@ import CategoryFilter from '@/components/store/CategoryFilter.vue'
 import SearchBar from '@/components/store/SearchBar.vue'
 import EmptyState from '@/components/store/EmptyState.vue'
 import CartCounter from '@/components/store/CartCounter.vue'
-import { ShoppingBag, X } from 'lucide-vue-next'
+import { ShoppingBag, X, Menu } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 
 /**
@@ -79,6 +80,25 @@ const props = defineProps<Props>()
  * Local state untuk search input yang di-sync dengan prop searchQuery
  */
 const localSearchQuery = ref(props.searchQuery ?? '')
+
+/**
+ * Mobile menu state untuk hamburger navigation
+ */
+const isMobileMenuOpen = ref(false)
+
+/**
+ * Toggle mobile menu visibility
+ */
+function toggleMobileMenu() {
+    isMobileMenuOpen.value = !isMobileMenuOpen.value
+}
+
+/**
+ * Close mobile menu
+ */
+function closeMobileMenu() {
+    isMobileMenuOpen.value = false
+}
 
 /**
  * Computed untuk cart total items
@@ -218,76 +238,123 @@ function handleClearSearch() {
     </Head>
 
     <div class="min-h-screen bg-background">
-        <!-- Header Navigation -->
+        <!-- Header Navigation dengan Mobile Responsive -->
         <header class="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+            <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                 <!-- Logo & Brand -->
-                <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                        <ShoppingBag class="h-5 w-5 text-primary-foreground" />
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary sm:h-10 sm:w-10">
+                        <ShoppingBag class="h-4 w-4 text-primary-foreground sm:h-5 sm:w-5" />
                     </div>
-                    <span class="text-xl font-bold text-foreground">Simple Store</span>
+                    <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
                 </div>
 
-                <!-- Cart Counter & Auth Navigation -->
-                <nav class="flex items-center gap-3">
+                <!-- Desktop Navigation -->
+                <nav class="hidden items-center gap-3 sm:flex">
                     <CartCounter :count="cartTotalItems" />
 
                     <Link
                         v-if="$page.props.auth.user"
                         :href="dashboard()"
-                        class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                        class="rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                     >
                         Dashboard
                     </Link>
                     <template v-else>
                         <Link
                             :href="login()"
-                            class="rounded-lg px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                            class="rounded-lg px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
                         >
                             Masuk
                         </Link>
                         <Link
                             :href="register()"
-                            class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                            class="rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                         >
                             Daftar
                         </Link>
                     </template>
                 </nav>
+
+                <!-- Mobile Navigation -->
+                <div class="flex items-center gap-2 sm:hidden">
+                    <CartCounter :count="cartTotalItems" />
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        class="h-11 w-11"
+                        aria-label="Menu navigasi"
+                        @click="toggleMobileMenu"
+                    >
+                        <Menu class="h-5 w-5" />
+                    </Button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu Dropdown -->
+            <div
+                v-if="isMobileMenuOpen"
+                class="border-t border-border bg-background px-4 py-4 sm:hidden"
+            >
+                <div class="flex flex-col gap-2">
+                    <Link
+                        v-if="$page.props.auth.user"
+                        :href="dashboard()"
+                        class="flex h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                        @click="closeMobileMenu"
+                    >
+                        Dashboard
+                    </Link>
+                    <template v-else>
+                        <Link
+                            :href="login()"
+                            class="flex h-11 items-center justify-center rounded-lg border border-border px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                            @click="closeMobileMenu"
+                        >
+                            Masuk
+                        </Link>
+                        <Link
+                            :href="register()"
+                            class="flex h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                            @click="closeMobileMenu"
+                        >
+                            Daftar
+                        </Link>
+                    </template>
+                </div>
             </div>
         </header>
 
-        <!-- Main Content -->
-        <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-            <!-- Search Bar Section -->
-            <div class="mb-6">
+        <!-- Main Content dengan Mobile Optimization -->
+        <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+            <!-- Search Bar Section - Full width pada mobile -->
+            <div class="mb-5 sm:mb-6">
                 <SearchBar
                     v-model="localSearchQuery"
                     placeholder="Cari produk..."
                     :debounce="400"
-                    class="max-w-md"
+                    class="w-full sm:max-w-md"
                     @search="handleSearch"
                 />
             </div>
 
-            <!-- Page Title -->
-            <div class="mb-6">
-                <div class="flex items-center justify-between">
+            <!-- Page Title - Responsive text size -->
+            <div class="mb-5 sm:mb-6">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 class="text-3xl font-bold tracking-tight text-foreground">
+                        <h1 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                             {{ pageHeading }}
                         </h1>
-                        <p class="mt-2 text-muted-foreground">
+                        <p class="mt-1 text-sm text-muted-foreground sm:mt-2 sm:text-base">
                             {{ pageDescription }}
                         </p>
                     </div>
-                    <!-- Clear Search Button -->
+                    <!-- Clear Search Button - Touch-friendly -->
                     <Button
                         v-if="props.searchQuery"
                         variant="outline"
-                        size="sm"
-                        class="flex items-center gap-2"
+                        size="default"
+                        class="flex h-11 w-full items-center justify-center gap-2 sm:h-9 sm:w-auto"
                         @click="handleClearSearch"
                     >
                         <X class="h-4 w-4" />
@@ -296,8 +363,8 @@ function handleClearSearch() {
                 </div>
             </div>
 
-            <!-- Category Filter -->
-            <div v-if="categories.data.length > 0" class="mb-8">
+            <!-- Category Filter - Horizontal scroll pada mobile -->
+            <div v-if="categories.data.length > 0" class="mb-6 sm:mb-8">
                 <CategoryFilter
                     :categories="categories.data"
                     :active-category="selectedCategory"
@@ -305,15 +372,15 @@ function handleClearSearch() {
                 />
             </div>
 
-            <!-- Products Grid -->
+            <!-- Products Grid - Optimized untuk 320px+ screens -->
             <div
                 v-if="products.data.length > 0"
-                class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                class="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:gap-6"
             >
                 <div
                     v-for="product in products.data"
                     :key="product.id"
-                    class="overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md"
+                    class="overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-shadow hover:shadow-md sm:rounded-xl"
                 >
                     <ProductCard
                         :product="product"

@@ -82,38 +82,38 @@ const formattedSubtotal = computed(() => {
     </Head>
 
     <div class="min-h-screen bg-background">
-        <!-- Header Navigation -->
+        <!-- Header Navigation - Mobile Optimized -->
         <header class="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+            <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                 <!-- Logo & Brand -->
-                <Link :href="home()" class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                        <ShoppingBag class="h-5 w-5 text-primary-foreground" />
+                <Link :href="home()" class="flex items-center gap-2 sm:gap-3">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary sm:h-10 sm:w-10">
+                        <ShoppingBag class="h-4 w-4 text-primary-foreground sm:h-5 sm:w-5" />
                     </div>
-                    <span class="text-xl font-bold text-foreground">Simple Store</span>
+                    <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
                 </Link>
 
-                <!-- Cart Counter & Auth -->
-                <nav class="flex items-center gap-3">
+                <!-- Cart Counter & Auth - Hidden auth on mobile -->
+                <nav class="flex items-center gap-2 sm:gap-3">
                     <CartCounter :count="cart.total_items" />
 
                     <Link
                         v-if="$page.props.auth.user"
                         href="/dashboard"
-                        class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                        class="hidden rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
                     >
                         Dashboard
                     </Link>
                     <template v-else>
                         <Link
                             href="/login"
-                            class="rounded-lg px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                            class="hidden rounded-lg px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent sm:inline-flex"
                         >
                             Masuk
                         </Link>
                         <Link
                             href="/register"
-                            class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                            class="hidden rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
                         >
                             Daftar
                         </Link>
@@ -122,23 +122,23 @@ const formattedSubtotal = computed(() => {
             </div>
         </header>
 
-        <!-- Main Content -->
-        <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-            <!-- Back Button -->
+        <!-- Main Content - Mobile Optimized dengan padding untuk sticky footer -->
+        <main class="mx-auto max-w-7xl px-4 py-6 pb-32 sm:px-6 sm:py-8 sm:pb-8 lg:px-8">
+            <!-- Back Button - Touch-friendly -->
             <Link
                 :href="home()"
-                class="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                class="mb-4 inline-flex h-11 items-center gap-2 rounded-lg px-3 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:mb-6 sm:h-auto sm:px-0"
             >
                 <ArrowLeft class="h-4 w-4" />
                 Kembali ke Katalog
             </Link>
 
-            <!-- Page Title -->
-            <div class="mb-8">
-                <h1 class="text-3xl font-bold tracking-tight text-foreground">
+            <!-- Page Title - Responsive -->
+            <div class="mb-6 sm:mb-8">
+                <h1 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                     Keranjang Belanja
                 </h1>
-                <p class="mt-2 text-muted-foreground">
+                <p class="mt-1 text-sm text-muted-foreground sm:mt-2 sm:text-base">
                     {{ isEmpty ? 'Keranjang Anda kosong' : `${cart.total_items} item dalam keranjang` }}
                 </p>
             </div>
@@ -160,11 +160,11 @@ const formattedSubtotal = computed(() => {
                 </template>
             </EmptyState>
 
-            <!-- Cart Content -->
-            <div v-else class="grid gap-8 lg:grid-cols-3">
+            <!-- Cart Content - Mobile Optimized -->
+            <div v-else class="grid gap-6 lg:grid-cols-3 lg:gap-8">
                 <!-- Cart Items -->
                 <div class="lg:col-span-2">
-                    <div class="space-y-4">
+                    <div class="space-y-3 sm:space-y-4">
                         <CartItem
                             v-for="item in cart.items"
                             :key="item.id"
@@ -173,8 +173,8 @@ const formattedSubtotal = computed(() => {
                     </div>
                 </div>
 
-                <!-- Order Summary -->
-                <div class="lg:col-span-1">
+                <!-- Order Summary - Desktop Only -->
+                <div class="hidden lg:col-span-1 lg:block">
                     <div class="sticky top-24 rounded-xl border border-border bg-card p-6">
                         <h2 class="mb-4 text-lg font-semibold text-foreground">
                             Ringkasan Pesanan
@@ -202,13 +202,13 @@ const formattedSubtotal = computed(() => {
 
                         <!-- Checkout Button -->
                         <Link :href="checkoutShow()">
-                        <Button
-                            size="lg"
-                            class="mt-6 w-full gap-2"
-                        >
-                            Lanjut ke Checkout
+                            <Button
+                                size="lg"
+                                class="mt-6 w-full gap-2"
+                            >
+                                Lanjut ke Checkout
                                 <ArrowRight class="h-4 w-4" />
-                        </Button>
+                            </Button>
                         </Link>
 
                         <!-- Continue Shopping Link -->
@@ -222,6 +222,28 @@ const formattedSubtotal = computed(() => {
                 </div>
             </div>
         </main>
+
+        <!-- Mobile Sticky Checkout Footer -->
+        <div
+            v-if="!isEmpty"
+            class="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 lg:hidden"
+        >
+            <div class="mx-auto max-w-7xl">
+                <div class="mb-3 flex items-center justify-between">
+                    <span class="text-sm text-muted-foreground">Total ({{ cart.total_items }} item)</span>
+                    <span class="text-lg font-bold text-primary">{{ formattedSubtotal }}</span>
+                </div>
+                <Link :href="checkoutShow()" class="block">
+                    <Button
+                        size="lg"
+                        class="h-12 w-full gap-2 text-base"
+                    >
+                        Lanjut ke Checkout
+                        <ArrowRight class="h-4 w-4" />
+                    </Button>
+                </Link>
+            </div>
+        </div>
 
         <!-- Footer -->
         <footer class="mt-16 border-t border-border bg-muted/30">

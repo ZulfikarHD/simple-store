@@ -46,15 +46,15 @@ const isEmpty = computed(() => props.count === 0)
 <template>
     <Link
         :href="cartUrl"
-        class="relative flex items-center justify-center rounded-lg p-2 text-foreground transition-colors hover:bg-accent"
+        class="relative flex h-11 w-11 items-center justify-center rounded-lg text-foreground transition-colors hover:bg-accent"
         :aria-label="`Keranjang belanja, ${count} item`"
     >
-        <ShoppingCart class="h-5 w-5" />
+        <ShoppingCart class="h-5 w-5 sm:h-5 sm:w-5" />
 
-        <!-- Badge Counter -->
+        <!-- Badge Counter - Touch-friendly size -->
         <span
             v-if="!isEmpty"
-            class="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground"
+            class="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground sm:-right-1 sm:-top-1"
         >
             {{ displayCount }}
         </span>

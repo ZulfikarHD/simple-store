@@ -2,17 +2,26 @@
 
 namespace App\Services;
 
+use App\Http\Controllers\ProductController;
 use App\Models\Product;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * ProductService untuk mengelola operasi CRUD produk di admin panel
- * dengan fitur filtering, search, dan image upload management
+ * dengan fitur filtering, search, image upload optimization, dan cache management
+ *
+ * @author Zulfikar Hidayatullah
  */
 class ProductService
 {
+    /**
+     * Constructor dengan dependency injection ImageService
+     */
+    public function __construct(
+        private ImageService $imageService
+    ) {}
+
     /**
      * Mendapatkan daftar produk dengan pagination dan filter, yaitu:
      * - Pencarian berdasarkan nama
@@ -62,22 +71,27 @@ class ProductService
     }
 
     /**
-     * Membuat produk baru dengan handling image upload
+     * Membuat produk baru dengan handling image upload, optimasi, dan cache clear
      *
      * @param  array<string, mixed>  $data  Data produk dari form request
      */
     public function createProduct(array $data): Product
     {
-        // Handle image upload jika ada
+        // Handle image upload dengan optimasi jika ada
         if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
-            $data['image'] = $this->uploadImage($data['image']);
+            $data['image'] = $this->imageService->uploadAndOptimize($data['image'], 'products');
         }
 
-        return Product::create($data);
+        $product = Product::create($data);
+
+        // Clear cache setelah produk baru dibuat
+        ProductController::clearProductCache();
+
+        return $product;
     }
 
     /**
-     * Mengupdate produk dengan handling image upload
+     * Mengupdate produk dengan handling image upload, optimasi, dan cache clear
      *
      * @param  array<string, mixed>  $data  Data produk dari form request
      */
@@ -86,8 +100,8 @@ class ProductService
         // Handle image upload jika ada file baru
         if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
             // Hapus image lama jika ada
-            $this->deleteImage($product->image);
-            $data['image'] = $this->uploadImage($data['image']);
+            $this->imageService->deleteImage($product->image);
+            $data['image'] = $this->imageService->uploadAndOptimize($data['image'], 'products');
         } else {
             // Jika tidak ada file baru, jangan update field image
             unset($data['image']);
@@ -95,11 +109,14 @@ class ProductService
 
         $product->update($data);
 
+        // Clear cache setelah produk diupdate
+        ProductController::clearProductCache();
+
         return $product->fresh(['category']);
     }
 
     /**
-     * Menghapus produk dengan validasi constraint
+     * Menghapus produk dengan validasi constraint dan cache clear
      * Produk tidak bisa dihapus jika masih ada di order yang belum selesai
      *
      * @return array{success: bool, message: string}
@@ -121,33 +138,16 @@ class ProductService
         }
 
         // Hapus image jika ada
-        $this->deleteImage($product->image);
+        $this->imageService->deleteImage($product->image);
 
         $product->delete();
+
+        // Clear cache setelah produk dihapus
+        ProductController::clearProductCache();
 
         return [
             'success' => true,
             'message' => 'Produk berhasil dihapus.',
         ];
-    }
-
-    /**
-     * Upload image ke storage dengan nama unik
-     */
-    private function uploadImage(UploadedFile $file): string
-    {
-        $filename = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
-
-        return $file->storeAs('products', $filename, 'public');
-    }
-
-    /**
-     * Menghapus image dari storage
-     */
-    private function deleteImage(?string $imagePath): void
-    {
-        if ($imagePath && Storage::disk('public')->exists($imagePath)) {
-            Storage::disk('public')->delete($imagePath);
-        }
     }
 }

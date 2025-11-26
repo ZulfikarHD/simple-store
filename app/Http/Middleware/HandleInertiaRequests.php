@@ -2,11 +2,18 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Order;
 use App\Services\CartService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
+/**
+ * Middleware untuk handling Inertia.js requests
+ * dengan shared data untuk cart, auth, dan order notifications
+ *
+ * @author Zulfikar Hidayatullah
+ */
 class HandleInertiaRequests extends Middleware
 {
     /**
@@ -30,6 +37,7 @@ class HandleInertiaRequests extends Middleware
 
     /**
      * Define the props that are shared by default.
+     * Termasuk pending_orders_count untuk notifikasi admin
      *
      * @see https://inertiajs.com/shared-data
      *
@@ -54,6 +62,10 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
             ],
+            // Pending orders count untuk admin notifications
+            'pending_orders_count' => fn () => $request->user()
+                ? Order::where('status', 'pending')->count()
+                : 0,
         ];
     }
 }
