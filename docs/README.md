@@ -67,10 +67,10 @@ import { ProductCard, CartItem, SearchBar } from '@/components/store'
 
 ## Project Status
 
-- **Current Version**: 0.2.0 (Development)
+- **Current Version**: 0.3.0 (Development)
 - **Last Updated**: 2024-11-26
-- **Project Status**: In Development - Sprint 2 Complete
-- **Latest Feature**: ✅ CUST-009 Order Confirmation & WhatsApp Integration (Completed)
+- **Project Status**: In Development - Sprint 3 Started
+- **Latest Feature**: ✅ ADMIN-001 Admin Dashboard Overview (Completed)
 
 ### Sprint 1 Progress
 
@@ -90,6 +90,17 @@ import { ProductCard, CartItem, SearchBar } from '@/components/store'
 | CUST-007 | Checkout Form | ✅ Completed |
 | CUST-008 | WhatsApp Integration | ✅ Completed |
 | CUST-009 | Order Confirmation | ✅ Completed |
+
+### Sprint 3 Progress
+
+| Story | Description | Status |
+|-------|-------------|--------|
+| ADMIN-001 | Admin Dashboard Overview | ✅ Completed |
+| ADMIN-002 | View All Products | ⏳ Pending |
+| ADMIN-003 | Add New Products | ⏳ Pending |
+| ADMIN-004 | Edit Products | ⏳ Pending |
+| ADMIN-005 | Delete Products | ⏳ Pending |
+| ADMIN-006 | Manage Categories | ⏳ Pending |
 
 ---
 

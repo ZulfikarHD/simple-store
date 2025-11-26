@@ -9,7 +9,8 @@
  */
 import { Head, Link, router } from '@inertiajs/vue3'
 import { computed, ref, watch } from 'vue'
-import { dashboard, login, register } from '@/routes'
+import { login, register } from '@/routes'
+import { dashboard } from '@/routes/admin'
 import ProductCard from '@/components/store/ProductCard.vue'
 import CategoryFilter from '@/components/store/CategoryFilter.vue'
 import SearchBar from '@/components/store/SearchBar.vue'

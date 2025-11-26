@@ -122,13 +122,16 @@
 
 #### Sprint 3: Product Management (Week 3-4)
 
-- **ADMIN-001:** As an admin, I want to view dashboard overview
+- **ADMIN-001:** ✅ As an admin, I want to view dashboard overview
   - Acceptance Criteria:
-    - Display today's orders count
-    - Show pending orders
-    - Quick stats (total sales, products)
-    - Recent orders list
+    - ✅ Display today's orders count
+    - ✅ Show pending orders
+    - ✅ Quick stats (total sales, products)
+    - ✅ Recent orders list
+    - ✅ Order status breakdown
+    - ✅ Responsive design dengan dark mode
   - Story Points: 5
+  - Status: ✅ Completed on 2024-11-26
 
 - **ADMIN-002:** As an admin, I want to view all products
   - Acceptance Criteria:
@@ -275,10 +278,11 @@
 **Status:** ✅ All stories completed on 2024-11-26  
 **Stories:** CUST-005, CUST-006, CUST-007, CUST-008, CUST-009
 
-### Sprint 3 (Week 3-4): Admin Product Management
+### Sprint 3 (Week 3-4): Admin Product Management ⏳ IN PROGRESS
 **Goal:** Admin can manage products and categories  
 **Story Points:** 23  
-**Stories:** ADMIN-001, ADMIN-002, ADMIN-003, ADMIN-004, ADMIN-005, ADMIN-006
+**Status:** 🚀 Started on 2024-11-26 (1/6 stories completed)
+**Stories:** ADMIN-001 ✅, ADMIN-002, ADMIN-003, ADMIN-004, ADMIN-005, ADMIN-006
 
 ### Sprint 4 (Week 4-5): Admin Order Management
 **Goal:** Admin can view and manage orders  
