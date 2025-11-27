@@ -123,6 +123,42 @@
 }
 
 /* ========================================
+   iOS-LIKE ANIMATION SYSTEM
+   Spring physics dan timing functions untuk native feel
+   ======================================== */
+:root {
+    /* iOS Spring Timing Functions */
+    --ios-spring-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    --ios-spring-smooth: cubic-bezier(0.23, 1, 0.32, 1);
+    --ios-spring-snappy: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --ios-ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+
+    /* iOS Timing Durations */
+    --ios-duration-instant: 100ms;
+    --ios-duration-fast: 200ms;
+    --ios-duration-normal: 350ms;
+    --ios-duration-slow: 500ms;
+
+    /* iOS Interaction Scales */
+    --ios-press-scale: 0.97;
+    --ios-hover-scale: 1.02;
+    --ios-bounce-scale: 1.05;
+
+    /* iOS Shadows - Layered depth effect */
+    --ios-shadow-sm: 0 1px 2px oklch(0 0 0 / 0.04), 0 1px 3px oklch(0 0 0 / 0.06);
+    --ios-shadow-md: 0 4px 6px oklch(0 0 0 / 0.05), 0 2px 4px oklch(0 0 0 / 0.04);
+    --ios-shadow-lg: 0 10px 15px oklch(0 0 0 / 0.08), 0 4px 6px oklch(0 0 0 / 0.05);
+    --ios-shadow-xl: 0 20px 25px oklch(0 0 0 / 0.1), 0 8px 10px oklch(0 0 0 / 0.06);
+    --ios-shadow-float: 0 25px 50px oklch(0 0 0 / 0.15);
+
+    /* iOS Blur Values */
+    --ios-blur-sm: 8px;
+    --ios-blur-md: 16px;
+    --ios-blur-lg: 24px;
+    --ios-blur-xl: 40px;
+}
+
+/* ========================================
    LIGHT MODE - Blue Theme
    Airbnb-inspired clean aesthetic
    ======================================== */
@@ -338,18 +374,271 @@
 }
 
 /* ========================================
+   iOS-LIKE ANIMATIONS
+   Spring physics keyframes dan utility classes
+   ======================================== */
+@layer utilities {
+    /* iOS Spring Bounce In */
+    @keyframes ios-bounce-in {
+        0% {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        50% {
+            transform: scale(1.02);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .animate-ios-bounce-in {
+        animation: ios-bounce-in var(--ios-duration-normal) var(--ios-spring-bounce);
+    }
+
+    /* iOS Slide Up with Spring */
+    @keyframes ios-slide-up {
+        0% {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-ios-slide-up {
+        animation: ios-slide-up var(--ios-duration-normal) var(--ios-spring-smooth);
+    }
+
+    /* iOS Slide Down (for dismissing) */
+    @keyframes ios-slide-down {
+        0% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+    }
+
+    .animate-ios-slide-down {
+        animation: ios-slide-down var(--ios-duration-fast) var(--ios-spring-snappy);
+    }
+
+    /* iOS Fade Scale */
+    @keyframes ios-fade-scale {
+        0% {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .animate-ios-fade-scale {
+        animation: ios-fade-scale var(--ios-duration-fast) var(--ios-spring-smooth);
+    }
+
+    /* iOS Pop (for buttons, badges) */
+    @keyframes ios-pop {
+        0% {
+            transform: scale(0.8);
+        }
+        50% {
+            transform: scale(1.1);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .animate-ios-pop {
+        animation: ios-pop var(--ios-duration-fast) var(--ios-spring-bounce);
+    }
+
+    /* iOS Shake (for errors) */
+    @keyframes ios-shake {
+        0%, 100% { transform: translateX(0); }
+        20% { transform: translateX(-8px); }
+        40% { transform: translateX(8px); }
+        60% { transform: translateX(-4px); }
+        80% { transform: translateX(4px); }
+    }
+
+    .animate-ios-shake {
+        animation: ios-shake 0.5s var(--ios-spring-snappy);
+    }
+
+    /* iOS Pulse (for loading states) */
+    @keyframes ios-pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    .animate-ios-pulse {
+        animation: ios-pulse 1.5s var(--ios-spring-smooth) infinite;
+    }
+
+    /* iOS Spin (for loaders) */
+    @keyframes ios-spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .animate-ios-spin {
+        animation: ios-spin 1s linear infinite;
+    }
+
+    /* iOS Badge Bounce */
+    @keyframes ios-badge-bounce {
+        0% {
+            transform: scale(0);
+        }
+        50% {
+            transform: scale(1.2);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .animate-ios-badge {
+        animation: ios-badge-bounce var(--ios-duration-normal) var(--ios-spring-bounce);
+    }
+
+    /* Staggered Animation Delays */
+    .stagger-1 { animation-delay: 50ms; }
+    .stagger-2 { animation-delay: 100ms; }
+    .stagger-3 { animation-delay: 150ms; }
+    .stagger-4 { animation-delay: 200ms; }
+    .stagger-5 { animation-delay: 250ms; }
+    .stagger-6 { animation-delay: 300ms; }
+    .stagger-7 { animation-delay: 350ms; }
+    .stagger-8 { animation-delay: 400ms; }
+
+    /* iOS Press Effect - Active state */
+    .ios-press {
+        transition: transform var(--ios-duration-instant) var(--ios-spring-snappy),
+                    box-shadow var(--ios-duration-instant) var(--ios-spring-snappy);
+        will-change: transform;
+    }
+
+    .ios-press:active {
+        transform: scale(var(--ios-press-scale));
+    }
+
+    /* iOS Hover Lift Effect */
+    .ios-hover-lift {
+        transition: transform var(--ios-duration-fast) var(--ios-spring-smooth),
+                    box-shadow var(--ios-duration-fast) var(--ios-spring-smooth);
+    }
+
+    .ios-hover-lift:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--ios-shadow-lg);
+    }
+
+    /* iOS Card Style */
+    .ios-card {
+        @apply bg-card rounded-2xl;
+        box-shadow: var(--ios-shadow-md);
+        transition: transform var(--ios-duration-fast) var(--ios-spring-smooth),
+                    box-shadow var(--ios-duration-fast) var(--ios-spring-smooth);
+    }
+
+    .ios-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--ios-shadow-xl);
+    }
+
+    .ios-card:active {
+        transform: scale(var(--ios-press-scale));
+    }
+
+    /* iOS Glass Effect (Frosted Glass) */
+    .ios-glass {
+        background: oklch(1 0 0 / 0.7);
+        backdrop-filter: blur(var(--ios-blur-md)) saturate(180%);
+        -webkit-backdrop-filter: blur(var(--ios-blur-md)) saturate(180%);
+    }
+
+    .dark .ios-glass {
+        background: oklch(0.15 0.02 260 / 0.7);
+    }
+
+    /* iOS Bottom Sheet Handle */
+    .ios-handle {
+        @apply mx-auto mt-2 mb-4 h-1 w-10 rounded-full bg-muted-foreground/30;
+    }
+
+    /* iOS Momentum Scroll */
+    .ios-scroll {
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+    }
+
+    /* iOS Snap Scroll untuk Carousel */
+    .ios-snap-scroll {
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .ios-snap-item {
+        scroll-snap-align: start;
+    }
+
+    /* iOS Safe Area Padding */
+    .ios-safe-top {
+        padding-top: env(safe-area-inset-top);
+    }
+
+    .ios-safe-bottom {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* Pull to Refresh Indicator */
+    @keyframes ptr-spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .ptr-spinner {
+        animation: ptr-spin 1s linear infinite;
+    }
+}
+
+/* ========================================
    PRODUCT CARD STYLES
-   Airbnb-inspired hover effects
+   iOS-inspired interactions dengan spring physics
    ======================================== */
 @layer components {
     .product-card {
-        @apply bg-card rounded-xl overflow-hidden transition-all duration-300;
-        box-shadow: var(--shadow-card);
+        @apply bg-card rounded-2xl overflow-hidden;
+        box-shadow: var(--ios-shadow-md);
+        transition: transform var(--ios-duration-fast) var(--ios-spring-smooth),
+                    box-shadow var(--ios-duration-fast) var(--ios-spring-smooth);
+        will-change: transform;
+        -webkit-tap-highlight-color: transparent;
     }
 
     .product-card:hover {
-        box-shadow: var(--shadow-card-hover);
-        transform: translateY(-2px);
+        box-shadow: var(--ios-shadow-xl);
+        transform: translateY(-4px) scale(1.01);
+    }
+
+    .product-card:active {
+        transform: scale(var(--ios-press-scale));
+        box-shadow: var(--ios-shadow-sm);
     }
 
     /* Status badges */
@@ -363,5 +652,128 @@
 
     .status-unavailable {
         @apply bg-destructive/10 text-destructive;
+    }
+}
+
+/* ========================================
+   iOS COMPONENT STYLES
+   Reusable iOS-like components
+   ======================================== */
+@layer components {
+    /* iOS Button Style */
+    .ios-button {
+        @apply relative overflow-hidden rounded-xl font-semibold;
+        transition: transform var(--ios-duration-instant) var(--ios-spring-snappy),
+                    background-color var(--ios-duration-fast) ease,
+                    box-shadow var(--ios-duration-fast) ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .ios-button:active {
+        transform: scale(var(--ios-press-scale));
+    }
+
+    /* iOS List Item */
+    .ios-list-item {
+        @apply relative flex items-center gap-3 px-4 py-3;
+        transition: background-color var(--ios-duration-instant) ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .ios-list-item:active {
+        @apply bg-muted/50;
+    }
+
+    /* iOS Input Style */
+    .ios-input {
+        @apply rounded-xl border-0 bg-muted/50 px-4 py-3;
+        transition: background-color var(--ios-duration-fast) ease,
+                    box-shadow var(--ios-duration-fast) ease;
+    }
+
+    .ios-input:focus {
+        @apply bg-background ring-2 ring-primary/20;
+        box-shadow: var(--ios-shadow-md);
+    }
+
+    /* iOS Segmented Control */
+    .ios-segmented {
+        @apply flex gap-1 rounded-xl bg-muted/50 p-1;
+    }
+
+    .ios-segmented-item {
+        @apply flex-1 rounded-lg px-4 py-2 text-center text-sm font-medium;
+        transition: all var(--ios-duration-fast) var(--ios-spring-smooth);
+    }
+
+    .ios-segmented-item[data-active="true"] {
+        @apply bg-background text-foreground shadow-sm;
+    }
+
+    /* iOS Navigation Bar */
+    .ios-navbar {
+        @apply sticky top-0 z-50;
+        background: oklch(1 0 0 / 0.85);
+        backdrop-filter: blur(var(--ios-blur-lg)) saturate(180%);
+        -webkit-backdrop-filter: blur(var(--ios-blur-lg)) saturate(180%);
+    }
+
+    .dark .ios-navbar {
+        background: oklch(0.1 0.02 260 / 0.85);
+    }
+
+    /* iOS Tab Bar */
+    .ios-tabbar {
+        @apply fixed inset-x-0 bottom-0 z-50;
+        background: oklch(1 0 0 / 0.85);
+        backdrop-filter: blur(var(--ios-blur-lg)) saturate(180%);
+        -webkit-backdrop-filter: blur(var(--ios-blur-lg)) saturate(180%);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .dark .ios-tabbar {
+        background: oklch(0.1 0.02 260 / 0.85);
+    }
+
+    /* iOS Bottom Sheet */
+    .ios-bottom-sheet {
+        @apply fixed inset-x-0 bottom-0 z-50 rounded-t-3xl bg-background;
+        box-shadow: 0 -10px 40px oklch(0 0 0 / 0.15);
+        max-height: 90vh;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* iOS Action Sheet */
+    .ios-action-sheet {
+        @apply mx-2 mb-2 overflow-hidden rounded-2xl bg-background;
+        box-shadow: var(--ios-shadow-xl);
+    }
+
+    .ios-action-sheet-item {
+        @apply flex w-full items-center justify-center py-4 text-base font-medium text-primary;
+        border-top: 1px solid var(--border);
+        transition: background-color var(--ios-duration-instant) ease;
+    }
+
+    .ios-action-sheet-item:first-child {
+        border-top: none;
+    }
+
+    .ios-action-sheet-item:active {
+        @apply bg-muted/50;
+    }
+
+    .ios-action-sheet-item--destructive {
+        @apply text-destructive;
+    }
+
+    /* iOS Pull to Refresh */
+    .ios-ptr-container {
+        @apply relative overflow-hidden;
+    }
+
+    .ios-ptr-indicator {
+        @apply absolute left-1/2 top-0 flex -translate-x-1/2 items-center justify-center;
+        transition: transform var(--ios-duration-fast) var(--ios-spring-smooth);
     }
 }

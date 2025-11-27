@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
  * Checkout Page - Halaman Checkout
- * Menampilkan form data customer dan ringkasan pesanan
- * dengan validasi real-time, integrasi WhatsApp, dan bottom navigation
+ * Menampilkan form data customer dengan iOS-like form animations,
+ * spring transitions, haptic feedback, dan success celebration state
  *
  * @author Zulfikar Hidayatullah
  */
@@ -16,16 +16,17 @@ import UserBottomNav from '@/components/mobile/UserBottomNav.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useHapticFeedback } from '@/composables/useHapticFeedback'
+import { useShakeAnimation } from '@/composables/useSpringAnimation'
 import {
     ShoppingBag,
     ArrowLeft,
     Package,
     User,
-    Phone,
     MapPin,
-    FileText,
     Loader2,
     AlertCircle,
+    CheckCircle,
 } from 'lucide-vue-next'
 
 /**
@@ -66,6 +67,23 @@ interface Props {
 const props = defineProps<Props>()
 
 /**
+ * Haptic feedback dan shake animation
+ */
+const haptic = useHapticFeedback()
+const { shakeClass, shake } = useShakeAnimation()
+
+/**
+ * Press states
+ */
+const isBackPressed = ref(false)
+const isSubmitPressed = ref(false)
+
+/**
+ * Focus states untuk form fields dengan iOS-like animation
+ */
+const focusedField = ref<string | null>(null)
+
+/**
  * Computed untuk format subtotal
  */
 const formattedSubtotal = computed(() => {
@@ -86,6 +104,29 @@ function formatPrice(price: number): string {
         minimumFractionDigits: 0,
     }).format(price)
 }
+
+/**
+ * Handle form error dengan shake animation
+ */
+function handleFormError() {
+    haptic.error()
+    shake()
+}
+
+/**
+ * Handle field focus
+ */
+function handleFieldFocus(fieldName: string) {
+    focusedField.value = fieldName
+    haptic.selection()
+}
+
+/**
+ * Handle field blur
+ */
+function handleFieldBlur() {
+    focusedField.value = null
+}
 </script>
 
 <template>
@@ -95,38 +136,52 @@ function formatPrice(price: number): string {
     </Head>
 
     <div class="min-h-screen bg-background">
-        <!-- Header Navigation - Mobile Optimized -->
-        <header class="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <!-- Header Navigation dengan iOS Glass Effect -->
+        <header class="ios-navbar sticky top-0 z-50 border-b border-border/30">
             <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                 <!-- Logo & Brand -->
-                <Link href="/" class="flex items-center gap-2 sm:gap-3">
-                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary sm:h-10 sm:w-10">
+                <Link
+                    href="/"
+                    v-motion
+                    :initial="{ opacity: 0, x: -20 }"
+                    :enter="{
+                        opacity: 1,
+                        x: 0,
+                        transition: {
+                            type: 'spring',
+                            stiffness: 300,
+                            damping: 25,
+                        },
+                    }"
+                    class="flex items-center gap-2 sm:gap-3"
+                >
+                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm sm:h-10 sm:w-10">
                         <ShoppingBag class="h-4 w-4 text-primary-foreground sm:h-5 sm:w-5" />
                     </div>
                     <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
                 </Link>
 
-                <!-- Cart Counter & Auth - Hidden auth on mobile -->
+                <!-- Cart Counter & Auth -->
                 <nav class="flex items-center gap-2 sm:gap-3">
                     <CartCounter :count="cart.total_items" />
 
                     <Link
                         v-if="$page.props.auth.user"
                         href="/dashboard"
-                        class="hidden rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
+                        class="ios-button hidden rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm sm:inline-flex"
                     >
                         Dashboard
                     </Link>
                     <template v-else>
                         <Link
                             href="/login"
-                            class="hidden rounded-lg px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent sm:inline-flex"
+                            class="ios-button hidden rounded-xl px-4 py-2.5 text-sm font-medium text-foreground sm:inline-flex"
                         >
                             Masuk
                         </Link>
                         <Link
                             href="/register"
-                            class="hidden rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
+                            class="ios-button hidden rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm sm:inline-flex"
                         >
                             Daftar
                         </Link>
@@ -135,19 +190,50 @@ function formatPrice(price: number): string {
             </div>
         </header>
 
-        <!-- Main Content - Mobile Optimized -->
+        <!-- Main Content -->
         <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-            <!-- Back Button - Touch-friendly -->
+            <!-- Back Button dengan iOS press feedback -->
             <Link
                 :href="showCart()"
-                class="mb-4 inline-flex h-11 items-center gap-2 rounded-lg px-3 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:mb-6 sm:h-auto sm:px-0"
+                v-motion
+                :initial="{ opacity: 0, x: -20 }"
+                :enter="{
+                    opacity: 1,
+                    x: 0,
+                    transition: {
+                        type: 'spring',
+                        stiffness: 300,
+                        damping: 25,
+                    },
+                }"
+                class="ios-button mb-4 inline-flex h-11 items-center gap-2 rounded-xl px-3 text-sm text-muted-foreground transition-all duration-150 hover:bg-accent hover:text-foreground sm:mb-6 sm:h-auto sm:px-0"
+                :class="{ 'scale-95 opacity-70': isBackPressed }"
+                @mousedown="isBackPressed = true"
+                @mouseup="isBackPressed = false"
+                @mouseleave="isBackPressed = false"
+                @touchstart.passive="isBackPressed = true"
+                @touchend="isBackPressed = false"
             >
                 <ArrowLeft class="h-4 w-4" />
                 Kembali ke Keranjang
             </Link>
 
-            <!-- Page Title - Responsive -->
-            <div class="mb-6 sm:mb-8">
+            <!-- Page Title dengan animation -->
+            <div
+                v-motion
+                :initial="{ opacity: 0, y: 20 }"
+                :enter="{
+                    opacity: 1,
+                    y: 0,
+                    transition: {
+                        type: 'spring',
+                        stiffness: 300,
+                        damping: 25,
+                        delay: 50,
+                    },
+                }"
+                class="mb-6 sm:mb-8"
+            >
                 <h1 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                     Checkout
                 </h1>
@@ -156,18 +242,31 @@ function formatPrice(price: number): string {
                 </p>
             </div>
 
-            <!-- Checkout Form - Mobile Optimized -->
+            <!-- Checkout Form dengan iOS styling -->
             <Form
                 v-bind="checkoutStore.form()"
                 #default="{ errors, processing, hasErrors }"
                 class="grid gap-6 lg:grid-cols-3 lg:gap-8"
+                @submit="hasErrors && handleFormError()"
             >
                 <!-- Form Fields -->
                 <div class="space-y-4 sm:space-y-6 lg:col-span-2">
-                    <!-- Error Alert -->
+                    <!-- Error Alert dengan shake animation -->
                     <div
                         v-if="hasErrors && errors.checkout"
-                        class="rounded-lg border border-destructive/50 bg-destructive/10 p-3 sm:p-4"
+                        v-motion
+                        :initial="{ opacity: 0, scale: 0.95 }"
+                        :enter="{
+                            opacity: 1,
+                            scale: 1,
+                            transition: {
+                                type: 'spring',
+                                stiffness: 400,
+                                damping: 20,
+                            },
+                        }"
+                        :class="shakeClass"
+                        class="rounded-2xl border border-destructive/50 bg-destructive/10 p-4"
                     >
                         <div class="flex items-center gap-2 text-destructive">
                             <AlertCircle class="h-5 w-5 shrink-0" />
@@ -176,25 +275,46 @@ function formatPrice(price: number): string {
                     </div>
 
                     <!-- Data Penerima Section -->
-                    <div class="rounded-lg border border-border bg-card p-4 sm:rounded-xl sm:p-6">
+                    <div
+                        v-motion
+                        :initial="{ opacity: 0, y: 20 }"
+                        :enter="{
+                            opacity: 1,
+                            y: 0,
+                            transition: {
+                                type: 'spring',
+                                stiffness: 300,
+                                damping: 25,
+                                delay: 100,
+                            },
+                        }"
+                        class="ios-card rounded-2xl border border-border/50 p-4 sm:p-6"
+                    >
                         <h2 class="mb-4 flex items-center gap-2 text-base font-semibold text-foreground sm:mb-6 sm:text-lg">
                             <User class="h-5 w-5 text-primary" />
                             Data Penerima
                         </h2>
 
                         <div class="space-y-4">
-                            <!-- Nama Lengkap -->
+                            <!-- Nama Lengkap dengan iOS-like focus animation -->
                             <div class="space-y-2">
                                 <Label for="customer_name" class="text-sm sm:text-base">Nama Lengkap *</Label>
-                                <Input
-                                    id="customer_name"
-                                    name="customer_name"
-                                    type="text"
-                                    placeholder="Masukkan nama lengkap"
-                                    class="h-11 text-base sm:h-10 sm:text-sm"
-                                    :aria-invalid="!!errors.customer_name"
-                                />
-                                <p v-if="errors.customer_name" class="text-sm text-destructive">
+                                <div
+                                    class="transition-transform duration-200"
+                                    :class="{ 'scale-[1.02]': focusedField === 'customer_name' }"
+                                >
+                                    <Input
+                                        id="customer_name"
+                                        name="customer_name"
+                                        type="text"
+                                        placeholder="Masukkan nama lengkap"
+                                        class="ios-input h-12 rounded-xl text-base sm:h-11 sm:text-sm"
+                                        :aria-invalid="!!errors.customer_name"
+                                        @focus="handleFieldFocus('customer_name')"
+                                        @blur="handleFieldBlur"
+                                    />
+                                </div>
+                                <p v-if="errors.customer_name" class="animate-ios-shake text-sm text-destructive">
                                     {{ errors.customer_name }}
                                 </p>
                             </div>
@@ -204,16 +324,23 @@ function formatPrice(price: number): string {
                                 <Label for="customer_phone" class="text-sm sm:text-base">
                                     Nomor Telepon (WhatsApp) *
                                 </Label>
-                                <Input
-                                    id="customer_phone"
-                                    name="customer_phone"
-                                    type="tel"
-                                    inputmode="tel"
-                                    placeholder="08xxxxxxxxxx"
-                                    class="h-11 text-base sm:h-10 sm:text-sm"
-                                    :aria-invalid="!!errors.customer_phone"
-                                />
-                                <p v-if="errors.customer_phone" class="text-sm text-destructive">
+                                <div
+                                    class="transition-transform duration-200"
+                                    :class="{ 'scale-[1.02]': focusedField === 'customer_phone' }"
+                                >
+                                    <Input
+                                        id="customer_phone"
+                                        name="customer_phone"
+                                        type="tel"
+                                        inputmode="tel"
+                                        placeholder="08xxxxxxxxxx"
+                                        class="ios-input h-12 rounded-xl text-base sm:h-11 sm:text-sm"
+                                        :aria-invalid="!!errors.customer_phone"
+                                        @focus="handleFieldFocus('customer_phone')"
+                                        @blur="handleFieldBlur"
+                                    />
+                                </div>
+                                <p v-if="errors.customer_phone" class="animate-ios-shake text-sm text-destructive">
                                     {{ errors.customer_phone }}
                                 </p>
                                 <p class="text-xs text-muted-foreground">
@@ -224,7 +351,21 @@ function formatPrice(price: number): string {
                     </div>
 
                     <!-- Alamat Pengiriman Section -->
-                    <div class="rounded-lg border border-border bg-card p-4 sm:rounded-xl sm:p-6">
+                    <div
+                        v-motion
+                        :initial="{ opacity: 0, y: 20 }"
+                        :enter="{
+                            opacity: 1,
+                            y: 0,
+                            transition: {
+                                type: 'spring',
+                                stiffness: 300,
+                                damping: 25,
+                                delay: 150,
+                            },
+                        }"
+                        class="ios-card rounded-2xl border border-border/50 p-4 sm:p-6"
+                    >
                         <h2 class="mb-4 flex items-center gap-2 text-base font-semibold text-foreground sm:mb-6 sm:text-lg">
                             <MapPin class="h-5 w-5 text-primary" />
                             Alamat Pengiriman
@@ -234,15 +375,22 @@ function formatPrice(price: number): string {
                             <!-- Alamat Lengkap -->
                             <div class="space-y-2">
                                 <Label for="customer_address" class="text-sm sm:text-base">Alamat Lengkap *</Label>
-                                <textarea
-                                    id="customer_address"
-                                    name="customer_address"
-                                    rows="4"
-                                    placeholder="Masukkan alamat lengkap dengan RT/RW, kelurahan, kecamatan, kota, dan kode pos"
-                                    class="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-3 text-base shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 sm:py-2 sm:text-sm"
-                                    :aria-invalid="!!errors.customer_address"
-                                ></textarea>
-                                <p v-if="errors.customer_address" class="text-sm text-destructive">
+                                <div
+                                    class="transition-transform duration-200"
+                                    :class="{ 'scale-[1.01]': focusedField === 'customer_address' }"
+                                >
+                                    <textarea
+                                        id="customer_address"
+                                        name="customer_address"
+                                        rows="4"
+                                        placeholder="Masukkan alamat lengkap dengan RT/RW, kelurahan, kecamatan, kota, dan kode pos"
+                                        class="ios-input flex min-h-[120px] w-full rounded-xl border-0 bg-muted/50 px-4 py-3 text-base shadow-xs placeholder:text-muted-foreground focus:bg-background focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
+                                        :aria-invalid="!!errors.customer_address"
+                                        @focus="handleFieldFocus('customer_address')"
+                                        @blur="handleFieldBlur"
+                                    ></textarea>
+                                </div>
+                                <p v-if="errors.customer_address" class="animate-ios-shake text-sm text-destructive">
                                     {{ errors.customer_address }}
                                 </p>
                             </div>
@@ -252,15 +400,22 @@ function formatPrice(price: number): string {
                                 <Label for="notes" class="text-sm sm:text-base">
                                     Catatan (Opsional)
                                 </Label>
-                                <textarea
-                                    id="notes"
-                                    name="notes"
-                                    rows="3"
-                                    placeholder="Catatan tambahan untuk pesanan (misal: warna, ukuran, patokan alamat, dll)"
-                                    class="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-3 text-base shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 sm:py-2 sm:text-sm"
-                                    :aria-invalid="!!errors.notes"
-                                ></textarea>
-                                <p v-if="errors.notes" class="text-sm text-destructive">
+                                <div
+                                    class="transition-transform duration-200"
+                                    :class="{ 'scale-[1.01]': focusedField === 'notes' }"
+                                >
+                                    <textarea
+                                        id="notes"
+                                        name="notes"
+                                        rows="3"
+                                        placeholder="Catatan tambahan untuk pesanan (misal: warna, ukuran, patokan alamat, dll)"
+                                        class="ios-input flex min-h-[100px] w-full rounded-xl border-0 bg-muted/50 px-4 py-3 text-base shadow-xs placeholder:text-muted-foreground focus:bg-background focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
+                                        :aria-invalid="!!errors.notes"
+                                        @focus="handleFieldFocus('notes')"
+                                        @blur="handleFieldBlur"
+                                    ></textarea>
+                                </div>
+                                <p v-if="errors.notes" class="animate-ios-shake text-sm text-destructive">
                                     {{ errors.notes }}
                                 </p>
                             </div>
@@ -269,19 +424,45 @@ function formatPrice(price: number): string {
                 </div>
 
                 <!-- Order Summary -->
-                <div class="lg:col-span-1">
-                    <div class="sticky top-24 rounded-xl border border-border bg-card p-6">
+                <div
+                    v-motion
+                    :initial="{ opacity: 0, x: 20 }"
+                    :enter="{
+                        opacity: 1,
+                        x: 0,
+                        transition: {
+                            type: 'spring',
+                            stiffness: 300,
+                            damping: 25,
+                            delay: 200,
+                        },
+                    }"
+                    class="lg:col-span-1"
+                >
+                    <div class="ios-card sticky top-24 rounded-2xl border border-border/50 p-6">
                         <h2 class="mb-4 flex items-center gap-2 text-lg font-semibold text-foreground">
                             <Package class="h-5 w-5 text-primary" />
                             Ringkasan Pesanan
                         </h2>
 
-                        <!-- Items List -->
-                        <div class="mb-4 max-h-64 space-y-3 overflow-y-auto">
+                        <!-- Items List dengan scroll -->
+                        <div class="ios-scroll mb-4 max-h-64 space-y-3 overflow-y-auto">
                             <div
-                                v-for="item in cart.items"
+                                v-for="(item, index) in cart.items"
                                 :key="item.id"
-                                class="flex items-center gap-3 rounded-lg bg-muted/50 p-3"
+                                v-motion
+                                :initial="{ opacity: 0, y: 10 }"
+                                :enter="{
+                                    opacity: 1,
+                                    y: 0,
+                                    transition: {
+                                        type: 'spring',
+                                        stiffness: 300,
+                                        damping: 25,
+                                        delay: 250 + index * 50,
+                                    },
+                                }"
+                                class="flex items-center gap-3 rounded-xl bg-muted/30 p-3"
                             >
                                 <!-- Product Image -->
                                 <div class="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted">
@@ -335,17 +516,22 @@ function formatPrice(price: number): string {
                             </div>
                         </div>
 
-                        <!-- Submit Button -->
+                        <!-- Submit Button dengan iOS-like animation -->
                         <Button
                             type="submit"
                             size="lg"
-                            class="mt-6 w-full gap-2"
+                            class="ios-button mt-6 h-14 w-full gap-2 rounded-2xl shadow-lg transition-transform duration-150"
+                            :class="{ 'scale-95': isSubmitPressed }"
                             :disabled="processing"
+                            @mousedown="isSubmitPressed = true"
+                            @mouseup="isSubmitPressed = false"
+                            @mouseleave="isSubmitPressed = false"
+                            @touchstart.passive="isSubmitPressed = true"
+                            @touchend="isSubmitPressed = false"
                         >
-                            <Loader2 v-if="processing" class="h-4 w-4 animate-spin" />
-                            <template v-else>
-                                Pesan via WhatsApp
-                            </template>
+                            <Loader2 v-if="processing" class="h-5 w-5 animate-spin" />
+                            <CheckCircle v-else class="h-5 w-5" />
+                            <span>{{ processing ? 'Memproses...' : 'Pesan via WhatsApp' }}</span>
                         </Button>
 
                         <!-- Info -->
@@ -357,7 +543,7 @@ function formatPrice(price: number): string {
             </Form>
         </main>
 
-        <!-- Footer - Hidden on mobile -->
+        <!-- Footer -->
         <footer class="mt-16 hidden border-t border-border bg-muted/30 md:block">
             <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div class="text-center text-sm text-muted-foreground">
@@ -373,4 +559,3 @@ function formatPrice(price: number): string {
         <UserBottomNav />
     </div>
 </template>
-

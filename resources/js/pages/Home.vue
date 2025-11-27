@@ -2,15 +2,13 @@
 /**
  * Home Page - Katalog Produk
  * Menampilkan daftar produk aktif dalam format grid responsive
- * dengan filter kategori, pencarian, empty state, cart counter,
- * dan navigasi ke halaman login/register
- * Optimasi untuk mobile dengan hamburger menu, touch-friendly buttons,
- * dan bottom navigation untuk mobile app experience
+ * dengan iOS-like animations, pull-to-refresh, staggered entrance,
+ * filter kategori, pencarian, dan bottom navigation
  *
  * @author Zulfikar Hidayatullah
  */
 import { Head, Link, router } from '@inertiajs/vue3'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { login, register } from '@/routes'
 import { dashboard } from '@/routes/admin'
 import ProductCard from '@/components/store/ProductCard.vue'
@@ -19,8 +17,10 @@ import SearchBar from '@/components/store/SearchBar.vue'
 import EmptyState from '@/components/store/EmptyState.vue'
 import CartCounter from '@/components/store/CartCounter.vue'
 import UserBottomNav from '@/components/mobile/UserBottomNav.vue'
+import PullToRefresh from '@/components/mobile/PullToRefresh.vue'
 import { ShoppingBag, X, Menu } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
+import { useHapticFeedback } from '@/composables/useHapticFeedback'
 
 /**
  * Interface untuk data produk dari ProductResource
@@ -79,6 +79,11 @@ interface Props {
 const props = defineProps<Props>()
 
 /**
+ * Haptic feedback untuk iOS-like tactile response
+ */
+const haptic = useHapticFeedback()
+
+/**
  * Local state untuk search input yang di-sync dengan prop searchQuery
  */
 const localSearchQuery = ref(props.searchQuery ?? '')
@@ -89,9 +94,15 @@ const localSearchQuery = ref(props.searchQuery ?? '')
 const isMobileMenuOpen = ref(false)
 
 /**
+ * Menu button press state untuk iOS-like feedback
+ */
+const isMenuPressed = ref(false)
+
+/**
  * Toggle mobile menu visibility
  */
 function toggleMobileMenu() {
+    haptic.medium()
     isMobileMenuOpen.value = !isMobileMenuOpen.value
 }
 
@@ -182,6 +193,7 @@ const emptyStateDescription = computed(() => {
  * Navigasi ke halaman dengan query parameter category, mempertahankan search jika ada
  */
 function handleCategorySelect(categoryId: number | null) {
+    haptic.selection()
     const data: Record<string, string | number> = {}
     if (categoryId) {
         data.category = categoryId
@@ -220,6 +232,7 @@ function handleSearch(searchTerm: string) {
  * Menghapus query parameter search dan kembali ke state sebelumnya
  */
 function handleClearSearch() {
+    haptic.light()
     localSearchQuery.value = ''
     const data: Record<string, number> = {}
     if (props.selectedCategory) {
@@ -239,180 +252,290 @@ function handleClearSearch() {
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     </Head>
 
-    <div class="min-h-screen bg-background">
-        <!-- Header Navigation dengan Mobile Responsive -->
-        <header class="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
-                <!-- Logo & Brand -->
-                <div class="flex items-center gap-2 sm:gap-3">
-                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary sm:h-10 sm:w-10">
-                        <ShoppingBag class="h-4 w-4 text-primary-foreground sm:h-5 sm:w-5" />
+    <PullToRefresh>
+        <div class="min-h-screen bg-background">
+            <!-- Header Navigation dengan iOS Glass Effect -->
+            <header class="ios-navbar sticky top-0 z-50 border-b border-border/30">
+                <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
+                    <!-- Logo & Brand dengan spring animation -->
+                    <div
+                        v-motion
+                        :initial="{ opacity: 0, x: -20 }"
+                        :enter="{
+                            opacity: 1,
+                            x: 0,
+                            transition: {
+                                type: 'spring',
+                                stiffness: 300,
+                                damping: 25,
+                            },
+                        }"
+                        class="flex items-center gap-2 sm:gap-3"
+                    >
+                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm sm:h-10 sm:w-10">
+                            <ShoppingBag class="h-4 w-4 text-primary-foreground sm:h-5 sm:w-5" />
+                        </div>
+                        <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
                     </div>
-                    <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
-                </div>
 
-                <!-- Desktop Navigation -->
-                <nav class="hidden items-center gap-3 sm:flex">
-                    <CartCounter :count="cartTotalItems" />
-
-                    <Link
-                        v-if="$page.props.auth.user"
-                        :href="dashboard()"
-                        class="rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                    <!-- Desktop Navigation dengan fade in -->
+                    <nav
+                        v-motion
+                        :initial="{ opacity: 0, x: 20 }"
+                        :enter="{
+                            opacity: 1,
+                            x: 0,
+                            transition: {
+                                type: 'spring',
+                                stiffness: 300,
+                                damping: 25,
+                                delay: 100,
+                            },
+                        }"
+                        class="hidden items-center gap-3 sm:flex"
                     >
-                        Dashboard
-                    </Link>
-                    <template v-else>
-                        <Link
-                            :href="login()"
-                            class="rounded-lg px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-                        >
-                            Masuk
-                        </Link>
-                        <Link
-                            :href="register()"
-                            class="rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                        >
-                            Daftar
-                        </Link>
-                    </template>
-                </nav>
+                        <CartCounter :count="cartTotalItems" />
 
-                <!-- Mobile Navigation -->
-                <div class="flex items-center gap-2 sm:hidden">
-                    <CartCounter :count="cartTotalItems" />
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        class="h-11 w-11"
-                        aria-label="Menu navigasi"
-                        @click="toggleMobileMenu"
-                    >
-                        <Menu class="h-5 w-5" />
-                    </Button>
-                </div>
-            </div>
-
-            <!-- Mobile Menu Dropdown -->
-            <div
-                v-if="isMobileMenuOpen"
-                class="border-t border-border bg-background px-4 py-4 sm:hidden"
-            >
-                <div class="flex flex-col gap-2">
-                    <Link
-                        v-if="$page.props.auth.user"
-                        :href="dashboard()"
-                        class="flex h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                        @click="closeMobileMenu"
-                    >
-                        Dashboard
-                    </Link>
-                    <template v-else>
                         <Link
-                            :href="login()"
-                            class="flex h-11 items-center justify-center rounded-lg border border-border px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-                            @click="closeMobileMenu"
+                            v-if="$page.props.auth.user"
+                            :href="dashboard()"
+                            class="ios-button rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
                         >
-                            Masuk
+                            Dashboard
                         </Link>
-                        <Link
-                            :href="register()"
-                            class="flex h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                            @click="closeMobileMenu"
+                        <template v-else>
+                            <Link
+                                :href="login()"
+                                class="ios-button rounded-xl px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent"
+                            >
+                                Masuk
+                            </Link>
+                            <Link
+                                :href="register()"
+                                class="ios-button rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+                            >
+                                Daftar
+                            </Link>
+                        </template>
+                    </nav>
+
+                    <!-- Mobile Navigation -->
+                    <div class="flex items-center gap-2 sm:hidden">
+                        <CartCounter :count="cartTotalItems" />
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            class="h-11 w-11 transition-transform duration-150 ease-[var(--ios-spring-snappy)]"
+                            :class="{ 'scale-90': isMenuPressed }"
+                            aria-label="Menu navigasi"
+                            @click="toggleMobileMenu"
+                            @mousedown="isMenuPressed = true"
+                            @mouseup="isMenuPressed = false"
+                            @mouseleave="isMenuPressed = false"
+                            @touchstart.passive="isMenuPressed = true"
+                            @touchend="isMenuPressed = false"
                         >
-                            Daftar
-                        </Link>
-                    </template>
-                </div>
-            </div>
-        </header>
-
-        <!-- Main Content dengan Mobile Optimization -->
-        <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-            <!-- Search Bar Section - Full width pada mobile -->
-            <div class="mb-5 sm:mb-6">
-                <SearchBar
-                    v-model="localSearchQuery"
-                    placeholder="Cari produk..."
-                    :debounce="400"
-                    class="w-full sm:max-w-md"
-                    @search="handleSearch"
-                />
-            </div>
-
-            <!-- Page Title - Responsive text size -->
-            <div class="mb-5 sm:mb-6">
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                            {{ pageHeading }}
-                        </h1>
-                        <p class="mt-1 text-sm text-muted-foreground sm:mt-2 sm:text-base">
-                            {{ pageDescription }}
-                        </p>
+                            <Menu class="h-5 w-5" />
+                        </Button>
                     </div>
-                    <!-- Clear Search Button - Touch-friendly -->
-                    <Button
-                        v-if="props.searchQuery"
-                        variant="outline"
-                        size="default"
-                        class="flex h-11 w-full items-center justify-center gap-2 sm:h-9 sm:w-auto"
-                        @click="handleClearSearch"
-                    >
-                        <X class="h-4 w-4" />
-                        Hapus Pencarian
-                    </Button>
                 </div>
-            </div>
 
-            <!-- Category Filter - Horizontal scroll pada mobile -->
-            <div v-if="categories.data.length > 0" class="mb-6 sm:mb-8">
-                <CategoryFilter
-                    :categories="categories.data"
-                    :active-category="selectedCategory"
-                    @select="handleCategorySelect"
-                />
-            </div>
+                <!-- Mobile Menu Dropdown dengan slide animation -->
+                <Transition
+                    enter-active-class="transition-all duration-300 ease-[var(--ios-spring-smooth)]"
+                    enter-from-class="opacity-0 -translate-y-2"
+                    enter-to-class="opacity-100 translate-y-0"
+                    leave-active-class="transition-all duration-200 ease-[var(--ios-spring-snappy)]"
+                    leave-from-class="opacity-100 translate-y-0"
+                    leave-to-class="opacity-0 -translate-y-2"
+                >
+                    <div
+                        v-if="isMobileMenuOpen"
+                        class="border-t border-border/50 bg-background/95 px-4 py-4 backdrop-blur sm:hidden"
+                    >
+                        <div class="flex flex-col gap-2">
+                            <Link
+                                v-if="$page.props.auth.user"
+                                :href="dashboard()"
+                                class="ios-button flex h-12 items-center justify-center rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm"
+                                @click="closeMobileMenu"
+                            >
+                                Dashboard
+                            </Link>
+                            <template v-else>
+                                <Link
+                                    :href="login()"
+                                    class="ios-button flex h-12 items-center justify-center rounded-xl border border-border bg-background px-4 text-sm font-medium text-foreground"
+                                    @click="closeMobileMenu"
+                                >
+                                    Masuk
+                                </Link>
+                                <Link
+                                    :href="register()"
+                                    class="ios-button flex h-12 items-center justify-center rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm"
+                                    @click="closeMobileMenu"
+                                >
+                                    Daftar
+                                </Link>
+                            </template>
+                        </div>
+                    </div>
+                </Transition>
+            </header>
 
-            <!-- Products Grid - Optimized untuk 320px+ screens -->
-            <div
-                v-if="products.data.length > 0"
-                class="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:gap-6"
-            >
+            <!-- Main Content dengan animations -->
+            <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+                <!-- Search Bar Section dengan slide up animation -->
                 <div
-                    v-for="product in products.data"
-                    :key="product.id"
-                    class="overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-shadow hover:shadow-md sm:rounded-xl"
+                    v-motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :enter="{
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                            type: 'spring',
+                            stiffness: 300,
+                            damping: 25,
+                            delay: 50,
+                        },
+                    }"
+                    class="mb-5 sm:mb-6"
+                >
+                    <SearchBar
+                        v-model="localSearchQuery"
+                        placeholder="Cari produk..."
+                        :debounce="400"
+                        class="w-full sm:max-w-md"
+                        @search="handleSearch"
+                    />
+                </div>
+
+                <!-- Page Title dengan slide up animation -->
+                <div
+                    v-motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :enter="{
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                            type: 'spring',
+                            stiffness: 300,
+                            damping: 25,
+                            delay: 100,
+                        },
+                    }"
+                    class="mb-5 sm:mb-6"
+                >
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h1 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                                {{ pageHeading }}
+                            </h1>
+                            <p class="mt-1 text-sm text-muted-foreground sm:mt-2 sm:text-base">
+                                {{ pageDescription }}
+                            </p>
+                        </div>
+                        <!-- Clear Search Button dengan spring animation -->
+                        <Button
+                            v-if="props.searchQuery"
+                            v-motion
+                            :initial="{ scale: 0, opacity: 0 }"
+                            :enter="{
+                                scale: 1,
+                                opacity: 1,
+                                transition: {
+                                    type: 'spring',
+                                    stiffness: 400,
+                                    damping: 20,
+                                },
+                            }"
+                            variant="outline"
+                            size="default"
+                            class="ios-button flex h-11 w-full items-center justify-center gap-2 rounded-xl sm:h-10 sm:w-auto"
+                            @click="handleClearSearch"
+                        >
+                            <X class="h-4 w-4" />
+                            Hapus Pencarian
+                        </Button>
+                    </div>
+                </div>
+
+                <!-- Category Filter dengan iOS horizontal scroll -->
+                <div
+                    v-if="categories.data.length > 0"
+                    v-motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :enter="{
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                            type: 'spring',
+                            stiffness: 300,
+                            damping: 25,
+                            delay: 150,
+                        },
+                    }"
+                    class="mb-6 sm:mb-8"
+                >
+                    <CategoryFilter
+                        :categories="categories.data"
+                        :active-category="selectedCategory"
+                        @select="handleCategorySelect"
+                    />
+                </div>
+
+                <!-- Products Grid dengan staggered animations -->
+                <div
+                    v-if="products.data.length > 0"
+                    class="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:gap-6"
                 >
                     <ProductCard
+                        v-for="(product, index) in products.data"
+                        :key="product.id"
                         :product="product"
+                        :index="index"
                         mode="grid"
                     />
                 </div>
-            </div>
 
-            <!-- Empty State -->
-            <EmptyState
-                v-if="products.data.length === 0"
-                :icon="props.searchQuery ? '🔍' : '🛒'"
-                :title="emptyStateTitle"
-                :description="emptyStateDescription"
-            />
-        </main>
-
-        <!-- Footer - Hidden on mobile karena ada bottom nav -->
-        <footer class="hidden border-t border-border bg-muted/30 md:block">
-            <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                <div class="text-center text-sm text-muted-foreground">
-                    <p>&copy; {{ new Date().getFullYear() }} Simple Store. Dibuat oleh Zulfikar Hidayatullah.</p>
+                <!-- Empty State dengan fade animation -->
+                <div
+                    v-if="products.data.length === 0"
+                    v-motion
+                    :initial="{ opacity: 0, scale: 0.95 }"
+                    :enter="{
+                        opacity: 1,
+                        scale: 1,
+                        transition: {
+                            type: 'spring',
+                            stiffness: 300,
+                            damping: 25,
+                            delay: 200,
+                        },
+                    }"
+                >
+                    <EmptyState
+                        :icon="props.searchQuery ? '🔍' : '🛒'"
+                        :title="emptyStateTitle"
+                        :description="emptyStateDescription"
+                    />
                 </div>
-            </div>
-        </footer>
+            </main>
 
-        <!-- Bottom padding untuk mobile nav -->
-        <div class="h-20 md:hidden" />
+            <!-- Footer - Hidden on mobile karena ada bottom nav -->
+            <footer class="hidden border-t border-border bg-muted/30 md:block">
+                <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                    <div class="text-center text-sm text-muted-foreground">
+                        <p>&copy; {{ new Date().getFullYear() }} Simple Store. Dibuat oleh Zulfikar Hidayatullah.</p>
+                    </div>
+                </div>
+            </footer>
 
-        <!-- Mobile Bottom Navigation -->
-        <UserBottomNav />
-    </div>
+            <!-- Bottom padding untuk mobile nav -->
+            <div class="h-20 md:hidden" />
+
+            <!-- Mobile Bottom Navigation -->
+            <UserBottomNav />
+        </div>
+    </PullToRefresh>
 </template>
