@@ -37,13 +37,13 @@ class DatabaseSeeder extends Seeder
         // Admin user
         User::factory()->admin()->create([
             'name' => 'Admin Store',
-            'email' => 'admin@store.test',
+            'email' => 'admin@test.com',
         ]);
 
         // Customer users
         User::factory()->customer()->create([
             'name' => 'Customer Demo',
-            'email' => 'customer@store.test',
+            'email' => 'customer@test.com',
             'phone' => '081234567890',
             'address' => 'Jl. Contoh No. 123, Jakarta',
         ]);
