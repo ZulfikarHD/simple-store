@@ -7,6 +7,9 @@
  * - Order summary dengan subtotal, delivery fee, total
  * - Status timeline dengan timestamps
  * - Update status section dengan dropdown dan confirmation
+ * - iOS-like design dengan spring animations dan haptic feedback
+ *
+ * @author Zulfikar Hidayatullah
  */
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -22,10 +25,12 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog'
 import PriceDisplay from '@/components/store/PriceDisplay.vue'
+import PullToRefresh from '@/components/mobile/PullToRefresh.vue'
 import { type BreadcrumbItem } from '@/types'
-import { Head, Link, router, usePage } from '@inertiajs/vue3'
+import { Head, router, usePage } from '@inertiajs/vue3'
 import { dashboard } from '@/routes/admin'
 import { index as ordersIndex, updateStatus } from '@/routes/admin/orders'
+import { useHapticFeedback } from '@/composables/useHapticFeedback'
 import {
     ArrowLeft,
     User,
@@ -42,6 +47,11 @@ import {
     MessageSquare,
 } from 'lucide-vue-next'
 import { ref, computed } from 'vue'
+
+/**
+ * Haptic feedback untuk iOS-like tactile response
+ */
+const haptic = useHapticFeedback()
 
 interface OrderItem {
     id: number
@@ -177,6 +187,7 @@ function formatDate(dateString: string | null): string {
  * Open WhatsApp dengan nomor telepon customer
  */
 function openWhatsApp(phone: string) {
+    haptic.medium()
     const cleanPhone = phone.replace(/\D/g, '')
     window.open(`https://wa.me/${cleanPhone}`, '_blank')
 }
@@ -189,6 +200,7 @@ function confirmStatusUpdate() {
     if (isCancelledStatus.value && !cancellationReason.value.trim()) {
         return
     }
+    haptic.medium()
     showConfirmDialog.value = true
 }
 
@@ -196,6 +208,7 @@ function confirmStatusUpdate() {
  * Eksekusi update status
  */
 function executeStatusUpdate() {
+    haptic.heavy()
     isUpdating.value = true
 
     router.patch(
@@ -205,6 +218,12 @@ function executeStatusUpdate() {
             cancellation_reason: isCancelledStatus.value ? cancellationReason.value : null,
         },
         {
+            onSuccess: () => {
+                haptic.success()
+            },
+            onError: () => {
+                haptic.error()
+            },
             onFinish: () => {
                 isUpdating.value = false
                 showConfirmDialog.value = false
@@ -281,315 +300,474 @@ const timelineItems = computed(() => {
 
     return items
 })
+
+/**
+ * Handle back navigation
+ */
+function goBack() {
+    haptic.light()
+    router.visit(ordersIndex().url)
+}
 </script>
 
 <template>
     <Head :title="`Detail Pesanan - ${order.order_number}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex flex-col gap-6 p-4 md:p-6">
-            <!-- Page Header -->
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div class="flex flex-col gap-2">
-                    <div class="flex items-center gap-3">
-                        <Link :href="ordersIndex().url">
-                            <Button variant="ghost" size="sm" class="h-8 w-8 p-0">
+        <PullToRefresh>
+            <div class="flex flex-col gap-6 p-4 md:p-6">
+                <!-- Page Header dengan spring animation -->
+                <div
+                    v-motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :enter="{
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                            type: 'spring',
+                            stiffness: 300,
+                            damping: 25,
+                        },
+                    }"
+                    class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                    <div class="flex flex-col gap-2">
+                        <div class="flex items-center gap-3">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                class="ios-button h-8 w-8 p-0"
+                                @click="goBack"
+                            >
                                 <ArrowLeft class="h-4 w-4" />
                             </Button>
-                        </Link>
-                        <div>
-                            <h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-                                {{ order.order_number }}
-                            </h1>
-                            <p class="text-muted-foreground">
-                                Detail pesanan dan update status
-                            </p>
+                            <div>
+                                <h1 class="text-2xl font-bold tracking-tight md:text-3xl">
+                                    {{ order.order_number }}
+                                </h1>
+                                <p class="text-muted-foreground">
+                                    Detail pesanan dan update status
+                                </p>
+                            </div>
                         </div>
                     </div>
+                    <Badge
+                        v-motion
+                        :initial="{ scale: 0 }"
+                        :enter="{
+                            scale: 1,
+                            transition: {
+                                type: 'spring',
+                                stiffness: 400,
+                                damping: 20,
+                                delay: 100,
+                            },
+                        }"
+                        :class="getStatusClass(order.status)"
+                        class="h-8 px-4 text-sm"
+                    >
+                        {{ order.status_label }}
+                    </Badge>
                 </div>
-                <Badge
-                    :class="getStatusClass(order.status)"
-                    class="h-8 px-4 text-sm"
+
+                <!-- Flash Messages -->
+                <Transition
+                    enter-active-class="transition-all duration-300 ease-[var(--ios-spring-smooth)]"
+                    enter-from-class="opacity-0 -translate-y-2"
+                    enter-to-class="opacity-100 translate-y-0"
+                    leave-active-class="transition-all duration-200"
+                    leave-from-class="opacity-100"
+                    leave-to-class="opacity-0"
                 >
-                    {{ order.status_label }}
-                </Badge>
-            </div>
+                    <div
+                        v-if="flashSuccess"
+                        class="rounded-xl border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200"
+                    >
+                        {{ flashSuccess }}
+                    </div>
+                </Transition>
+                <Transition
+                    enter-active-class="transition-all duration-300 ease-[var(--ios-spring-smooth)]"
+                    enter-from-class="opacity-0 -translate-y-2"
+                    enter-to-class="opacity-100 translate-y-0"
+                    leave-active-class="transition-all duration-200"
+                    leave-from-class="opacity-100"
+                    leave-to-class="opacity-0"
+                >
+                    <div
+                        v-if="flashError"
+                        class="rounded-xl border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200"
+                    >
+                        {{ flashError }}
+                    </div>
+                </Transition>
 
-            <!-- Flash Messages -->
-            <div
-                v-if="flashSuccess"
-                class="rounded-lg border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200"
-            >
-                {{ flashSuccess }}
-            </div>
-            <div
-                v-if="flashError"
-                class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200"
-            >
-                {{ flashError }}
-            </div>
-
-            <div class="grid gap-6 lg:grid-cols-3">
-                <!-- Main Content (2 columns) -->
-                <div class="flex flex-col gap-6 lg:col-span-2">
-                    <!-- Customer Info Card -->
-                    <Card>
-                        <CardHeader>
-                            <CardTitle class="flex items-center gap-2">
-                                <User class="h-5 w-5" />
-                                Informasi Customer
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div class="grid gap-4 sm:grid-cols-2">
-                                <div class="flex items-start gap-3">
-                                    <User class="mt-0.5 h-4 w-4 text-muted-foreground" />
-                                    <div>
-                                        <p class="text-sm text-muted-foreground">Nama</p>
-                                        <p class="font-medium">{{ order.customer_name }}</p>
+                <div class="grid gap-6 lg:grid-cols-3">
+                    <!-- Main Content (2 columns) -->
+                    <div class="flex flex-col gap-6 lg:col-span-2">
+                        <!-- Customer Info Card -->
+                        <Card
+                            v-motion
+                            :initial="{ opacity: 0, y: 20 }"
+                            :enter="{
+                                opacity: 1,
+                                y: 0,
+                                transition: {
+                                    type: 'spring',
+                                    stiffness: 300,
+                                    damping: 25,
+                                    delay: 50,
+                                },
+                            }"
+                            class="ios-card"
+                        >
+                            <CardHeader>
+                                <CardTitle class="flex items-center gap-2">
+                                    <User class="h-5 w-5" />
+                                    Informasi Customer
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div class="grid gap-4 sm:grid-cols-2">
+                                    <div class="flex items-start gap-3">
+                                        <User class="mt-0.5 h-4 w-4 text-muted-foreground" />
+                                        <div>
+                                            <p class="text-sm text-muted-foreground">Nama</p>
+                                            <p class="font-medium">{{ order.customer_name }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <Phone class="mt-0.5 h-4 w-4 text-muted-foreground" />
+                                        <div>
+                                            <p class="text-sm text-muted-foreground">Telepon</p>
+                                            <button
+                                                class="ios-button font-medium text-primary hover:underline"
+                                                @click="openWhatsApp(order.customer_phone)"
+                                            >
+                                                {{ order.customer_phone }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-3 sm:col-span-2">
+                                        <MapPin class="mt-0.5 h-4 w-4 text-muted-foreground" />
+                                        <div>
+                                            <p class="text-sm text-muted-foreground">Alamat</p>
+                                            <p class="font-medium">{{ order.customer_address }}</p>
+                                        </div>
+                                    </div>
+                                    <div v-if="order.notes" class="flex items-start gap-3 sm:col-span-2">
+                                        <FileText class="mt-0.5 h-4 w-4 text-muted-foreground" />
+                                        <div>
+                                            <p class="text-sm text-muted-foreground">Catatan</p>
+                                            <p class="font-medium">{{ order.notes }}</p>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="flex items-start gap-3">
-                                    <Phone class="mt-0.5 h-4 w-4 text-muted-foreground" />
-                                    <div>
-                                        <p class="text-sm text-muted-foreground">Telepon</p>
-                                        <button
-                                            class="font-medium text-primary hover:underline"
-                                            @click="openWhatsApp(order.customer_phone)"
-                                        >
-                                            {{ order.customer_phone }}
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="flex items-start gap-3 sm:col-span-2">
-                                    <MapPin class="mt-0.5 h-4 w-4 text-muted-foreground" />
-                                    <div>
-                                        <p class="text-sm text-muted-foreground">Alamat</p>
-                                        <p class="font-medium">{{ order.customer_address }}</p>
-                                    </div>
-                                </div>
-                                <div v-if="order.notes" class="flex items-start gap-3 sm:col-span-2">
-                                    <FileText class="mt-0.5 h-4 w-4 text-muted-foreground" />
-                                    <div>
-                                        <p class="text-sm text-muted-foreground">Catatan</p>
-                                        <p class="font-medium">{{ order.notes }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            </CardContent>
+                        </Card>
 
-                    <!-- Order Items Card -->
-                    <Card>
-                        <CardHeader>
-                            <CardTitle class="flex items-center gap-2">
-                                <Package class="h-5 w-5" />
-                                Detail Pesanan
-                            </CardTitle>
-                            <CardDescription>
-                                {{ order.items_count }} item dalam pesanan ini
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent class="p-0">
-                            <div class="overflow-x-auto">
-                                <table class="w-full">
-                                    <thead class="border-b bg-muted/50">
-                                        <tr>
-                                            <th class="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                                                Produk
-                                            </th>
-                                            <th class="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
-                                                Harga
-                                            </th>
-                                            <th class="px-4 py-3 text-center text-sm font-medium text-muted-foreground">
-                                                Qty
-                                            </th>
-                                            <th class="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
-                                                Subtotal
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y">
-                                        <tr
-                                            v-for="item in order.items"
-                                            :key="item.id"
-                                            class="transition-colors hover:bg-muted/50"
-                                        >
-                                            <td class="px-4 py-3">
-                                                <div class="flex flex-col gap-1">
-                                                    <span class="font-medium">{{ item.product_name }}</span>
-                                                    <span v-if="item.notes" class="text-sm text-muted-foreground">
-                                                        {{ item.notes }}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td class="px-4 py-3 text-right">
-                                                <PriceDisplay :price="item.product_price" size="sm" />
-                                            </td>
-                                            <td class="px-4 py-3 text-center">
-                                                <Badge variant="outline">
-                                                    {{ item.quantity }}
-                                                </Badge>
-                                            </td>
-                                            <td class="px-4 py-3 text-right">
-                                                <PriceDisplay :price="item.subtotal" size="sm" />
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <!-- Order Summary -->
-                            <div class="border-t p-4">
-                                <div class="flex flex-col gap-2">
-                                    <div class="flex justify-between text-sm">
-                                        <span class="text-muted-foreground">Subtotal</span>
-                                        <PriceDisplay :price="order.subtotal" size="sm" />
-                                    </div>
-                                    <div class="flex justify-between text-sm">
-                                        <span class="text-muted-foreground">Ongkos Kirim</span>
-                                        <PriceDisplay :price="order.delivery_fee" size="sm" />
-                                    </div>
-                                    <div class="flex justify-between border-t pt-2 text-lg font-bold">
-                                        <span>Total</span>
-                                        <PriceDisplay :price="order.total" size="lg" />
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                <!-- Sidebar (1 column) -->
-                <div class="flex flex-col gap-6">
-                    <!-- Update Status Card -->
-                    <Card>
-                        <CardHeader>
-                            <CardTitle class="flex items-center gap-2">
-                                <CheckCircle2 class="h-5 w-5" />
-                                Update Status
-                            </CardTitle>
-                            <CardDescription>
-                                Perbarui status pesanan ini
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div class="flex flex-col gap-4">
-                                <div class="flex flex-col gap-2">
-                                    <Label for="status">Status Pesanan</Label>
-                                    <select
-                                        id="status"
-                                        v-model="selectedStatus"
-                                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
-                                    >
-                                        <option
-                                            v-for="(label, value) in statuses"
-                                            :key="value"
-                                            :value="value"
-                                        >
-                                            {{ label }}
-                                        </option>
-                                    </select>
+                        <!-- Order Items Card -->
+                        <Card
+                            v-motion
+                            :initial="{ opacity: 0, y: 20 }"
+                            :enter="{
+                                opacity: 1,
+                                y: 0,
+                                transition: {
+                                    type: 'spring',
+                                    stiffness: 300,
+                                    damping: 25,
+                                    delay: 100,
+                                },
+                            }"
+                            class="ios-card"
+                        >
+                            <CardHeader>
+                                <CardTitle class="flex items-center gap-2">
+                                    <Package class="h-5 w-5" />
+                                    Detail Pesanan
+                                </CardTitle>
+                                <CardDescription>
+                                    {{ order.items_count }} item dalam pesanan ini
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent class="p-0">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full">
+                                        <thead class="border-b bg-muted/50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                                                    Produk
+                                                </th>
+                                                <th class="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
+                                                    Harga
+                                                </th>
+                                                <th class="px-4 py-3 text-center text-sm font-medium text-muted-foreground">
+                                                    Qty
+                                                </th>
+                                                <th class="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
+                                                    Subtotal
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y">
+                                            <tr
+                                                v-for="(item, index) in order.items"
+                                                :key="item.id"
+                                                v-motion
+                                                :initial="{ opacity: 0, x: -20 }"
+                                                :enter="{
+                                                    opacity: 1,
+                                                    x: 0,
+                                                    transition: {
+                                                        type: 'spring',
+                                                        stiffness: 300,
+                                                        damping: 25,
+                                                        delay: 150 + index * 30,
+                                                    },
+                                                }"
+                                                class="transition-colors hover:bg-muted/50"
+                                            >
+                                                <td class="px-4 py-3">
+                                                    <div class="flex flex-col gap-1">
+                                                        <span class="font-medium">{{ item.product_name }}</span>
+                                                        <span v-if="item.notes" class="text-sm text-muted-foreground">
+                                                            {{ item.notes }}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td class="px-4 py-3 text-right">
+                                                    <PriceDisplay :price="item.product_price" size="sm" />
+                                                </td>
+                                                <td class="px-4 py-3 text-center">
+                                                    <Badge variant="outline">
+                                                        {{ item.quantity }}
+                                                    </Badge>
+                                                </td>
+                                                <td class="px-4 py-3 text-right">
+                                                    <PriceDisplay :price="item.subtotal" size="sm" />
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
 
-                                <!-- Cancellation Reason -->
-                                <div v-if="isCancelledStatus" class="flex flex-col gap-2">
-                                    <Label for="cancellation_reason">
-                                        Alasan Pembatalan <span class="text-destructive">*</span>
-                                    </Label>
-                                    <textarea
-                                        id="cancellation_reason"
-                                        v-model="cancellationReason"
-                                        placeholder="Masukkan alasan pembatalan..."
-                                        rows="3"
-                                        class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    />
+                                <!-- Order Summary -->
+                                <div class="border-t p-4">
+                                    <div class="flex flex-col gap-2">
+                                        <div class="flex justify-between text-sm">
+                                            <span class="text-muted-foreground">Subtotal</span>
+                                            <PriceDisplay :price="order.subtotal" size="sm" />
+                                        </div>
+                                        <div class="flex justify-between text-sm">
+                                            <span class="text-muted-foreground">Ongkos Kirim</span>
+                                            <PriceDisplay :price="order.delivery_fee" size="sm" />
+                                        </div>
+                                        <div class="flex justify-between border-t pt-2 text-lg font-bold">
+                                            <span>Total</span>
+                                            <PriceDisplay :price="order.total" size="lg" />
+                                        </div>
+                                    </div>
                                 </div>
+                            </CardContent>
+                        </Card>
+                    </div>
 
-                                <Button
-                                    :disabled="!hasStatusChanged || (isCancelledStatus && !cancellationReason.trim())"
-                                    class="w-full"
-                                    @click="confirmStatusUpdate"
-                                >
+                    <!-- Sidebar (1 column) -->
+                    <div class="flex flex-col gap-6">
+                        <!-- Update Status Card -->
+                        <Card
+                            v-motion
+                            :initial="{ opacity: 0, y: 20 }"
+                            :enter="{
+                                opacity: 1,
+                                y: 0,
+                                transition: {
+                                    type: 'spring',
+                                    stiffness: 300,
+                                    damping: 25,
+                                    delay: 150,
+                                },
+                            }"
+                            class="ios-card"
+                        >
+                            <CardHeader>
+                                <CardTitle class="flex items-center gap-2">
+                                    <CheckCircle2 class="h-5 w-5" />
                                     Update Status
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <!-- Status Timeline Card -->
-                    <Card>
-                        <CardHeader>
-                            <CardTitle class="flex items-center gap-2">
-                                <Clock class="h-5 w-5" />
-                                Timeline Status
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div class="relative flex flex-col gap-4">
-                                <div
-                                    v-for="(item, index) in timelineItems"
-                                    :key="item.status"
-                                    class="flex gap-3"
-                                >
-                                    <!-- Timeline Line -->
-                                    <div class="flex flex-col items-center">
-                                        <div
-                                            :class="[
-                                                'flex h-8 w-8 items-center justify-center rounded-full',
-                                                item.status === 'cancelled'
-                                                    ? 'bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400'
-                                                    : 'bg-green-100 text-green-600 dark:bg-green-950 dark:text-green-400'
-                                            ]"
+                                </CardTitle>
+                                <CardDescription>
+                                    Perbarui status pesanan ini
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div class="flex flex-col gap-4">
+                                    <div class="flex flex-col gap-2">
+                                        <Label for="status">Status Pesanan</Label>
+                                        <select
+                                            id="status"
+                                            v-model="selectedStatus"
+                                            class="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm ring-offset-background transition-all focus:outline-none focus:ring-2 focus:ring-ring"
                                         >
-                                            <component
-                                                :is="getTimelineIcon(item.status)"
-                                                class="h-4 w-4"
+                                            <option
+                                                v-for="(label, value) in statuses"
+                                                :key="value"
+                                                :value="value"
+                                            >
+                                                {{ label }}
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Cancellation Reason -->
+                                    <Transition
+                                        enter-active-class="transition-all duration-300 ease-[var(--ios-spring-smooth)]"
+                                        enter-from-class="opacity-0 -translate-y-2"
+                                        enter-to-class="opacity-100 translate-y-0"
+                                        leave-active-class="transition-all duration-200"
+                                        leave-from-class="opacity-100"
+                                        leave-to-class="opacity-0"
+                                    >
+                                        <div v-if="isCancelledStatus" class="flex flex-col gap-2">
+                                            <Label for="cancellation_reason">
+                                                Alasan Pembatalan <span class="text-destructive">*</span>
+                                            </Label>
+                                            <textarea
+                                                id="cancellation_reason"
+                                                v-model="cancellationReason"
+                                                placeholder="Masukkan alasan pembatalan..."
+                                                rows="3"
+                                                class="flex min-h-[80px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                             />
                                         </div>
-                                        <div
-                                            v-if="index < timelineItems.length - 1"
-                                            class="h-full w-px bg-border"
-                                        />
-                                    </div>
+                                    </Transition>
 
-                                    <!-- Timeline Content -->
-                                    <div class="flex flex-col pb-4">
-                                        <span class="font-medium">{{ item.label }}</span>
-                                        <span class="text-sm text-muted-foreground">
-                                            {{ formatDate(item.timestamp) }}
-                                        </span>
-                                    </div>
+                                    <Button
+                                        :disabled="!hasStatusChanged || (isCancelledStatus && !cancellationReason.trim())"
+                                        class="ios-button w-full"
+                                        @click="confirmStatusUpdate"
+                                    >
+                                        Update Status
+                                    </Button>
                                 </div>
+                            </CardContent>
+                        </Card>
 
-                                <!-- Cancellation Reason -->
-                                <div
-                                    v-if="order.status === 'cancelled' && order.cancellation_reason"
-                                    class="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950"
-                                >
-                                    <div class="flex items-start gap-2">
-                                        <MessageSquare class="mt-0.5 h-4 w-4 text-red-600 dark:text-red-400" />
-                                        <div>
-                                            <p class="text-sm font-medium text-red-800 dark:text-red-200">
-                                                Alasan Pembatalan
-                                            </p>
-                                            <p class="text-sm text-red-700 dark:text-red-300">
-                                                {{ order.cancellation_reason }}
-                                            </p>
+                        <!-- Status Timeline Card -->
+                        <Card
+                            v-motion
+                            :initial="{ opacity: 0, y: 20 }"
+                            :enter="{
+                                opacity: 1,
+                                y: 0,
+                                transition: {
+                                    type: 'spring',
+                                    stiffness: 300,
+                                    damping: 25,
+                                    delay: 200,
+                                },
+                            }"
+                            class="ios-card"
+                        >
+                            <CardHeader>
+                                <CardTitle class="flex items-center gap-2">
+                                    <Clock class="h-5 w-5" />
+                                    Timeline Status
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div class="relative flex flex-col gap-4">
+                                    <div
+                                        v-for="(item, index) in timelineItems"
+                                        :key="item.status"
+                                        v-motion
+                                        :initial="{ opacity: 0, x: -20 }"
+                                        :enter="{
+                                            opacity: 1,
+                                            x: 0,
+                                            transition: {
+                                                type: 'spring',
+                                                stiffness: 300,
+                                                damping: 25,
+                                                delay: 250 + index * 50,
+                                            },
+                                        }"
+                                        class="flex gap-3"
+                                    >
+                                        <!-- Timeline Line -->
+                                        <div class="flex flex-col items-center">
+                                            <div
+                                                :class="[
+                                                    'flex h-8 w-8 items-center justify-center rounded-full',
+                                                    item.status === 'cancelled'
+                                                        ? 'bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400'
+                                                        : 'bg-green-100 text-green-600 dark:bg-green-950 dark:text-green-400'
+                                                ]"
+                                            >
+                                                <component
+                                                    :is="getTimelineIcon(item.status)"
+                                                    class="h-4 w-4"
+                                                />
+                                            </div>
+                                            <div
+                                                v-if="index < timelineItems.length - 1"
+                                                class="h-full w-px bg-border"
+                                            />
+                                        </div>
+
+                                        <!-- Timeline Content -->
+                                        <div class="flex flex-col pb-4">
+                                            <span class="font-medium">{{ item.label }}</span>
+                                            <span class="text-sm text-muted-foreground">
+                                                {{ formatDate(item.timestamp) }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Cancellation Reason -->
+                                    <div
+                                        v-if="order.status === 'cancelled' && order.cancellation_reason"
+                                        v-motion
+                                        :initial="{ opacity: 0, y: 10 }"
+                                        :enter="{
+                                            opacity: 1,
+                                            y: 0,
+                                            transition: {
+                                                type: 'spring',
+                                                stiffness: 300,
+                                                damping: 25,
+                                            },
+                                        }"
+                                        class="rounded-xl border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950"
+                                    >
+                                        <div class="flex items-start gap-2">
+                                            <MessageSquare class="mt-0.5 h-4 w-4 text-red-600 dark:text-red-400" />
+                                            <div>
+                                                <p class="text-sm font-medium text-red-800 dark:text-red-200">
+                                                    Alasan Pembatalan
+                                                </p>
+                                                <p class="text-sm text-red-700 dark:text-red-300">
+                                                    {{ order.cancellation_reason }}
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
+
+                <!-- Bottom padding untuk mobile nav -->
+                <div class="h-20 md:hidden" />
             </div>
-        </div>
+        </PullToRefresh>
+
     </AppLayout>
 
     <!-- Confirm Status Update Dialog -->
     <Dialog v-model:open="showConfirmDialog">
-        <DialogContent>
+        <DialogContent class="rounded-2xl">
             <DialogHeader>
                 <DialogTitle>Konfirmasi Update Status</DialogTitle>
                 <DialogDescription>
@@ -603,12 +781,14 @@ const timelineItems = computed(() => {
             <DialogFooter>
                 <Button
                     variant="outline"
+                    class="ios-button"
                     @click="showConfirmDialog = false"
                 >
                     Batal
                 </Button>
                 <Button
                     :variant="isCancelledStatus ? 'destructive' : 'default'"
+                    class="ios-button"
                     :disabled="isUpdating"
                     @click="executeStatusUpdate"
                 >
@@ -618,4 +798,3 @@ const timelineItems = computed(() => {
         </DialogContent>
     </Dialog>
 </template>
-

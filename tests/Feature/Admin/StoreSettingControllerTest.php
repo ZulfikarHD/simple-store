@@ -42,7 +42,7 @@ class StoreSettingControllerTest extends TestCase
      */
     public function test_authenticated_user_can_view_settings(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
 
         $response = $this->actingAs($user)->get(route('admin.settings.index'));
 
@@ -57,7 +57,7 @@ class StoreSettingControllerTest extends TestCase
      */
     public function test_can_update_store_information(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
 
         $response = $this->actingAs($user)->patch(route('admin.settings.update'), [
             'store_name' => 'Toko Baru',
@@ -91,7 +91,7 @@ class StoreSettingControllerTest extends TestCase
      */
     public function test_can_update_whatsapp_number(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
 
         $response = $this->actingAs($user)->patch(route('admin.settings.update'), [
             'store_name' => 'Test Store',
@@ -120,7 +120,7 @@ class StoreSettingControllerTest extends TestCase
      */
     public function test_can_update_operating_hours(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
 
         $operatingHours = [
             'monday' => ['open' => '10:00', 'close' => '22:00', 'is_open' => true],
@@ -154,7 +154,7 @@ class StoreSettingControllerTest extends TestCase
      */
     public function test_can_update_delivery_settings(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
 
         $response = $this->actingAs($user)->patch(route('admin.settings.update'), [
             'store_name' => 'Test Store',
@@ -186,7 +186,7 @@ class StoreSettingControllerTest extends TestCase
      */
     public function test_store_name_is_required(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
 
         $response = $this->actingAs($user)->patch(route('admin.settings.update'), [
             'store_name' => '',
@@ -212,7 +212,7 @@ class StoreSettingControllerTest extends TestCase
      */
     public function test_whatsapp_number_is_required(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
 
         $response = $this->actingAs($user)->patch(route('admin.settings.update'), [
             'store_name' => 'Test Store',
@@ -238,7 +238,7 @@ class StoreSettingControllerTest extends TestCase
      */
     public function test_delivery_fee_cannot_be_negative(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
 
         $response = $this->actingAs($user)->patch(route('admin.settings.update'), [
             'store_name' => 'Test Store',
@@ -264,7 +264,7 @@ class StoreSettingControllerTest extends TestCase
      */
     public function test_settings_page_shows_saved_data(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
 
         // Set initial settings
         StoreSetting::set('store_name', 'My Awesome Store', 'string', 'general');

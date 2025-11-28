@@ -33,7 +33,7 @@ class CategoryControllerTest extends TestCase
      */
     public function test_authenticated_user_can_view_categories_list(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         Category::factory()->count(5)->create();
 
         $response = $this->actingAs($user)->get(route('admin.categories.index'));
@@ -49,7 +49,7 @@ class CategoryControllerTest extends TestCase
      */
     public function test_categories_show_correct_product_count(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $category = Category::factory()->create();
         Product::factory()->count(5)->create(['category_id' => $category->id]);
 
@@ -66,7 +66,7 @@ class CategoryControllerTest extends TestCase
      */
     public function test_can_access_create_category_page(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
 
         $response = $this->actingAs($user)->get(route('admin.categories.create'));
 
@@ -80,7 +80,7 @@ class CategoryControllerTest extends TestCase
      */
     public function test_can_create_category_without_image(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
 
         $categoryData = [
             'name' => 'Kategori Baru',
@@ -102,7 +102,7 @@ class CategoryControllerTest extends TestCase
     public function test_can_create_category_with_image(): void
     {
         Storage::fake('public');
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
 
         $categoryData = [
             'name' => 'Kategori Dengan Gambar',
@@ -127,7 +127,7 @@ class CategoryControllerTest extends TestCase
      */
     public function test_create_category_validation(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
 
         $response = $this->actingAs($user)->post(route('admin.categories.store'), []);
 
@@ -139,7 +139,7 @@ class CategoryControllerTest extends TestCase
      */
     public function test_category_name_must_be_unique(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         Category::factory()->create(['name' => 'Kategori Existing']);
 
         $response = $this->actingAs($user)->post(route('admin.categories.store'), [
@@ -155,7 +155,7 @@ class CategoryControllerTest extends TestCase
      */
     public function test_can_access_edit_category_page(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $category = Category::factory()->create();
 
         $response = $this->actingAs($user)->get(route('admin.categories.edit', $category));
@@ -171,7 +171,7 @@ class CategoryControllerTest extends TestCase
      */
     public function test_can_update_category(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $category = Category::factory()->create();
 
         $updateData = [
@@ -193,7 +193,7 @@ class CategoryControllerTest extends TestCase
      */
     public function test_can_update_category_with_same_name(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $category = Category::factory()->create(['name' => 'Nama Asli']);
 
         $updateData = [
@@ -213,7 +213,7 @@ class CategoryControllerTest extends TestCase
      */
     public function test_can_delete_category_without_products(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $category = Category::factory()->create();
 
         $response = $this->actingAs($user)->delete(route('admin.categories.destroy', $category));
@@ -228,7 +228,7 @@ class CategoryControllerTest extends TestCase
      */
     public function test_cannot_delete_category_with_products(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $category = Category::factory()->create();
         Product::factory()->count(3)->create(['category_id' => $category->id]);
 
@@ -244,7 +244,7 @@ class CategoryControllerTest extends TestCase
      */
     public function test_categories_ordered_by_sort_order(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         Category::factory()->create(['name' => 'Third', 'sort_order' => 3]);
         Category::factory()->create(['name' => 'First', 'sort_order' => 1]);
         Category::factory()->create(['name' => 'Second', 'sort_order' => 2]);
@@ -263,7 +263,7 @@ class CategoryControllerTest extends TestCase
      */
     public function test_category_gets_default_sort_order(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         Category::factory()->create(['sort_order' => 5]);
 
         $categoryData = [
@@ -278,4 +278,3 @@ class CategoryControllerTest extends TestCase
         $this->assertEquals(6, $category->sort_order);
     }
 }
-

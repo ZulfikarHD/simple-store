@@ -35,7 +35,7 @@ class ProductControllerTest extends TestCase
      */
     public function test_authenticated_user_can_view_products_list(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $category = Category::factory()->create();
         Product::factory()->count(5)->create(['category_id' => $category->id]);
 
@@ -53,7 +53,7 @@ class ProductControllerTest extends TestCase
      */
     public function test_can_search_products_by_name(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $category = Category::factory()->create();
         Product::factory()->create(['name' => 'Nasi Goreng Spesial', 'category_id' => $category->id]);
         Product::factory()->create(['name' => 'Mie Goreng', 'category_id' => $category->id]);
@@ -72,7 +72,7 @@ class ProductControllerTest extends TestCase
      */
     public function test_can_filter_products_by_category(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $category1 = Category::factory()->create(['name' => 'Makanan']);
         $category2 = Category::factory()->create(['name' => 'Minuman']);
         Product::factory()->count(3)->create(['category_id' => $category1->id]);
@@ -90,7 +90,7 @@ class ProductControllerTest extends TestCase
      */
     public function test_can_filter_products_by_active_status(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $category = Category::factory()->create();
         Product::factory()->count(3)->create(['category_id' => $category->id, 'is_active' => true]);
         Product::factory()->count(2)->create(['category_id' => $category->id, 'is_active' => false]);
@@ -107,7 +107,7 @@ class ProductControllerTest extends TestCase
      */
     public function test_can_access_create_product_page(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         Category::factory()->count(3)->create();
 
         $response = $this->actingAs($user)->get(route('admin.products.create'));
@@ -123,7 +123,7 @@ class ProductControllerTest extends TestCase
      */
     public function test_can_create_product_without_image(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $category = Category::factory()->create();
 
         $productData = [
@@ -149,7 +149,7 @@ class ProductControllerTest extends TestCase
     public function test_can_create_product_with_image(): void
     {
         Storage::fake('public');
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $category = Category::factory()->create();
 
         $productData = [
@@ -178,7 +178,7 @@ class ProductControllerTest extends TestCase
      */
     public function test_create_product_validation(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
 
         $response = $this->actingAs($user)->post(route('admin.products.store'), []);
 
@@ -190,7 +190,7 @@ class ProductControllerTest extends TestCase
      */
     public function test_can_access_edit_product_page(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $category = Category::factory()->create();
         $product = Product::factory()->create(['category_id' => $category->id]);
 
@@ -208,7 +208,7 @@ class ProductControllerTest extends TestCase
      */
     public function test_can_update_product(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $category = Category::factory()->create();
         $product = Product::factory()->create(['category_id' => $category->id]);
 
@@ -234,7 +234,7 @@ class ProductControllerTest extends TestCase
      */
     public function test_can_delete_product_without_active_orders(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $category = Category::factory()->create();
         $product = Product::factory()->create(['category_id' => $category->id]);
 
@@ -250,7 +250,7 @@ class ProductControllerTest extends TestCase
      */
     public function test_cannot_delete_product_with_active_orders(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $category = Category::factory()->create();
         $product = Product::factory()->create(['category_id' => $category->id]);
 
@@ -273,7 +273,7 @@ class ProductControllerTest extends TestCase
      */
     public function test_products_pagination_works(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $category = Category::factory()->create();
         Product::factory()->count(15)->create(['category_id' => $category->id]);
 
@@ -286,4 +286,3 @@ class ProductControllerTest extends TestCase
             ->where('products.last_page', 2));
     }
 }
-

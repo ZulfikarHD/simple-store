@@ -29,9 +29,7 @@ class DashboardTest extends TestCase
      */
     public function test_authenticated_user_can_access_dashboard(): void
     {
-        $user = User::factory()->create([
-            'email_verified_at' => now(),
-        ]);
+        $user = User::factory()->admin()->create();
 
         $response = $this->actingAs($user)->get(route('admin.dashboard'));
 
@@ -45,9 +43,7 @@ class DashboardTest extends TestCase
      */
     public function test_dashboard_displays_correct_statistics(): void
     {
-        $user = User::factory()->create([
-            'email_verified_at' => now(),
-        ]);
+        $user = User::factory()->admin()->create();
 
         // Buat test data dengan factory untuk simulate real data
         Product::factory()->count(5)->create(['is_active' => true]);
@@ -90,9 +86,7 @@ class DashboardTest extends TestCase
      */
     public function test_dashboard_displays_recent_orders(): void
     {
-        $user = User::factory()->create([
-            'email_verified_at' => now(),
-        ]);
+        $user = User::factory()->admin()->create();
 
         // Buat 7 orders untuk test limit 5
         Order::factory()->count(7)->create();
@@ -121,9 +115,7 @@ class DashboardTest extends TestCase
      */
     public function test_dashboard_displays_order_status_breakdown(): void
     {
-        $user = User::factory()->create([
-            'email_verified_at' => now(),
-        ]);
+        $user = User::factory()->admin()->create();
 
         // Buat orders dengan berbagai status
         Order::factory()->count(5)->create(['status' => 'pending']);
@@ -147,9 +139,7 @@ class DashboardTest extends TestCase
      */
     public function test_dashboard_handles_empty_data(): void
     {
-        $user = User::factory()->create([
-            'email_verified_at' => now(),
-        ]);
+        $user = User::factory()->admin()->create();
 
         $response = $this->actingAs($user)->get(route('admin.dashboard'));
 

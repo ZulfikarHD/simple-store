@@ -11,6 +11,14 @@ import { router, Link } from '@inertiajs/vue3'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog'
 import PriceDisplay from '@/components/store/PriceDisplay.vue'
 import { OrderStatusBadge } from '@/components/store'
 import { show } from '@/routes/admin/orders'
@@ -21,10 +29,9 @@ import {
     Package,
     Clock,
     ChefHat,
-    Truck,
     CircleCheck,
     Loader2,
-    MapPin,
+    AlertCircle,
 } from 'lucide-vue-next'
 
 /**
@@ -37,6 +44,8 @@ interface OrderItem {
     subtotal: number
 }
 
+type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled'
+
 interface Order {
     id: number
     order_number: string
@@ -44,7 +53,7 @@ interface Order {
     customer_phone: string
     customer_address?: string
     total: number
-    status: string
+    status: OrderStatus
     items: OrderItem[]
     created_at: string
     waiting_minutes?: number
@@ -140,21 +149,57 @@ const nextStatus = computed(() => {
 })
 
 /**
- * Quick status update handler
+ * Error message state untuk menampilkan error ke user
  */
-async function quickUpdateStatus(): Promise<void> {
+const errorMessage = ref<string | null>(null)
+
+/**
+ * Confirmation modal state untuk mencegah aksi tidak sengaja
+ */
+const showConfirmModal = ref(false)
+
+/**
+ * Open confirmation modal sebelum update status
+ * untuk mencegah aksi tidak sengaja oleh admin
+ */
+function openConfirmModal(): void {
+    if (!nextStatus.value || isUpdating.value) return
+    showConfirmModal.value = true
+}
+
+/**
+ * Close confirmation modal tanpa melakukan aksi
+ */
+function closeConfirmModal(): void {
+    showConfirmModal.value = false
+}
+
+/**
+ * Quick status update handler dengan proper error handling
+ * untuk memberikan feedback ke user jika terjadi kesalahan
+ * Dipanggil setelah user mengkonfirmasi melalui modal
+ */
+async function confirmUpdateStatus(): Promise<void> {
     if (!nextStatus.value || isUpdating.value) return
 
     isUpdating.value = true
+    errorMessage.value = null
+    showConfirmModal.value = false
 
     try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+
+        if (!csrfToken) {
+            throw new Error('CSRF token tidak ditemukan')
+        }
+
         const response = await fetch(`/admin/api/orders/${props.order.id}/quick-status`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '',
+                'X-CSRF-TOKEN': csrfToken,
             },
             credentials: 'same-origin',
             body: JSON.stringify({ status: nextStatus.value.status }),
@@ -164,12 +209,37 @@ async function quickUpdateStatus(): Promise<void> {
             emit('statusUpdated', props.order.id, nextStatus.value.status)
             // Reload halaman untuk refresh data
             router.reload({ only: ['orders', 'pending_orders_count'] })
+        } else {
+            const data = await response.json().catch(() => ({}))
+            errorMessage.value = data.message || 'Gagal mengubah status pesanan'
+            // Auto-clear error setelah 3 detik
+            setTimeout(() => {
+                errorMessage.value = null
+            }, 3000)
         }
     } catch (error) {
         console.error('Failed to update order status:', error)
+        errorMessage.value = error instanceof Error ? error.message : 'Terjadi kesalahan'
+        // Auto-clear error setelah 3 detik
+        setTimeout(() => {
+            errorMessage.value = null
+        }, 3000)
     } finally {
         isUpdating.value = false
     }
+}
+
+/**
+ * Get status label dalam Bahasa Indonesia untuk konfirmasi modal
+ */
+function getStatusLabel(status: string): string {
+    const labels: Record<string, string> = {
+        confirmed: 'Dikonfirmasi',
+        preparing: 'Diproses',
+        ready: 'Siap Kirim',
+        delivered: 'Selesai',
+    }
+    return labels[status] || status
 }
 
 /**
@@ -178,26 +248,6 @@ async function quickUpdateStatus(): Promise<void> {
 function openWhatsApp(): void {
     const cleanPhone = props.order.customer_phone.replace(/\D/g, '')
     window.open(`https://wa.me/${cleanPhone}`, '_blank')
-}
-
-/**
- * Get status icon
- */
-function getStatusIcon(status: string) {
-    switch (status) {
-        case 'pending':
-            return Clock
-        case 'confirmed':
-            return Check
-        case 'preparing':
-            return ChefHat
-        case 'ready':
-            return Package
-        case 'delivered':
-            return Truck
-        default:
-            return Clock
-    }
 }
 </script>
 
@@ -260,6 +310,14 @@ function getStatusIcon(status: string) {
                 </p>
             </div>
 
+            <!-- Error Message -->
+            <div
+                v-if="errorMessage"
+                class="mt-3 rounded-lg bg-red-50 p-2 text-sm text-red-600 dark:bg-red-950 dark:text-red-400"
+            >
+                {{ errorMessage }}
+            </div>
+
             <!-- Footer Row: Total & Actions -->
             <div class="mt-4 flex items-center justify-between gap-3">
                 <PriceDisplay
@@ -298,7 +356,7 @@ function getStatusIcon(status: string) {
                         size="sm"
                         class="h-9 gap-1.5"
                         :disabled="isUpdating"
-                        @click="quickUpdateStatus"
+                        @click="openConfirmModal"
                     >
                         <Loader2 v-if="isUpdating" class="h-4 w-4 animate-spin" />
                         <component :is="nextStatus.icon" v-else class="h-4 w-4" />
@@ -308,6 +366,59 @@ function getStatusIcon(status: string) {
             </div>
         </CardContent>
     </Card>
+
+    <!-- Confirmation Modal untuk mencegah aksi tidak sengaja -->
+    <Dialog v-model:open="showConfirmModal">
+        <DialogContent class="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle class="flex items-center gap-2">
+                    <AlertCircle class="h-5 w-5 text-amber-500" />
+                    Konfirmasi Perubahan Status
+                </DialogTitle>
+                <DialogDescription>
+                    Apakah Anda yakin ingin mengubah status pesanan
+                    <span class="font-semibold text-foreground">{{ order.order_number }}</span>
+                    menjadi
+                    <span class="font-semibold text-primary">{{ nextStatus ? getStatusLabel(nextStatus.status) : '' }}</span>?
+                </DialogDescription>
+            </DialogHeader>
+
+            <!-- Order Summary untuk konteks -->
+            <div class="rounded-lg border bg-muted/50 p-3">
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-muted-foreground">Customer:</span>
+                    <span class="font-medium">{{ order.customer_name }}</span>
+                </div>
+                <div class="mt-1 flex items-center justify-between text-sm">
+                    <span class="text-muted-foreground">Total:</span>
+                    <PriceDisplay :price="order.total" size="sm" />
+                </div>
+                <div class="mt-1 flex items-center justify-between text-sm">
+                    <span class="text-muted-foreground">Items:</span>
+                    <span>{{ order.items.length }} item</span>
+                </div>
+            </div>
+
+            <DialogFooter class="flex-col gap-2 sm:flex-row">
+                <Button
+                    variant="outline"
+                    class="w-full sm:w-auto"
+                    @click="closeConfirmModal"
+                >
+                    Batal
+                </Button>
+                <Button
+                    class="w-full sm:w-auto"
+                    :disabled="isUpdating"
+                    @click="confirmUpdateStatus"
+                >
+                    <Loader2 v-if="isUpdating" class="mr-2 h-4 w-4 animate-spin" />
+                    <component :is="nextStatus?.icon" v-else class="mr-2 h-4 w-4" />
+                    Ya, {{ nextStatus?.label }}
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
 </template>
 
 <style scoped>

@@ -44,7 +44,7 @@ class OrderControllerTest extends TestCase
      */
     public function test_authenticated_user_can_view_orders_list(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         Order::factory()->count(5)->create();
 
         $response = $this->actingAs($user)->get(route('admin.orders.index'));
@@ -61,7 +61,7 @@ class OrderControllerTest extends TestCase
      */
     public function test_can_search_orders_by_order_number(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $order1 = Order::factory()->create(['order_number' => 'ORD-20241126-AAAAA']);
         Order::factory()->create(['order_number' => 'ORD-20241126-BBBBB']);
 
@@ -79,7 +79,7 @@ class OrderControllerTest extends TestCase
      */
     public function test_can_search_orders_by_customer_name(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         Order::factory()->create(['customer_name' => 'John Doe']);
         Order::factory()->create(['customer_name' => 'Jane Smith']);
 
@@ -96,7 +96,7 @@ class OrderControllerTest extends TestCase
      */
     public function test_can_search_orders_by_phone(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         Order::factory()->create(['customer_phone' => '081234567890']);
         Order::factory()->create(['customer_phone' => '089876543210']);
 
@@ -112,7 +112,7 @@ class OrderControllerTest extends TestCase
      */
     public function test_can_filter_orders_by_status(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         Order::factory()->count(3)->create(['status' => 'pending']);
         Order::factory()->count(2)->create(['status' => 'confirmed']);
         Order::factory()->count(1)->create(['status' => 'delivered']);
@@ -129,7 +129,7 @@ class OrderControllerTest extends TestCase
      */
     public function test_can_filter_orders_by_date_range(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         Order::factory()->create(['created_at' => now()->subDays(5)]);
         Order::factory()->create(['created_at' => now()->subDays(2)]);
         Order::factory()->create(['created_at' => now()]);
@@ -149,7 +149,7 @@ class OrderControllerTest extends TestCase
      */
     public function test_can_view_order_detail(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $order = Order::factory()->create([
             'customer_name' => 'Test Customer',
             'status' => 'pending',
@@ -176,7 +176,7 @@ class OrderControllerTest extends TestCase
      */
     public function test_can_update_order_status_to_confirmed(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $order = Order::factory()->create(['status' => 'pending']);
 
         $response = $this->actingAs($user)->patch(route('admin.orders.updateStatus', $order), [
@@ -198,7 +198,7 @@ class OrderControllerTest extends TestCase
      */
     public function test_can_update_order_status_to_preparing(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $order = Order::factory()->create(['status' => 'confirmed']);
 
         $response = $this->actingAs($user)->patch(route('admin.orders.updateStatus', $order), [
@@ -217,7 +217,7 @@ class OrderControllerTest extends TestCase
      */
     public function test_can_update_order_status_to_ready(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $order = Order::factory()->create(['status' => 'preparing']);
 
         $response = $this->actingAs($user)->patch(route('admin.orders.updateStatus', $order), [
@@ -236,7 +236,7 @@ class OrderControllerTest extends TestCase
      */
     public function test_can_update_order_status_to_delivered(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $order = Order::factory()->create(['status' => 'ready']);
 
         $response = $this->actingAs($user)->patch(route('admin.orders.updateStatus', $order), [
@@ -255,7 +255,7 @@ class OrderControllerTest extends TestCase
      */
     public function test_can_cancel_order_with_reason(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $order = Order::factory()->create(['status' => 'pending']);
 
         $response = $this->actingAs($user)->patch(route('admin.orders.updateStatus', $order), [
@@ -276,7 +276,7 @@ class OrderControllerTest extends TestCase
      */
     public function test_cancellation_requires_reason(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $order = Order::factory()->create(['status' => 'pending']);
 
         $response = $this->actingAs($user)->patch(route('admin.orders.updateStatus', $order), [
@@ -291,7 +291,7 @@ class OrderControllerTest extends TestCase
      */
     public function test_status_must_be_valid(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $order = Order::factory()->create(['status' => 'pending']);
 
         $response = $this->actingAs($user)->patch(route('admin.orders.updateStatus', $order), [
@@ -306,7 +306,7 @@ class OrderControllerTest extends TestCase
      */
     public function test_orders_pagination_works(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         Order::factory()->count(15)->create();
 
         $response = $this->actingAs($user)->get(route('admin.orders.index'));
@@ -323,7 +323,7 @@ class OrderControllerTest extends TestCase
      */
     public function test_order_detail_shows_items_correctly(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+        $user = User::factory()->admin()->create();
         $order = Order::factory()->create();
         $product = Product::factory()->create();
         OrderItem::factory()->count(3)->create([
@@ -338,4 +338,3 @@ class OrderControllerTest extends TestCase
             ->has('order.items', 3));
     }
 }
-

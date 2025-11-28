@@ -252,10 +252,9 @@ function handleClearSearch() {
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     </Head>
 
-    <PullToRefresh>
-        <div class="min-h-screen bg-background">
-            <!-- Header Navigation dengan iOS Glass Effect -->
-            <header class="ios-navbar sticky top-0 z-50 border-b border-border/30">
+    <div class="min-h-screen bg-background">
+        <!-- Header Navigation dengan iOS Glass Effect (Fixed) -->
+        <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-border/30">
                 <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                     <!-- Logo & Brand dengan spring animation -->
                     <div
@@ -383,7 +382,11 @@ function handleClearSearch() {
                 </Transition>
             </header>
 
+            <!-- Spacer untuk fixed header -->
+            <div class="h-14 sm:h-16" />
+
             <!-- Main Content dengan animations -->
+            <PullToRefresh>
             <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
                 <!-- Search Bar Section dengan slide up animation -->
                 <div
@@ -530,12 +533,12 @@ function handleClearSearch() {
                     </div>
                 </div>
             </footer>
+            </PullToRefresh>
 
             <!-- Bottom padding untuk mobile nav -->
             <div class="h-20 md:hidden" />
-
-            <!-- Mobile Bottom Navigation -->
-            <UserBottomNav />
         </div>
-    </PullToRefresh>
+
+        <!-- Mobile Bottom Navigation (Outside main content untuk fixed positioning) -->
+        <UserBottomNav />
 </template>

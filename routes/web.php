@@ -27,11 +27,16 @@ Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.s
 Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
 
 // Account routes untuk profil dan riwayat pesanan user
+// Halaman index bisa diakses guest (akan tampilkan prompt login)
+// Halaman orders memerlukan authentication
 Route::get('/account', [AccountController::class, 'index'])->name('account.index');
-Route::get('/account/orders', [AccountController::class, 'orders'])->name('account.orders');
+Route::get('/account/orders', [AccountController::class, 'orders'])
+    ->middleware('auth')
+    ->name('account.orders');
 
-// Admin routes dengan auth middleware untuk proteksi akses
-Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+// Admin routes dengan auth, verified, dan admin middleware untuk proteksi akses
+// Hanya user dengan role admin yang dapat mengakses halaman-halaman ini
+Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('products', AdminProductController::class);
     Route::resource('categories', CategoryController::class);

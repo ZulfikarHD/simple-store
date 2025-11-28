@@ -92,8 +92,8 @@ const menuItems = [
     </Head>
 
     <div class="min-h-screen bg-background">
-        <!-- Header Navigation -->
-        <header class="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <!-- Header Navigation (Fixed) -->
+        <header class="fixed inset-x-0 top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                 <!-- Logo & Brand -->
                 <Link :href="home()" class="flex items-center gap-2 sm:gap-3">
@@ -115,6 +115,9 @@ const menuItems = [
                 </nav>
             </div>
         </header>
+
+        <!-- Spacer untuk fixed header -->
+        <div class="h-14 sm:h-16" />
 
         <!-- Main Content -->
         <main class="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8">

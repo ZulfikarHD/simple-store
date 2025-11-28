@@ -127,9 +127,9 @@ onMounted(() => {
     </Head>
 
     <div class="min-h-screen bg-background">
-        <!-- Header Navigation -->
-        <header class="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <!-- Header Navigation (Fixed) -->
+        <header class="fixed inset-x-0 top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                 <!-- Logo & Brand -->
                 <Link :href="home()" class="flex items-center gap-3">
                     <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
@@ -166,6 +166,9 @@ onMounted(() => {
                 </nav>
             </div>
         </header>
+
+        <!-- Spacer untuk fixed header -->
+        <div class="h-14 sm:h-16" />
 
         <!-- Main Content -->
         <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">

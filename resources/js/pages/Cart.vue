@@ -102,10 +102,9 @@ function handleCheckoutClick() {
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     </Head>
 
-    <PullToRefresh>
-        <div class="min-h-screen bg-background">
-            <!-- Header Navigation dengan iOS Glass Effect -->
-            <header class="ios-navbar sticky top-0 z-50 border-b border-border/30">
+    <div class="min-h-screen bg-background">
+        <!-- Header Navigation dengan iOS Glass Effect (Fixed) -->
+        <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-border/30">
                 <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                     <!-- Logo & Brand -->
                     <Link
@@ -158,7 +157,11 @@ function handleCheckoutClick() {
                 </div>
             </header>
 
+            <!-- Spacer untuk fixed header -->
+            <div class="h-14 sm:h-16" />
+
             <!-- Main Content -->
+            <PullToRefresh>
             <main class="mx-auto max-w-7xl px-4 py-6 pb-40 sm:px-6 sm:py-8 sm:pb-8 lg:px-8">
                 <!-- Back Button dengan iOS press feedback -->
                 <Link
@@ -408,9 +411,9 @@ function handleCheckoutClick() {
                     </div>
                 </div>
             </footer>
-
-            <!-- Mobile Bottom Navigation -->
-            <UserBottomNav />
+            </PullToRefresh>
         </div>
-    </PullToRefresh>
+
+        <!-- Mobile Bottom Navigation (Outside untuk fixed positioning) -->
+        <UserBottomNav />
 </template>

@@ -8,11 +8,11 @@
  * - Active products count
  * - Recent orders list
  * - Browser notifications untuk pesanan baru
- * - Mobile redirect ke halaman orders (order-centric view)
+ * - iOS-like design dengan spring animations dan haptic feedback
  *
  * @author Zulfikar Hidayatullah
  */
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -20,13 +20,15 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { OrderStatusBadge } from '@/components/store'
 import PriceDisplay from '@/components/store/PriceDisplay.vue'
+import PullToRefresh from '@/components/mobile/PullToRefresh.vue'
 import { type BreadcrumbItem } from '@/types'
 import { Head, Link } from '@inertiajs/vue3'
 import { dashboard } from '@/routes/admin'
 import { index as productsIndex } from '@/routes/admin/products'
 import { index as categoriesIndex } from '@/routes/admin/categories'
-import { index as ordersIndex } from '@/routes/admin/orders'
+import { show as orderShow } from '@/routes/admin/orders'
 import { useOrderNotifications } from '@/composables/useOrderNotifications'
+import { useHapticFeedback } from '@/composables/useHapticFeedback'
 import {
     ShoppingBag,
     Clock,
@@ -40,6 +42,11 @@ import {
 } from 'lucide-vue-next'
 
 /**
+ * Haptic feedback untuk iOS-like tactile response
+ */
+const haptic = useHapticFeedback()
+
+/**
  * Setup browser notifications untuk pesanan baru
  */
 const {
@@ -50,20 +57,12 @@ const {
 } = useOrderNotifications()
 
 /**
- * Mobile detection dan redirect ke orders view
- * Admin pada mobile sebaiknya langsung melihat pesanan
+ * Press state untuk iOS-like button feedback
  */
-function checkMobileAndRedirect(): void {
-    const isMobile = window.innerWidth < 768
-    if (isMobile) {
-        router.visit(ordersIndex().url, { replace: true })
-    }
-}
+const pressedCard = ref<string | null>(null)
 
 onMounted(() => {
     watchPendingOrders()
-    // Redirect ke orders page pada mobile untuk order-centric experience
-    checkMobileAndRedirect()
 })
 
 interface OrderItem {
@@ -106,6 +105,7 @@ const breadcrumbs: BreadcrumbItem[] = [
  */
 const statsCards = [
     {
+        id: 'today',
         title: 'Orders Hari Ini',
         value: props.stats.today_orders,
         icon: ShoppingBag,
@@ -114,6 +114,7 @@ const statsCards = [
         description: 'Total pesanan masuk hari ini',
     },
     {
+        id: 'pending',
         title: 'Pending Orders',
         value: props.stats.pending_orders,
         icon: Clock,
@@ -122,6 +123,7 @@ const statsCards = [
         description: 'Pesanan menunggu konfirmasi',
     },
     {
+        id: 'products',
         title: 'Produk Aktif',
         value: props.stats.active_products,
         icon: Package,
@@ -137,265 +139,421 @@ const statsCards = [
 function formatNumber(value: number): string {
     return new Intl.NumberFormat('id-ID').format(value)
 }
+
+/**
+ * Handle card press untuk iOS-like feedback
+ */
+function handleCardPress(cardId: string) {
+    pressedCard.value = cardId
+    haptic.light()
+}
+
+/**
+ * Handle card release
+ */
+function handleCardRelease() {
+    pressedCard.value = null
+}
+
+/**
+ * Handle quick action click dengan haptic
+ */
+function handleQuickAction() {
+    haptic.medium()
+}
+
+/**
+ * Navigate to order detail
+ */
+function navigateToOrder(orderId: number) {
+    haptic.selection()
+    router.visit(orderShow(orderId).url)
+}
 </script>
 
 <template>
     <Head title="Admin Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex flex-col gap-6 p-4 md:p-6">
-            <!-- Page Header -->
-            <div class="flex flex-col gap-2">
-                <h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-                    Dashboard Admin
-                </h1>
-                <p class="text-muted-foreground">
-                    Overview statistik dan monitoring performa toko
-                </p>
-            </div>
-
-            <!-- Stats Cards Grid -->
-            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <!-- Total Sales Card -->
-                <Card class="overflow-hidden">
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">
-                            Total Penjualan
-                        </CardTitle>
-                        <div
-                            class="flex h-10 w-10 items-center justify-center rounded-full bg-purple-50 dark:bg-purple-950"
-                        >
-                            <TrendingUp
-                                class="h-5 w-5 text-purple-600 dark:text-purple-400"
-                            />
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <div class="flex flex-col gap-1">
-                            <PriceDisplay
-                                :price="stats.total_sales"
-                                size="xl"
-                            />
-                            <p class="text-xs text-muted-foreground">
-                                Total revenue keseluruhan
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <!-- Other Stats Cards -->
-                <Card
-                    v-for="stat in statsCards"
-                    :key="stat.title"
-                    class="overflow-hidden"
+        <PullToRefresh>
+            <div class="flex flex-col gap-6 p-4 md:p-6">
+                <!-- Page Header dengan spring animation -->
+                <div
+                    v-motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :enter="{
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                            type: 'spring',
+                            stiffness: 300,
+                            damping: 25,
+                        },
+                    }"
+                    class="flex flex-col gap-2"
                 >
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">
-                            {{ stat.title }}
-                        </CardTitle>
-                        <div
-                            :class="[
-                                'flex h-10 w-10 items-center justify-center rounded-full',
-                                stat.bgColor,
-                            ]"
-                        >
-                            <component
-                                :is="stat.icon"
-                                :class="['h-5 w-5', stat.color]"
-                            />
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <div class="flex flex-col gap-1">
-                            <div class="text-2xl font-bold">
-                                {{ formatNumber(stat.value) }}
-                            </div>
-                            <p class="text-xs text-muted-foreground">
-                                {{ stat.description }}
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+                    <h1 class="text-2xl font-bold tracking-tight md:text-3xl">
+                        Dashboard Admin
+                    </h1>
+                    <p class="text-muted-foreground">
+                        Overview statistik dan monitoring performa toko
+                    </p>
+                </div>
 
-            <!-- Order Status Breakdown -->
-            <div class="grid gap-4 md:grid-cols-2">
-                <!-- Recent Orders -->
-                <Card>
-                    <CardHeader>
-                        <CardTitle class="flex items-center gap-2">
-                            <ShoppingBag class="h-5 w-5" />
-                            Pesanan Terbaru
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div
-                            v-if="stats.recent_orders.length === 0"
-                            class="flex flex-col items-center justify-center py-8 text-center"
-                        >
-                            <ShoppingBag
-                                class="mb-2 h-12 w-12 text-muted-foreground/40"
-                            />
-                            <p class="text-sm text-muted-foreground">
-                                Belum ada pesanan
-                            </p>
-                        </div>
-
-                        <div
-                            v-else
-                            class="space-y-4"
-                        >
+                <!-- Stats Cards Grid dengan staggered animation -->
+                <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <!-- Total Sales Card -->
+                    <Card
+                        v-motion
+                        :initial="{ opacity: 0, y: 20 }"
+                        :enter="{
+                            opacity: 1,
+                            y: 0,
+                            transition: {
+                                type: 'spring',
+                                stiffness: 300,
+                                damping: 25,
+                                delay: 50,
+                            },
+                        }"
+                        class="ios-card overflow-hidden transition-transform duration-150"
+                        :class="{ 'scale-[0.97]': pressedCard === 'sales' }"
+                        @mousedown="handleCardPress('sales')"
+                        @mouseup="handleCardRelease"
+                        @mouseleave="handleCardRelease"
+                        @touchstart.passive="handleCardPress('sales')"
+                        @touchend="handleCardRelease"
+                    >
+                        <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle class="text-sm font-medium">
+                                Total Penjualan
+                            </CardTitle>
                             <div
-                                v-for="order in stats.recent_orders"
-                                :key="order.id"
-                                class="flex flex-col gap-2 rounded-lg border p-4 transition-colors hover:bg-accent"
+                                class="flex h-10 w-10 items-center justify-center rounded-full bg-purple-50 dark:bg-purple-950"
                             >
-                                <!-- Order Header -->
-                                <div class="flex items-start justify-between">
-                                    <div class="flex flex-col gap-1">
-                                        <div class="flex items-center gap-2">
-                                            <span class="font-mono text-sm font-medium">
-                                                {{ order.order_number }}
-                                            </span>
-                                            <OrderStatusBadge
-                                                :status="order.status"
-                                            />
-                                        </div>
-                                        <p class="text-sm font-medium">
-                                            {{ order.customer_name }}
-                                        </p>
-                                    </div>
-                                    <PriceDisplay
-                                        :price="order.total"
-                                        size="sm"
-                                    />
-                                </div>
-
-                                <!-- Order Meta -->
-                                <div class="flex items-center gap-4 text-xs text-muted-foreground">
-                                    <span class="flex items-center gap-1">
-                                        <Users class="h-3 w-3" />
-                                        {{ order.customer_phone }}
-                                    </span>
-                                    <span class="flex items-center gap-1">
-                                        <Package class="h-3 w-3" />
-                                        {{ order.items_count }} item
-                                    </span>
-                                    <span class="flex items-center gap-1">
-                                        <Calendar class="h-3 w-3" />
-                                        {{ order.created_at_human }}
-                                    </span>
-                                </div>
+                                <TrendingUp
+                                    class="h-5 w-5 text-purple-600 dark:text-purple-400"
+                                />
                             </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                        </CardHeader>
+                        <CardContent>
+                            <div class="flex flex-col gap-1">
+                                <PriceDisplay
+                                    :price="stats.total_sales"
+                                    size="xl"
+                                />
+                                <p class="text-xs text-muted-foreground">
+                                    Total revenue keseluruhan
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                <!-- Status Breakdown -->
-                <Card>
-                    <CardHeader>
-                        <CardTitle class="flex items-center gap-2">
-                            <TrendingUp class="h-5 w-5" />
-                            Status Pesanan
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div class="space-y-3">
+                    <!-- Other Stats Cards -->
+                    <Card
+                        v-for="(stat, index) in statsCards"
+                        :key="stat.id"
+                        v-motion
+                        :initial="{ opacity: 0, y: 20 }"
+                        :enter="{
+                            opacity: 1,
+                            y: 0,
+                            transition: {
+                                type: 'spring',
+                                stiffness: 300,
+                                damping: 25,
+                                delay: 100 + index * 50,
+                            },
+                        }"
+                        class="ios-card overflow-hidden transition-transform duration-150"
+                        :class="{ 'scale-[0.97]': pressedCard === stat.id }"
+                        @mousedown="handleCardPress(stat.id)"
+                        @mouseup="handleCardRelease"
+                        @mouseleave="handleCardRelease"
+                        @touchstart.passive="handleCardPress(stat.id)"
+                        @touchend="handleCardRelease"
+                    >
+                        <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle class="text-sm font-medium">
+                                {{ stat.title }}
+                            </CardTitle>
                             <div
-                                v-for="(count, status) in stats.order_status_breakdown"
-                                :key="status"
-                                class="flex items-center justify-between rounded-lg border p-3"
+                                :class="[
+                                    'flex h-10 w-10 items-center justify-center rounded-full',
+                                    stat.bgColor,
+                                ]"
                             >
-                                <div class="flex items-center gap-3">
-                                    <OrderStatusBadge :status="status" />
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-2xl font-bold">
-                                        {{ formatNumber(count) }}
-                                    </span>
-                                    <span class="text-sm text-muted-foreground">
-                                        orders
-                                    </span>
-                                </div>
+                                <component
+                                    :is="stat.icon"
+                                    :class="['h-5 w-5', stat.color]"
+                                />
                             </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div class="flex flex-col gap-1">
+                                <div class="text-2xl font-bold">
+                                    {{ formatNumber(stat.value) }}
+                                </div>
+                                <p class="text-xs text-muted-foreground">
+                                    {{ stat.description }}
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
 
-                            <!-- Empty State -->
+                <!-- Order Status Breakdown -->
+                <div class="grid gap-4 md:grid-cols-2">
+                    <!-- Recent Orders -->
+                    <Card
+                        v-motion
+                        :initial="{ opacity: 0, y: 20 }"
+                        :enter="{
+                            opacity: 1,
+                            y: 0,
+                            transition: {
+                                type: 'spring',
+                                stiffness: 300,
+                                damping: 25,
+                                delay: 250,
+                            },
+                        }"
+                        class="ios-card"
+                    >
+                        <CardHeader>
+                            <CardTitle class="flex items-center gap-2">
+                                <ShoppingBag class="h-5 w-5" />
+                                Pesanan Terbaru
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
                             <div
-                                v-if="
-                                    Object.keys(stats.order_status_breakdown)
-                                        .length === 0
-                                "
+                                v-if="stats.recent_orders.length === 0"
                                 class="flex flex-col items-center justify-center py-8 text-center"
                             >
-                                <Clock
+                                <ShoppingBag
                                     class="mb-2 h-12 w-12 text-muted-foreground/40"
                                 />
                                 <p class="text-sm text-muted-foreground">
-                                    Belum ada data status
+                                    Belum ada pesanan
                                 </p>
                             </div>
+
+                            <div
+                                v-else
+                                class="space-y-4"
+                            >
+                                <div
+                                    v-for="(order, orderIndex) in stats.recent_orders"
+                                    :key="order.id"
+                                    v-motion
+                                    :initial="{ opacity: 0, x: -20 }"
+                                    :enter="{
+                                        opacity: 1,
+                                        x: 0,
+                                        transition: {
+                                            type: 'spring',
+                                            stiffness: 300,
+                                            damping: 25,
+                                            delay: 300 + orderIndex * 50,
+                                        },
+                                    }"
+                                    class="ios-list-item flex flex-col gap-2 rounded-xl border p-4 transition-all duration-150 hover:bg-accent"
+                                    role="button"
+                                    tabindex="0"
+                                    @click="navigateToOrder(order.id)"
+                                    @keydown.enter="navigateToOrder(order.id)"
+                                >
+                                    <!-- Order Header -->
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex flex-col gap-1">
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-mono text-sm font-medium">
+                                                    {{ order.order_number }}
+                                                </span>
+                                                <OrderStatusBadge
+                                                    :status="order.status"
+                                                />
+                                            </div>
+                                            <p class="text-sm font-medium">
+                                                {{ order.customer_name }}
+                                            </p>
+                                        </div>
+                                        <PriceDisplay
+                                            :price="order.total"
+                                            size="sm"
+                                        />
+                                    </div>
+
+                                    <!-- Order Meta -->
+                                    <div class="flex items-center gap-4 text-xs text-muted-foreground">
+                                        <span class="flex items-center gap-1">
+                                            <Users class="h-3 w-3" />
+                                            {{ order.customer_phone }}
+                                        </span>
+                                        <span class="flex items-center gap-1">
+                                            <Package class="h-3 w-3" />
+                                            {{ order.items_count }} item
+                                        </span>
+                                        <span class="flex items-center gap-1">
+                                            <Calendar class="h-3 w-3" />
+                                            {{ order.created_at_human }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <!-- Status Breakdown -->
+                    <Card
+                        v-motion
+                        :initial="{ opacity: 0, y: 20 }"
+                        :enter="{
+                            opacity: 1,
+                            y: 0,
+                            transition: {
+                                type: 'spring',
+                                stiffness: 300,
+                                damping: 25,
+                                delay: 300,
+                            },
+                        }"
+                        class="ios-card"
+                    >
+                        <CardHeader>
+                            <CardTitle class="flex items-center gap-2">
+                                <TrendingUp class="h-5 w-5" />
+                                Status Pesanan
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div class="space-y-3">
+                                <div
+                                    v-for="(count, status, statusIndex) in stats.order_status_breakdown"
+                                    :key="status"
+                                    v-motion
+                                    :initial="{ opacity: 0, x: 20 }"
+                                    :enter="{
+                                        opacity: 1,
+                                        x: 0,
+                                        transition: {
+                                            type: 'spring',
+                                            stiffness: 300,
+                                            damping: 25,
+                                            delay: 350 + statusIndex * 50,
+                                        },
+                                    }"
+                                    class="flex items-center justify-between rounded-xl border p-3 transition-colors hover:bg-accent"
+                                >
+                                    <div class="flex items-center gap-3">
+                                        <OrderStatusBadge :status="status" />
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-2xl font-bold">
+                                            {{ formatNumber(count) }}
+                                        </span>
+                                        <span class="text-sm text-muted-foreground">
+                                            orders
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Empty State -->
+                                <div
+                                    v-if="
+                                        Object.keys(stats.order_status_breakdown)
+                                            .length === 0
+                                    "
+                                    class="flex flex-col items-center justify-center py-8 text-center"
+                                >
+                                    <Clock
+                                        class="mb-2 h-12 w-12 text-muted-foreground/40"
+                                    />
+                                    <p class="text-sm text-muted-foreground">
+                                        Belum ada data status
+                                    </p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <!-- Quick Actions -->
+                <Card
+                    v-motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :enter="{
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                            type: 'spring',
+                            stiffness: 300,
+                            damping: 25,
+                            delay: 400,
+                        },
+                    }"
+                    class="ios-card"
+                >
+                    <CardHeader>
+                        <CardTitle>Quick Actions</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div class="flex flex-wrap gap-3">
+                            <Link :href="productsIndex().url" @click="handleQuickAction">
+                                <Badge
+                                    variant="outline"
+                                    class="ios-button cursor-pointer px-4 py-2 hover:bg-accent"
+                                >
+                                    <Package class="mr-2 h-4 w-4" />
+                                    Kelola Produk
+                                </Badge>
+                            </Link>
+                            <Link :href="categoriesIndex().url" @click="handleQuickAction">
+                                <Badge
+                                    variant="outline"
+                                    class="ios-button cursor-pointer px-4 py-2 hover:bg-accent"
+                                >
+                                    <FolderTree class="mr-2 h-4 w-4" />
+                                    Kelola Kategori
+                                </Badge>
+                            </Link>
+
+                            <!-- Notification Permission Button -->
+                            <Button
+                                v-if="notificationSupported && notificationPermission !== 'granted'"
+                                variant="outline"
+                                size="sm"
+                                class="ios-button gap-2"
+                                @click="requestPermission"
+                            >
+                                <Bell class="h-4 w-4" />
+                                Aktifkan Notifikasi
+                            </Button>
+                            <Badge
+                                v-else-if="notificationSupported && notificationPermission === 'granted'"
+                                variant="secondary"
+                                class="px-4 py-2"
+                            >
+                                <Bell class="mr-2 h-4 w-4 text-green-600" />
+                                Notifikasi Aktif
+                            </Badge>
+                            <Badge
+                                v-else-if="notificationSupported && notificationPermission === 'denied'"
+                                variant="destructive"
+                                class="px-4 py-2"
+                            >
+                                <BellOff class="mr-2 h-4 w-4" />
+                                Notifikasi Diblokir
+                            </Badge>
                         </div>
                     </CardContent>
                 </Card>
+
+                <!-- Bottom padding untuk mobile nav -->
+                <div class="h-20 md:hidden" />
             </div>
+        </PullToRefresh>
 
-            <!-- Quick Actions -->
-            <Card>
-                <CardHeader>
-                    <CardTitle>Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div class="flex flex-wrap gap-3">
-                        <Link :href="productsIndex().url">
-                            <Badge
-                                variant="outline"
-                                class="cursor-pointer px-4 py-2 hover:bg-accent"
-                            >
-                                <Package class="mr-2 h-4 w-4" />
-                                Kelola Produk
-                            </Badge>
-                        </Link>
-                        <Link :href="categoriesIndex().url">
-                            <Badge
-                                variant="outline"
-                                class="cursor-pointer px-4 py-2 hover:bg-accent"
-                            >
-                                <FolderTree class="mr-2 h-4 w-4" />
-                                Kelola Kategori
-                            </Badge>
-                        </Link>
-
-                        <!-- Notification Permission Button -->
-                        <Button
-                            v-if="notificationSupported && notificationPermission !== 'granted'"
-                            variant="outline"
-                            size="sm"
-                            class="gap-2"
-                            @click="requestPermission"
-                        >
-                            <Bell class="h-4 w-4" />
-                            Aktifkan Notifikasi
-                        </Button>
-                        <Badge
-                            v-else-if="notificationSupported && notificationPermission === 'granted'"
-                            variant="secondary"
-                            class="px-4 py-2"
-                        >
-                            <Bell class="mr-2 h-4 w-4 text-green-600" />
-                            Notifikasi Aktif
-                        </Badge>
-                        <Badge
-                            v-else-if="notificationSupported && notificationPermission === 'denied'"
-                            variant="destructive"
-                            class="px-4 py-2"
-                        >
-                            <BellOff class="mr-2 h-4 w-4" />
-                            Notifikasi Diblokir
-                        </Badge>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
     </AppLayout>
 </template>
-
