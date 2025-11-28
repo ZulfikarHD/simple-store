@@ -146,9 +146,9 @@ docs/
 
 | Nama | Role | Kontak |
 |------|------|--------|
-| Zulfikar Hidayatullah | Developer | - |
-| - | Designer | - |
-| - | Product Owner | - |
+| Zulfikar Hidayatullah | Developer | 0857-1583-8733 |
+| Zulfikar Hidayatullah | Designer | 0857-1583-8733 |
+| Zulfikar Hidayatullah | Product Owner | 0857-1583-8733 |
 
 ---
 
