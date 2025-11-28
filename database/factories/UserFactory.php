@@ -27,7 +27,27 @@ class UserFactory extends Factory
     public function definition(): array
     {
         $name = fake()->name();
-        $firstName = Str::lower(Str::before($name, ' '));
+
+        // Extract clean first name without titles/suffixes
+        $nameParts = explode(' ', $name);
+
+        // Find the first non-title part
+        $firstName = '';
+        foreach ($nameParts as $part) {
+            $cleanPart = Str::replace(['Prof.', 'Dr.', 'Mr.', 'Mrs.', 'Ms.', 'Jr.', 'Sr.', 'III', 'IV', 'V'], '', $part);
+            $cleanPart = trim($cleanPart, '.');
+            if (!empty($cleanPart)) {
+                $firstName = $cleanPart;
+                break;
+            }
+        }
+
+        // Fallback to a simple name if extraction fails
+        if (empty($firstName)) {
+            $firstName = fake()->firstName();
+        }
+
+        $firstName = Str::lower($firstName);
         $email = $firstName . '@test.com';
         $password = $firstName . '123';
 
