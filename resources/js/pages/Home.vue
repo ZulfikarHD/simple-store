@@ -7,10 +7,11 @@
  *
  * @author Zulfikar Hidayatullah
  */
-import { Head, Link, router } from '@inertiajs/vue3'
+import { Head, Link, router, usePage } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
 import { login, register } from '@/routes'
 import { dashboard } from '@/routes/admin'
+import { index as accountIndex } from '@/routes/account'
 import ProductCard from '@/components/store/ProductCard.vue'
 import CategoryFilter from '@/components/store/CategoryFilter.vue'
 import SearchBar from '@/components/store/SearchBar.vue'
@@ -79,9 +80,22 @@ interface Props {
 const props = defineProps<Props>()
 
 /**
+ * Page instance untuk mengakses auth user
+ */
+const page = usePage()
+
+/**
  * Haptic feedback untuk iOS-like tactile response
  */
 const haptic = useHapticFeedback()
+
+/**
+ * Computed untuk cek apakah user adalah admin
+ */
+const isAdmin = computed(() => {
+    const user = (page.props as { auth?: { user?: { role?: string } } }).auth?.user
+    return user?.role === 'admin'
+})
 
 /**
  * Local state untuk search input yang di-sync dengan prop searchQuery
@@ -244,6 +258,15 @@ function handleClearSearch() {
         preserveScroll: true,
     })
 }
+
+/**
+ * Handler untuk logout user
+ * Melakukan POST request ke endpoint logout dengan method POST
+ */
+function handleLogout() {
+    haptic.medium()
+    router.post('/logout')
+}
 </script>
 
 <template>
@@ -252,7 +275,7 @@ function handleClearSearch() {
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     </Head>
 
-    <div class="min-h-screen bg-background">
+    <div class="flex min-h-screen flex-col bg-background">
         <!-- Header Navigation dengan iOS Glass Effect (Fixed) -->
         <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-border/30">
                 <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
@@ -295,13 +318,28 @@ function handleClearSearch() {
                     >
                         <CartCounter :count="cartTotalItems" />
 
-                        <Link
-                            v-if="$page.props.auth.user"
-                            :href="dashboard()"
-                            class="ios-button rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
-                        >
-                            Dashboard
-                        </Link>
+                        <template v-if="$page.props.auth.user">
+                            <Link
+                                v-if="isAdmin"
+                                :href="dashboard()"
+                                class="ios-button rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+                            >
+                                Dashboard
+                            </Link>
+                            <Link
+                                v-else
+                                :href="accountIndex()"
+                                class="ios-button rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+                            >
+                                Akun
+                            </Link>
+                            <button
+                                class="ios-button rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent"
+                                @click="handleLogout"
+                            >
+                                Keluar
+                            </button>
+                        </template>
                         <template v-else>
                             <Link
                                 :href="login()"
@@ -353,14 +391,24 @@ function handleClearSearch() {
                         class="border-t border-border/50 bg-background/95 px-4 py-4 backdrop-blur sm:hidden"
                     >
                         <div class="flex flex-col gap-2">
-                            <Link
-                                v-if="$page.props.auth.user"
-                                :href="dashboard()"
-                                class="ios-button flex h-12 items-center justify-center rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm"
-                                @click="closeMobileMenu"
-                            >
-                                Dashboard
-                            </Link>
+                            <template v-if="$page.props.auth.user">
+                                <Link
+                                    v-if="isAdmin"
+                                    :href="dashboard()"
+                                    class="ios-button flex h-12 items-center justify-center rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm"
+                                    @click="closeMobileMenu"
+                                >
+                                    Dashboard
+                                </Link>
+                                <Link
+                                    v-else
+                                    :href="accountIndex()"
+                                    class="ios-button flex h-12 items-center justify-center rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm"
+                                    @click="closeMobileMenu"
+                                >
+                                    Akun
+                                </Link>
+                            </template>
                             <template v-else>
                                 <Link
                                     :href="login()"
@@ -387,7 +435,7 @@ function handleClearSearch() {
 
             <!-- Main Content dengan animations -->
             <PullToRefresh>
-            <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+            <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
                 <!-- Search Bar Section dengan slide up animation -->
                 <div
                     v-motion
@@ -525,7 +573,9 @@ function handleClearSearch() {
                 </div>
             </main>
 
-            <!-- Footer - Hidden on mobile karena ada bottom nav -->
+            </PullToRefresh>
+            
+            <!-- Footer - Hidden on mobile karena ada bottom nav, sticky di bottom pada large screen -->
             <footer class="hidden border-t border-border bg-muted/30 md:block">
                 <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                     <div class="text-center text-sm text-muted-foreground">
@@ -533,7 +583,6 @@ function handleClearSearch() {
                     </div>
                 </div>
             </footer>
-            </PullToRefresh>
 
             <!-- Bottom padding untuk mobile nav -->
             <div class="h-20 md:hidden" />

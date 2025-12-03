@@ -24,10 +24,24 @@ class DashboardTest extends TestCase
     }
 
     /**
-     * Test bahwa authenticated user dapat akses dashboard
+     * Test bahwa customer (non-admin) tidak dapat akses admin dashboard
+     * dengan redirect ke home page dan error message
+     */
+    public function test_customer_cannot_access_admin_dashboard(): void
+    {
+        $customer = User::factory()->customer()->create();
+
+        $response = $this->actingAs($customer)->get(route('admin.dashboard'));
+
+        $response->assertRedirect(route('home'));
+        $response->assertSessionHas('error', 'Akses ditolak. Anda tidak memiliki izin untuk mengakses halaman admin.');
+    }
+
+    /**
+     * Test bahwa authenticated admin user dapat akses dashboard
      * dengan response success dan render page yang tepat
      */
-    public function test_authenticated_user_can_access_dashboard(): void
+    public function test_authenticated_admin_can_access_dashboard(): void
     {
         $user = User::factory()->admin()->create();
 

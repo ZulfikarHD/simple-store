@@ -46,10 +46,24 @@ Admin Guide merupakan panduan lengkap untuk administrator dalam mengelola aplika
 1. Buka browser dan akses URL aplikasi
 2. Klik menu **Login** di header
 3. Masukkan kredensial admin:
-   - **Email**: email terdaftar sebagai admin
-   - **Password**: password akun admin
+   - **Email**: admin@test.com
+   - **Password**: admin123
 4. Klik tombol **Login**
 5. Setelah berhasil login, Anda akan diarahkan ke Dashboard Admin
+
+#### Kredensial Default
+
+Untuk testing dan development, tersedia akun default berikut:
+
+**Admin Account:**
+- Email: `admin@test.com`
+- Password: `admin123`
+- Role: Admin (akses penuh)
+
+**Customer Account:**
+- Email: `customer@test.com`
+- Password: `customer123`
+- Role: Customer (akses terbatas)
 
 ### Navigasi Sidebar
 
