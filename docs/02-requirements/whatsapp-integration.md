@@ -2,7 +2,7 @@
 
 **Author:** Zulfikar Hidayatullah  
 **Last Updated:** 2025-12-10  
-**Version:** 1.0.0  
+**Version:** 1.1.0  
 **Status:** Implemented
 
 ---
@@ -137,22 +137,19 @@ order_items:
 #### WhatsApp Message Format
 
 ```
-Halo! Saya ingin memesan.
+Halo! Saya *John Doe* ingin memesan.
 
 *Invoice:* #ORD-20251210-A7B9C
-*Nama:* John Doe
-*Telepon:* 081234567890
+
+*Ringkasan Pesanan:*
+- Nasi Goreng Spesial × 2
+- Es Teh Manis × 1
+
+*Total:* Rp 65.000
+
 *Alamat:* Jl. Sudirman No. 123, Jakarta
 
 *Catatan:* Tolong tambahkan sambal extra
-
-*Ringkasan Pesanan:*
-• Nasi Goreng Spesial x2 = Rp 50.000
-• Es Teh Manis x1 = Rp 5.000
-
-*Subtotal:* Rp 55.000
-*Ongkir:* Rp 10.000
-*Total:* Rp 65.000
 
 *Link Detail Pesanan:*
 https://your-domain.com/admin/orders/123
@@ -160,12 +157,36 @@ https://your-domain.com/admin/orders/123
 Mohon konfirmasi pesanan saya. Terima kasih!
 ```
 
+**Note:** Format message telah diupdate untuk include nama customer di greeting. Alamat dan catatan hanya ditampilkan jika diisi.
+
 #### Implementation Details
 
 - WhatsApp Web URL scheme: `https://wa.me/[PHONE_NUMBER]?text=[MESSAGE]`
 - URL encoding untuk message content dengan `urlencode()`
 - Admin link generation menggunakan `route('admin.orders.show', $order->id)`
 - Redirect dari order success page dengan "Konfirmasi via WhatsApp" button
+
+#### Phone Number Formatting
+
+Sistem secara otomatis memformat nomor telepon untuk WhatsApp:
+
+```php
+// Input: 081234567890
+// Output: 6281234567890
+
+// Logic:
+// 1. Remove non-numeric characters
+// 2. If starts with '0', replace with '62'
+// 3. If doesn't start with '62', prepend '62'
+```
+
+**Contoh Transformasi:**
+| Input | Output |
+|-------|--------|
+| 081234567890 | 6281234567890 |
+| +6281234567890 | 6281234567890 |
+| 6281234567890 | 6281234567890 |
+| 81234567890 | 6281234567890 |
 
 ---
 
@@ -638,6 +659,24 @@ tests/Feature/Admin/SettingsTest.php
 
 ## Changelog
 
+### Version 1.1.0 (2025-12-10)
+
+**Added:**
+- ✅ Customer name di greeting message ("Halo! Saya *{nama}* ingin memesan...")
+- ✅ Auto phone number formatting dengan country code Indonesia (62)
+- ✅ Conditional display untuk alamat dan catatan (hanya jika diisi)
+- ✅ Checkout auto-fill dengan data user yang login
+- ✅ Optional address field untuk pickup orders
+
+**Changed:**
+- Message format lebih concise dan fokus pada informasi penting
+- Phone number auto-converted dari 08xxx ke 628xxx
+- Alamat field sekarang opsional (nullable)
+
+**Fixed:**
+- Customer-to-owner phone number tidak include country code
+- Konsistensi formatting antara customer-to-owner dan owner-to-customer
+
 ### Version 1.0.0 (2025-12-10)
 
 **Added:**
@@ -676,5 +715,6 @@ tests/Feature/Admin/SettingsTest.php
 
 | Version | Date       | Author                  | Changes           |
 |---------|------------|-------------------------|-------------------|
+| 1.1.0   | 2025-12-10 | Zulfikar Hidayatullah   | Phone formatting, customer name in message |
 | 1.0.0   | 2025-12-10 | Zulfikar Hidayatullah   | Initial release   |
 

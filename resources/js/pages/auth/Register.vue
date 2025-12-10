@@ -15,12 +15,31 @@ import { Spinner } from '@/components/ui/spinner';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
-import { Form, Head } from '@inertiajs/vue3';
+import { Form, Head, usePage } from '@inertiajs/vue3';
 import { Motion } from 'motion-v';
 import { springPresets, staggerDelay } from '@/composables/useMotionV';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useHapticFeedback } from '@/composables/useHapticFeedback';
 import { useShakeAnimation } from '@/composables/useSpringAnimation';
+
+const page = usePage();
+
+/**
+ * Interface dan computed untuk store branding
+ */
+interface StoreBranding {
+    name: string
+    tagline: string
+    logo: string | null
+}
+
+const storeBranding = computed<StoreBranding>(() => {
+    return (page.props as { store?: StoreBranding }).store ?? {
+        name: 'Simple Store',
+        tagline: 'Premium Quality Products',
+        logo: null,
+    }
+});
 
 /**
  * Haptic feedback dan shake animation
@@ -65,7 +84,7 @@ function handleFormError() {
 <template>
     <AuthBase
         title="Buat Akun Baru"
-        description="Daftar untuk mulai berbelanja di Simple Store"
+        :description="`Daftar untuk mulai berbelanja di ${storeBranding.name}`"
     >
         <Head title="Daftar" />
 

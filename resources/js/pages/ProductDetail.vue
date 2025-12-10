@@ -7,13 +7,14 @@
  *
  * @author Zulfikar Hidayatullah
  */
-import { Head, Link, router } from '@inertiajs/vue3'
+import { Head, Link, router, usePage } from '@inertiajs/vue3'
 import { Motion, AnimatePresence } from 'motion-v'
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { home } from '@/routes'
 import { store as storeCart } from '@/actions/App/Http/Controllers/CartController'
 import ProductCard from '@/components/store/ProductCard.vue'
 import CartCounter from '@/components/store/CartCounter.vue'
+import StoreHeader from '@/components/store/StoreHeader.vue'
 import UserBottomNav from '@/components/mobile/UserBottomNav.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -78,6 +79,25 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const page = usePage()
+
+/**
+ * Interface dan computed untuk store branding
+ */
+interface StoreBranding {
+    name: string
+    tagline: string
+    logo: string | null
+}
+
+const store = computed<StoreBranding>(() => {
+    return (page.props as { store?: StoreBranding }).store ?? {
+        name: 'Simple Store',
+        tagline: 'Premium Quality Products',
+        logo: null,
+    }
+})
 
 /**
  * Haptic feedback untuk iOS-like tactile response
@@ -220,7 +240,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
 </script>
 
 <template>
-    <Head :title="`${product.name} - Simple Store`">
+    <Head :title="`${product.name} - ${store.name}`">
         <meta name="description" :content="product.description ?? `Beli ${product.name} dengan harga terbaik`" />
         <link rel="preconnect" href="https://rsms.me/" />
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
@@ -231,23 +251,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
         <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-brand-blue-200/30 dark:border-brand-blue-800/30">
             <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                 <!-- Logo & Brand -->
-                <Motion
-                    tag="a"
-                    :href="home()"
-                    :initial="{ opacity: 0, x: -20 }"
-                    :animate="{ opacity: 1, x: 0 }"
-                    :transition="springTransition"
-                    class="flex items-center gap-2 sm:gap-3"
-                    @click.prevent="() => router.visit(home())"
-                >
-                    <div class="brand-logo h-9 w-9 sm:h-10 sm:w-10">
-                        <ShoppingBag class="h-4 w-4 text-white sm:h-5 sm:w-5" />
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
-                        <span class="hidden text-[10px] font-medium text-brand-gold sm:block">Premium Quality Products</span>
-                    </div>
-                </Motion>
+                <StoreHeader />
 
                 <!-- Cart Counter & Auth Navigation -->
                 <nav class="flex items-center gap-2 sm:gap-3">
@@ -652,9 +656,9 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
             <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
                 <div class="flex flex-col items-center gap-2">
                     <p class="text-center text-sm text-muted-foreground">
-                        &copy; {{ new Date().getFullYear() }} Simple Store. Dibuat dengan ❤️ oleh Zulfikar Hidayatullah.
+                        &copy; {{ new Date().getFullYear() }} {{ store.name }}. Created By Zulfikar Hidayatullah.
                     </p>
-                    <p class="text-xs text-brand-gold">Premium Quality Products</p>
+                    <p class="text-xs text-brand-gold">{{ store.tagline }}</p>
                 </div>
             </div>
         </footer>

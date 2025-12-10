@@ -7,13 +7,14 @@
  *
  * @author Zulfikar Hidayatullah
  */
-import { Head, Link } from '@inertiajs/vue3'
+import { Head, Link, usePage } from '@inertiajs/vue3'
 import { Form } from '@inertiajs/vue3'
 import { Motion, AnimatePresence } from 'motion-v'
 import { computed, ref } from 'vue'
 import { show as showCart } from '@/routes/cart'
 import { store as checkoutStore } from '@/actions/App/Http/Controllers/CheckoutController'
 import CartCounter from '@/components/store/CartCounter.vue'
+import StoreHeader from '@/components/store/StoreHeader.vue'
 import UserBottomNav from '@/components/mobile/UserBottomNav.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -60,13 +61,45 @@ interface CartData {
 }
 
 /**
+ * Interface untuk customer data dari authenticated user
+ */
+interface CustomerData {
+    name: string
+    phone: string | null
+    address: string | null
+}
+
+/**
  * Props yang diterima dari CheckoutController::show
  */
 interface Props {
     cart: CartData
+    customer: CustomerData | null
 }
 
 const props = defineProps<Props>()
+
+/**
+ * Page instance untuk mengakses shared props
+ */
+const page = usePage()
+
+/**
+ * Interface dan computed untuk store branding
+ */
+interface StoreBranding {
+    name: string
+    tagline: string
+    logo: string | null
+}
+
+const store = computed<StoreBranding>(() => {
+    return (page.props as { store?: StoreBranding }).store ?? {
+        name: 'Simple Store',
+        tagline: 'Premium Quality Products',
+        logo: null,
+    }
+})
 
 /**
  * Haptic feedback dan shake animation
@@ -139,7 +172,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
 </script>
 
 <template>
-    <Head title="Checkout - Simple Store">
+    <Head :title="`Checkout - ${store.name}`">
         <link rel="preconnect" href="https://rsms.me/" />
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     </Head>
@@ -149,22 +182,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
         <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-brand-blue-200/30 dark:border-brand-blue-800/30">
             <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                 <!-- Logo & Brand -->
-                <Motion
-                    tag="a"
-                    href="/"
-                    :initial="{ opacity: 0, x: -20 }"
-                    :animate="{ opacity: 1, x: 0 }"
-                    :transition="springTransition"
-                    class="flex items-center gap-2 sm:gap-3"
-                >
-                    <div class="brand-logo h-9 w-9 sm:h-10 sm:w-10">
-                        <ShoppingBag class="h-4 w-4 text-white sm:h-5 sm:w-5" />
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
-                        <span class="hidden text-[10px] font-medium text-brand-gold sm:block">Premium Quality Products</span>
-                    </div>
-                </Motion>
+                <StoreHeader />
 
                 <!-- Cart Counter & Auth -->
                 <nav class="flex items-center gap-2 sm:gap-3">
@@ -292,6 +310,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                                         name="customer_name"
                                         type="text"
                                         placeholder="Masukkan nama lengkap"
+                                        :default-value="customer?.name ?? ''"
                                         class="ios-input h-12 rounded-xl text-base sm:h-11 sm:text-sm"
                                         :aria-invalid="!!errors.customer_name"
                                         @focus="handleFieldFocus('customer_name')"
@@ -318,6 +337,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                                         type="tel"
                                         inputmode="tel"
                                         placeholder="08xxxxxxxxxx"
+                                        :default-value="customer?.phone ?? ''"
                                         class="ios-input h-12 rounded-xl text-base sm:h-11 sm:text-sm"
                                         :aria-invalid="!!errors.customer_phone"
                                         @focus="handleFieldFocus('customer_phone')"
@@ -349,7 +369,10 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                         <div class="space-y-4">
                             <!-- Alamat Lengkap -->
                             <div class="space-y-2">
-                                <Label for="customer_address" class="text-sm sm:text-base">Alamat Lengkap *</Label>
+                                <Label for="customer_address" class="text-sm sm:text-base">
+                                    Alamat Lengkap
+                                    <span class="text-muted-foreground">(Opsional)</span>
+                                </Label>
                                 <Motion
                                     :animate="{ scale: focusedField === 'customer_address' ? 1.01 : 1 }"
                                     :transition="snappyTransition"
@@ -363,7 +386,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                                         :aria-invalid="!!errors.customer_address"
                                         @focus="handleFieldFocus('customer_address')"
                                         @blur="handleFieldBlur"
-                                    ></textarea>
+                                    >{{ customer?.address ?? '' }}</textarea>
                                 </Motion>
                                 <p v-if="errors.customer_address" class="animate-ios-shake text-sm text-destructive">
                                     {{ errors.customer_address }}
@@ -509,9 +532,9 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
             <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div class="flex flex-col items-center gap-2">
                     <p class="text-center text-sm text-muted-foreground">
-                        &copy; {{ new Date().getFullYear() }} Simple Store. Dibuat dengan ❤️ oleh Zulfikar Hidayatullah.
+                        &copy; {{ new Date().getFullYear() }} {{ store.name }}. Created By Zulfikar Hidayatullah.
                     </p>
-                    <p class="text-xs text-brand-gold">Premium Quality Products</p>
+                    <p class="text-xs text-brand-gold">{{ store.tagline }}</p>
                 </div>
             </div>
         </footer>

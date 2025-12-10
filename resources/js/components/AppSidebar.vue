@@ -6,7 +6,6 @@
  * @author Zulfikar Hidayatullah
  */
 import { computed } from 'vue';
-import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import {
@@ -25,7 +24,7 @@ import { index as ordersIndex } from '@/routes/admin/orders';
 import { index as settingsIndex } from '@/routes/admin/settings';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Package, FolderTree, ShoppingBag, Settings } from 'lucide-vue-next';
+import { LayoutGrid, Package, FolderTree, ShoppingBag, Settings } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const page = usePage();
@@ -39,6 +38,7 @@ const pendingOrdersCount = computed(() => {
 
 /**
  * Main navigation items dengan badge untuk pesanan
+ * Grouping: Utama (Dashboard, Pesanan) -> Katalog (Produk, Kategori) -> Sistem (Pengaturan)
  */
 const mainNavItems = computed<NavItem[]>(() => [
     {
@@ -68,19 +68,6 @@ const mainNavItems = computed<NavItem[]>(() => [
         icon: Settings,
     },
 ]);
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Github Repo',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
-    },
-];
 </script>
 
 <template>
@@ -102,7 +89,6 @@ const footerNavItems: NavItem[] = [
         </SidebarContent>
 
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>

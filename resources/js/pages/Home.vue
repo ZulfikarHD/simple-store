@@ -18,6 +18,7 @@ import CategoryFilter from '@/components/store/CategoryFilter.vue'
 import SearchBar from '@/components/store/SearchBar.vue'
 import EmptyState from '@/components/store/EmptyState.vue'
 import CartCounter from '@/components/store/CartCounter.vue'
+import StoreHeader from '@/components/store/StoreHeader.vue'
 import UserBottomNav from '@/components/mobile/UserBottomNav.vue'
 import PullToRefresh from '@/components/mobile/PullToRefresh.vue'
 import { ShoppingBag, X, Menu } from 'lucide-vue-next'
@@ -97,6 +98,23 @@ const haptic = useHapticFeedback()
 const isAdmin = computed(() => {
     const user = (page.props as { auth?: { user?: { role?: string } } }).auth?.user
     return user?.role === 'admin'
+})
+
+/**
+ * Interface dan computed untuk store branding
+ */
+interface StoreBranding {
+    name: string
+    tagline: string
+    logo: string | null
+}
+
+const store = computed<StoreBranding>(() => {
+    return (page.props as { store?: StoreBranding }).store ?? {
+        name: 'Simple Store',
+        tagline: 'Premium Quality Products',
+        logo: null,
+    }
 })
 
 /**
@@ -288,20 +306,7 @@ const bouncyTransition = { type: 'spring' as const, ...springPresets.bouncy }
         <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-brand-blue-200/30 dark:border-brand-blue-800/30">
                 <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                     <!-- Logo & Brand dengan spring animation -->
-                <Motion
-                        :initial="{ opacity: 0, x: -20 }"
-                    :animate="{ opacity: 1, x: 0 }"
-                    :transition="springTransition"
-                        class="flex items-center gap-2 sm:gap-3"
-                    >
-                        <div class="brand-logo h-9 w-9 sm:h-10 sm:w-10">
-                            <ShoppingBag class="h-4 w-4 text-white sm:h-5 sm:w-5" />
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
-                            <span class="hidden text-[10px] font-medium text-brand-gold sm:block">Premium Quality Products</span>
-                        </div>
-                </Motion>
+                    <StoreHeader />
 
                     <!-- Desktop Navigation dengan fade in -->
                 <Motion
@@ -537,14 +542,20 @@ const bouncyTransition = { type: 'spring' as const, ...springPresets.bouncy }
                     <div class="flex flex-col items-center gap-3">
                         <div class="flex items-center gap-2">
                             <div class="brand-logo h-8 w-8">
-                                <ShoppingBag class="h-4 w-4 text-white" />
+                                <img
+                                    v-if="store.logo"
+                                    :src="`/storage/${store.logo}`"
+                                    :alt="store.name"
+                                    class="h-full w-full rounded-xl object-contain"
+                                />
+                                <ShoppingBag v-else class="h-4 w-4 text-white" />
                             </div>
-                            <span class="font-bold text-foreground">Simple Store</span>
+                            <span class="font-bold text-foreground">{{ store.name }}</span>
                         </div>
                         <p class="text-center text-sm text-muted-foreground">
-                            &copy; {{ new Date().getFullYear() }} Simple Store. Dibuat dengan ❤️ oleh Zulfikar Hidayatullah.
+                            &copy; {{ new Date().getFullYear() }} {{ store.name }}. Created By Zulfikar Hidayatullah.
                         </p>
-                        <p class="text-xs text-brand-gold">Premium Quality Products</p>
+                        <p class="text-xs text-brand-gold">{{ store.tagline }}</p>
                     </div>
                 </div>
             </footer>

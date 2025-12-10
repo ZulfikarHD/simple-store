@@ -13,6 +13,7 @@ import { computed, ref } from 'vue'
 import { home } from '@/routes'
 import { login, register } from '@/routes'
 import UserBottomNav from '@/components/mobile/UserBottomNav.vue'
+import StoreHeader from '@/components/store/StoreHeader.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -32,6 +33,23 @@ import {
 
 const page = usePage()
 const haptic = useHapticFeedback()
+
+/**
+ * Interface dan computed untuk store branding
+ */
+interface StoreBranding {
+    name: string
+    tagline: string
+    logo: string | null
+}
+
+const store = computed<StoreBranding>(() => {
+    return (page.props as { store?: StoreBranding }).store ?? {
+        name: 'Simple Store',
+        tagline: 'Premium Quality Products',
+        logo: null,
+    }
+})
 
 /**
  * Press states untuk iOS-like feedback
@@ -109,7 +127,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
 </script>
 
 <template>
-    <Head title="Akun Saya - Simple Store">
+    <Head :title="`Akun Saya - ${store.name}`">
         <link rel="preconnect" href="https://rsms.me/" />
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     </Head>
@@ -124,15 +142,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                     :animate="{ opacity: 1, x: 0 }"
                     :transition="springTransition"
                 >
-                <Link :href="home()" class="flex items-center gap-2 sm:gap-3">
-                        <div class="brand-logo h-9 w-9 sm:h-10 sm:w-10">
-                        <ShoppingBag class="h-4 w-4 text-white sm:h-5 sm:w-5" />
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
-                        <span class="hidden text-[10px] font-medium text-brand-gold sm:block">Premium Quality Products</span>
-                    </div>
-                </Link>
+                    <StoreHeader />
                 </Motion>
 
                 <!-- Desktop Auth Links -->

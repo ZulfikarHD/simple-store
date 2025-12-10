@@ -2,7 +2,7 @@
 
 **Author:** Zulfikar Hidayatullah  
 **Last Updated:** 2025-12-10  
-**Version:** 1.0.0
+**Version:** 1.1.0
 
 ---
 
@@ -59,31 +59,34 @@ X-Inertia: true
 {
   "component": "Checkout",
   "props": {
-    "cartItems": [
-      {
-        "id": 1,
-        "product": {
+    "cart": {
+      "items": [
+        {
           "id": 1,
-          "name": "Nasi Goreng Spesial",
-          "price": 25000,
-          "image_url": "/storage/products/nasi-goreng.jpg"
-        },
-        "quantity": 2,
-        "subtotal": 50000
-      }
-    ],
-    "subtotal": 50000,
-    "deliveryFee": 10000,
-    "total": 60000,
-    "user": {
+          "product": {
+            "id": 1,
+            "name": "Nasi Goreng Spesial",
+            "price": 25000,
+            "image_url": "/storage/products/nasi-goreng.jpg"
+          },
+          "quantity": 2,
+          "subtotal": 50000
+        }
+      ],
+      "subtotal": 50000,
+      "deliveryFee": 10000,
+      "total": 60000
+    },
+    "customer": {
       "name": "John Doe",
-      "email": "john@example.com",
       "phone": "081234567890",
       "address": "Jl. Sudirman No. 123"
     }
   }
 }
 ```
+
+**Note:** `customer` prop berisi data user yang login untuk auto-fill form checkout. Jika user tidak memiliki phone atau address, field tersebut akan null.
 
 #### Response (Unauthorized)
 
@@ -136,10 +139,12 @@ X-XSRF-TOKEN: {CSRF_TOKEN}
 
 | Parameter | Type | Required | Validation | Description |
 |-----------|------|----------|------------|-------------|
-| `customer_name` | string | Yes | max:255 | Nama customer untuk order |
-| `customer_phone` | string | Yes | max:20, regex:/^[0-9+\-\s()]+$/ | Nomor telepon customer |
-| `customer_address` | string | Yes | max:500 | Alamat lengkap untuk delivery |
-| `notes` | string | No | max:1000 | Catatan tambahan untuk order |
+| `customer_name` | string | Yes | min:3, max:100 | Nama customer untuk order |
+| `customer_phone` | string | Yes | min:10, max:15, regex:/^[0-9+\-\s]+$/ | Nomor telepon customer (WhatsApp) |
+| `customer_address` | string | **No** | max:500 | Alamat lengkap untuk delivery (opsional) |
+| `notes` | string | No | max:500 | Catatan tambahan untuk order |
+
+**Note:** `customer_address` sekarang opsional untuk mendukung pickup orders atau delivery dengan alamat fleksibel.
 
 #### Response (Success)
 
@@ -306,29 +311,33 @@ Content-Type: application/json
 https://wa.me/{OWNER_PHONE}?text={ENCODED_MESSAGE}
 ```
 
+**Phone Number Formatting:**
+- Sistem auto-format nomor dari `08xxx` ke `628xxx`
+- Country code Indonesia (62) ditambahkan otomatis
+- Non-numeric characters dihapus
+
 **Message Format:**
 ```
-Halo! Saya ingin memesan.
+Halo! Saya *John Doe* ingin memesan.
 
 *Invoice:* #ORD-20251210-A7B9C
-*Nama:* John Doe
-*Telepon:* 081234567890
+
+*Ringkasan Pesanan:*
+- Nasi Goreng Spesial × 2
+
+*Total:* Rp 60.000
+
 *Alamat:* Jl. Sudirman No. 123, Jakarta Pusat
 
 *Catatan:* Tolong tambahkan sambal extra
-
-*Ringkasan Pesanan:*
-• Nasi Goreng Spesial x2 = Rp 50.000
-
-*Subtotal:* Rp 50.000
-*Ongkir:* Rp 10.000
-*Total:* Rp 60.000
 
 *Link Detail Pesanan:*
 https://your-domain.com/admin/orders/123
 
 Mohon konfirmasi pesanan saya. Terima kasih!
 ```
+
+**Note:** Alamat dan Catatan hanya ditampilkan jika diisi oleh customer.
 
 ---
 
@@ -942,6 +951,21 @@ Gate::authorize('view', $order);
 
 ## Changelog
 
+### Version 1.1.0 (2025-12-10)
+
+**Added:**
+- ✅ Customer data auto-fill dari authenticated user
+- ✅ Phone number auto-formatting dengan country code (62)
+- ✅ Customer name di WhatsApp message greeting
+
+**Changed:**
+- `customer_address` sekarang opsional (nullable)
+- WhatsApp message format lebih concise
+- Conditional display untuk alamat dan catatan
+
+**Fixed:**
+- Phone number formatting untuk WhatsApp customer-to-owner
+
 ### Version 1.0.0 (2025-12-10)
 
 **Added:**
@@ -975,6 +999,6 @@ Untuk pertanyaan atau issue terkait Orders API:
 ---
 
 **Last Updated:** 2025-12-10  
-**API Version:** 1.0.0  
+**API Version:** 1.1.0  
 **Author:** Zulfikar Hidayatullah
 

@@ -28,6 +28,8 @@ class UpdateStoreSettingsRequest extends FormRequest
         return [
             // General Settings
             'store_name' => ['required', 'string', 'max:255'],
+            'store_tagline' => ['nullable', 'string', 'max:255'],
+            'store_logo' => ['nullable', 'string', 'max:500'],
             'store_address' => ['nullable', 'string', 'max:1000'],
             'store_phone' => ['nullable', 'string', 'max:50'],
 
@@ -87,6 +89,8 @@ class UpdateStoreSettingsRequest extends FormRequest
         return [
             'store_name.required' => 'Nama toko wajib diisi.',
             'store_name.max' => 'Nama toko maksimal 255 karakter.',
+            'store_tagline.max' => 'Tagline toko maksimal 255 karakter.',
+            'store_logo.max' => 'Path logo toko maksimal 500 karakter.',
             'store_address.max' => 'Alamat toko maksimal 1000 karakter.',
             'store_phone.max' => 'Nomor telepon maksimal 50 karakter.',
             'whatsapp_number.required' => 'Nomor WhatsApp wajib diisi.',
@@ -116,6 +120,8 @@ class UpdateStoreSettingsRequest extends FormRequest
     {
         return [
             'store_name' => 'nama toko',
+            'store_tagline' => 'tagline toko',
+            'store_logo' => 'logo toko',
             'store_address' => 'alamat toko',
             'store_phone' => 'nomor telepon toko',
             'whatsapp_number' => 'nomor WhatsApp',

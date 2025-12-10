@@ -19,6 +19,104 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] - 2025-12-10
+
+### Added - Store Branding & Checkout Enhancements
+
+#### Store Branding Configuration
+- **Logo Toko**
+  - Admin dapat upload logo toko dari halaman Settings
+  - Logo ditampilkan di header dan footer user-facing pages
+  - Support image formats: JPEG, PNG, JPG, WEBP (max 2MB)
+  - Fallback ke ShoppingBag icon jika logo tidak tersedia
+  
+- **Tagline Toko**
+  - Admin dapat mengatur tagline/slogan toko
+  - Tagline ditampilkan di header dan footer user-facing pages
+  - Default: "Premium Quality Products"
+  
+- **Dynamic Store Name**
+  - Nama toko dari settings diterapkan di semua halaman user
+  - Includes: Home, Cart, Checkout, Product Detail, Order Success, Account pages
+  - Shared via Inertia middleware untuk konsistensi global
+
+#### Checkout Enhancements
+- **Auto-fill Customer Data**
+  - Form checkout otomatis terisi dengan data user yang login
+  - Pre-fill: nama, nomor telepon, dan alamat
+  - Mengurangi friction dan meningkatkan checkout completion rate
+  
+- **Optional Address Field**
+  - Field alamat sekarang opsional (nullable)
+  - Berguna untuk pickup orders atau delivery dengan alamat fleksibel
+  - Database migration: `customer_address` column nullable
+
+#### WhatsApp Integration Improvements
+- **Phone Number Formatting**
+  - Customer-to-owner message sekarang include country code (62)
+  - Auto-format nomor dari 08xxx ke 628xxx
+  - Konsisten dengan owner-to-customer message format
+  
+- **Customer Name in Message**
+  - Message template customer-to-owner sekarang include nama customer
+  - Format: "Halo! Saya *{customer_name}* ingin memesan..."
+  - Memudahkan owner untuk identify customer
+
+#### UI/UX Improvements
+- **Reusable Store Components**
+  - `StoreHeader.vue`: Header component dengan dynamic branding
+  - `StoreFooter.vue`: Footer component dengan dynamic branding
+  - Konsisten styling di semua user-facing pages
+  
+- **Admin Sidebar Cleanup**
+  - Removed Laravel template links (Documentation, GitHub repo)
+  - Cleaner sidebar fokus pada store management
+  - Logo sidebar tanpa background wrapper
+
+### Changed
+
+- **Checkout Form**
+  - Label "Alamat Lengkap" → "Alamat Lengkap (Opsional)"
+  - Validation: `customer_address` dari `required` ke `nullable`
+  
+- **WhatsApp Message Format**
+  - Customer message sekarang include nama customer di greeting
+  - Phone number auto-formatted dengan country code Indonesia (62)
+
+- **Store Settings Page**
+  - Added logo upload section dengan preview
+  - Added tagline input field
+  - Reorganized form layout untuk better UX
+
+### Fixed
+
+- **WhatsApp Phone Formatting**
+  - Fixed customer-to-owner phone tidak include country code
+  - Nomor 08xxx sekarang otomatis diformat ke 628xxx
+
+- **Store Branding Consistency**
+  - Fixed branding tidak diterapkan di user-facing pages
+  - Semua pages sekarang menggunakan shared store props
+
+### Database Changes
+
+**New Migration:**
+- `2025_12_10_155728_make_customer_address_nullable_in_orders_table.php`
+  - Modified `customer_address` column to nullable
+
+**Store Settings Keys Added:**
+- `store_logo` (string, nullable) - Path to uploaded logo
+- `store_tagline` (string) - Store tagline/slogan
+
+### Testing
+
+- Updated `CheckoutTest` untuk handle optional address
+- Added test: `test_order_can_be_created_without_address`
+- Added test: `test_checkout_page_receives_customer_data_from_authenticated_user`
+- Updated WhatsApp message assertions untuk include customer name
+
+---
+
 ## [1.1.0] - 2025-12-10
 
 ### Added - WhatsApp Integration for Order Management
@@ -257,12 +355,59 @@ None introduced in this release.
 
 | Version | Release Date | Key Features |
 |---------|--------------|--------------|
+| 1.2.0   | 2025-12-10   | Store Branding, Checkout Autofill, WhatsApp Phone Formatting |
 | 1.1.0   | 2025-12-10   | WhatsApp Integration, Auto-Cancel, Rate Limiting |
 | 1.0.0   | 2024-11-25   | Initial Release (Product Management, Cart, Auth, 2FA) |
 
 ---
 
 ## Upgrade Guide
+
+### From 1.1.0 to 1.2.0
+
+#### Database Migrations
+
+```bash
+php artisan migrate
+```
+
+**Modified Tables:**
+- `orders`: `customer_address` column now nullable
+- `store_settings`: Added `store_logo` and `store_tagline` keys
+
+#### Configuration Changes
+
+1. **Store Branding Setup**
+   ```bash
+   # Login as admin
+   # Navigate to: /admin/settings
+   # Upload logo toko (optional, max 2MB)
+   # Set tagline toko (optional)
+   ```
+
+2. **Storage Link**
+   ```bash
+   # Ensure storage link exists for logo display
+   php artisan storage:link
+   ```
+
+#### Code Changes
+
+- No breaking changes
+- New optional features untuk store branding
+- Checkout form now accepts null address
+
+#### Assets Rebuild
+
+```bash
+# Rebuild frontend assets for new components
+yarn install
+yarn run build
+# or for development
+yarn run dev
+```
+
+---
 
 ### From 1.0.0 to 1.1.0
 

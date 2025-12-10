@@ -6,11 +6,12 @@
  *
  * @author Zulfikar Hidayatullah
  */
-import { Head, Link } from '@inertiajs/vue3'
+import { Head, Link, usePage } from '@inertiajs/vue3'
 import { Motion, AnimatePresence } from 'motion-v'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { home } from '@/routes'
 import UserBottomNav from '@/components/mobile/UserBottomNav.vue'
+import StoreHeader from '@/components/store/StoreHeader.vue'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { OrderStatusBadge } from '@/components/store'
@@ -59,6 +60,25 @@ interface Props {
 
 defineProps<Props>()
 
+const page = usePage()
+
+/**
+ * Interface dan computed untuk store branding
+ */
+interface StoreBranding {
+    name: string
+    tagline: string
+    logo: string | null
+}
+
+const store = computed<StoreBranding>(() => {
+    return (page.props as { store?: StoreBranding }).store ?? {
+        name: 'Simple Store',
+        tagline: 'Premium Quality Products',
+        logo: null,
+    }
+})
+
 const haptic = useHapticFeedback()
 
 /**
@@ -97,7 +117,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
 </script>
 
 <template>
-    <Head title="Riwayat Pesanan - Simple Store">
+    <Head :title="`Riwayat Pesanan - ${store.name}`">
         <link rel="preconnect" href="https://rsms.me/" />
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     </Head>
@@ -112,15 +132,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                     :animate="{ opacity: 1, x: 0 }"
                     :transition="springTransition"
                 >
-                <Link :href="home()" class="flex items-center gap-2 sm:gap-3">
-                        <div class="brand-logo h-9 w-9 sm:h-10 sm:w-10">
-                        <ShoppingBag class="h-4 w-4 text-white sm:h-5 sm:w-5" />
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
-                        <span class="hidden text-[10px] font-medium text-brand-gold sm:block">Premium Quality Products</span>
-                    </div>
-                </Link>
+                    <StoreHeader />
                 </Motion>
             </div>
         </header>

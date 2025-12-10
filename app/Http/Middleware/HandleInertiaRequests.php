@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Order;
 use App\Services\CartService;
+use App\Services\StoreSettingService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -62,6 +63,8 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
             ],
+            // Store branding untuk logo, nama, dan tagline toko
+            'store' => fn () => app(StoreSettingService::class)->getStoreBranding(),
             // Pending orders count untuk admin notifications
             'pending_orders_count' => fn () => $request->user()
                 ? Order::where('status', 'pending')->count()

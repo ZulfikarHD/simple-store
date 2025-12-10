@@ -1,8 +1,8 @@
 # Admin Guide - F&B Web App
 
 **Zulfikar Hidayatullah**  
-**Version**: 1.2.0  
-**Last Updated**: 2025-11-26
+**Version**: 1.3.0  
+**Last Updated**: 2025-12-10
 
 ## Overview
 
@@ -31,6 +31,7 @@ Admin Guide merupakan panduan lengkap untuk administrator dalam mengelola aplika
   - [Komunikasi dengan Customer](#komunikasi-dengan-customer)
 - [Pengaturan Toko](#pengaturan-toko)
   - [Informasi Toko](#informasi-toko)
+  - [Branding Toko](#branding-toko)
   - [Pengaturan WhatsApp](#pengaturan-whatsapp)
   - [Jam Operasional](#jam-operasional)
   - [Pengaturan Delivery](#pengaturan-delivery)
@@ -670,6 +671,65 @@ Section ini digunakan untuk mengatur informasi dasar toko yang akan ditampilkan 
 
 ---
 
+### Branding Toko
+
+Section ini digunakan untuk mengatur identitas visual toko yang akan ditampilkan di seluruh halaman customer.
+
+#### Form Fields
+
+1. **Logo Toko** (Optional)
+   - Upload gambar logo toko
+   - Format yang didukung: JPEG, PNG, JPG, WEBP
+   - Ukuran maksimal: 2MB
+   - Logo akan ditampilkan di:
+     - Header halaman customer (Home, Cart, Checkout, dll)
+     - Footer halaman customer
+     - Admin sidebar
+   - Jika tidak ada logo, sistem akan menampilkan icon ShoppingBag default
+
+2. **Tagline Toko** (Optional)
+   - Input tagline/slogan toko
+   - Maksimal 255 karakter
+   - Contoh: "Premium Quality Products", "Makanan Enak Harga Terjangkau"
+   - Tagline ditampilkan di bawah nama toko di header dan footer
+
+#### Mengelola Logo Toko
+
+**Upload Logo Baru:**
+1. Klik area upload atau drag file logo ke area tersebut
+2. Preview logo akan muncul setelah file dipilih
+3. Klik **Simpan Pengaturan** untuk menyimpan
+
+**Mengganti Logo:**
+1. Upload logo baru akan otomatis mengganti logo lama
+2. Logo lama akan dihapus dari storage
+
+**Menghapus Logo:**
+1. Klik tombol **X** pada preview logo
+2. Klik **Simpan Pengaturan** untuk menyimpan perubahan
+3. Sistem akan kembali menampilkan icon default
+
+#### Tips Logo Toko
+
+- **Resolusi Optimal:** 200x200 pixels atau lebih tinggi
+- **Aspect Ratio:** 1:1 (square) untuk tampilan terbaik
+- **Background:** Gunakan background transparan (PNG) untuk fleksibilitas
+- **Format Terbaik:** PNG untuk logo dengan transparansi, WEBP untuk ukuran file kecil
+
+#### Dampak Branding
+
+Perubahan branding akan langsung terlihat di:
+- Halaman Home (header dan footer)
+- Halaman Cart (header dan footer)
+- Halaman Checkout (header dan footer)
+- Halaman Detail Produk (header dan footer)
+- Halaman Order Success (header dan footer)
+- Halaman Account/Profile (header dan footer)
+- Halaman Register (deskripsi)
+- Admin Sidebar (logo dan nama toko)
+
+---
+
 ### Pengaturan WhatsApp
 
 Section ini digunakan untuk mengkonfigurasi nomor WhatsApp bisnis yang akan menerima pesanan dari customer.
@@ -1006,6 +1066,29 @@ Error message akan ditampilkan di bawah field yang bermasalah jika validasi gaga
 - Coba buka manual dengan mengetik wa.me/[nomor]
 - Gunakan aplikasi WhatsApp desktop jika ada
 
+### Masalah Branding Toko
+
+**Problem**: Logo tidak muncul setelah upload  
+**Solution**:
+- Pastikan file berformat: JPEG, PNG, JPG, atau WEBP
+- Cek ukuran file tidak melebihi 2MB
+- Jalankan `php artisan storage:link` jika belum
+- Clear browser cache dan refresh halaman
+
+**Problem**: Logo terpotong atau tidak proporsional  
+**Solution**:
+- Gunakan gambar dengan aspect ratio 1:1 (square)
+- Resolusi minimal 200x200 pixels
+- Hindari logo dengan banyak detail kecil
+
+**Problem**: Tagline tidak muncul di halaman customer  
+**Solution**:
+- Pastikan tagline sudah disimpan di pengaturan
+- Refresh halaman customer (Ctrl+F5)
+- Tagline hanya muncul di layar desktop (hidden di mobile)
+
+---
+
 ### Masalah Pengaturan Toko
 
 **Problem**: Pengaturan tidak tersimpan  
@@ -1053,6 +1136,14 @@ Jika mengalami masalah yang tidak dapat diselesaikan dengan panduan ini, silakan
 ---
 
 ## Changelog
+
+### Version 1.3.0 (2025-12-10)
+- Tambah dokumentasi branding toko (logo, tagline)
+- Upload dan manajemen logo toko
+- Tagline/slogan toko configuration
+- Dampak branding di halaman customer
+- Tips optimasi logo toko
+- Update troubleshooting masalah branding
 
 ### Version 1.2.0 (2025-11-26)
 - Tambah dokumentasi lengkap pengaturan toko

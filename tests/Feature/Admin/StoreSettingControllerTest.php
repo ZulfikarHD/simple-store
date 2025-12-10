@@ -61,6 +61,7 @@ class StoreSettingControllerTest extends TestCase
 
         $response = $this->actingAs($user)->patch(route('admin.settings.update'), [
             'store_name' => 'Toko Baru',
+            'store_tagline' => 'Tagline Baru',
             'store_address' => 'Jl. Test No. 123',
             'store_phone' => '021-1234567',
             'whatsapp_number' => '6281234567890',
@@ -76,12 +77,15 @@ class StoreSettingControllerTest extends TestCase
             'delivery_areas' => ['Jakarta Selatan', 'Jakarta Pusat'],
             'delivery_fee' => 15000,
             'minimum_order' => 50000,
+            'auto_cancel_enabled' => true,
+            'auto_cancel_minutes' => 30,
         ]);
 
         $response->assertRedirect();
         $response->assertSessionHas('success');
 
         $this->assertEquals('Toko Baru', StoreSetting::get('store_name'));
+        $this->assertEquals('Tagline Baru', StoreSetting::get('store_tagline'));
         $this->assertEquals('Jl. Test No. 123', StoreSetting::get('store_address'));
         $this->assertEquals('021-1234567', StoreSetting::get('store_phone'));
     }
@@ -107,6 +111,8 @@ class StoreSettingControllerTest extends TestCase
             ],
             'delivery_fee' => 10000,
             'minimum_order' => 0,
+            'auto_cancel_enabled' => true,
+            'auto_cancel_minutes' => 30,
         ]);
 
         $response->assertRedirect();
@@ -138,6 +144,8 @@ class StoreSettingControllerTest extends TestCase
             'operating_hours' => $operatingHours,
             'delivery_fee' => 10000,
             'minimum_order' => 0,
+            'auto_cancel_enabled' => true,
+            'auto_cancel_minutes' => 30,
         ]);
 
         $response->assertRedirect();
@@ -171,6 +179,8 @@ class StoreSettingControllerTest extends TestCase
             'delivery_areas' => ['Bekasi', 'Depok', 'Tangerang'],
             'delivery_fee' => 20000,
             'minimum_order' => 100000,
+            'auto_cancel_enabled' => false,
+            'auto_cancel_minutes' => 60,
         ]);
 
         $response->assertRedirect();

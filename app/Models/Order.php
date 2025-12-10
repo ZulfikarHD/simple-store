@@ -194,7 +194,7 @@ class Order extends Model
 
     /**
      * Generate WhatsApp message dari customer ke owner
-     * dengan tone yang sesuai dan link ke admin order detail
+     * dengan tone yang sesuai, nama customer, dan link ke admin order detail
      */
     public function generateWhatsAppMessage(): string
     {
@@ -204,10 +204,11 @@ class Order extends Model
 
         $adminUrl = url("/admin/orders/{$this->id}");
 
-        return "Halo! Saya ingin memesan.\n\n"
+        return "Halo! Saya *{$this->customer_name}* ingin memesan.\n\n"
             ."*Invoice:* #{$this->order_number}\n\n"
             ."*Ringkasan Pesanan:*\n{$items}\n\n"
             .'*Total:* Rp '.number_format($this->total, 0, ',', '.')."\n\n"
+            .($this->customer_address ? "*Alamat:* {$this->customer_address}\n\n" : '')
             .($this->notes ? "*Catatan:* {$this->notes}\n\n" : '')
             ."*Link Detail Pesanan:*\n{$adminUrl}\n\n"
             .'Mohon konfirmasi pesanan saya. Terima kasih!';

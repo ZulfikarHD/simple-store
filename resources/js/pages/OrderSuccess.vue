@@ -6,11 +6,12 @@
  *
  * @author Zulfikar Hidayatullah
  */
-import { Head, Link } from '@inertiajs/vue3'
+import { Head, Link, usePage } from '@inertiajs/vue3'
 import { Motion, AnimatePresence } from 'motion-v'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { home } from '@/routes'
 import CartCounter from '@/components/store/CartCounter.vue'
+import StoreHeader from '@/components/store/StoreHeader.vue'
 import UserBottomNav from '@/components/mobile/UserBottomNav.vue'
 import { Button } from '@/components/ui/button'
 import { useHapticFeedback } from '@/composables/useHapticFeedback'
@@ -69,6 +70,25 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const page = usePage()
+
+/**
+ * Interface dan computed untuk store branding
+ */
+interface StoreBranding {
+    name: string
+    tagline: string
+    logo: string | null
+}
+
+const store = computed<StoreBranding>(() => {
+    return (page.props as { store?: StoreBranding }).store ?? {
+        name: 'Simple Store',
+        tagline: 'Premium Quality Products',
+        logo: null,
+    }
+})
 
 /**
  * Haptic feedback
@@ -139,7 +159,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
 </script>
 
 <template>
-    <Head title="Pesanan Berhasil - Simple Store">
+    <Head :title="`Pesanan Berhasil - ${store.name}`">
         <link rel="preconnect" href="https://rsms.me/" />
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     </Head>
@@ -154,15 +174,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                     :animate="{ opacity: 1, x: 0 }"
                     :transition="springTransition"
                 >
-                <Link :href="home()" class="flex items-center gap-3">
-                        <div class="brand-logo h-10 w-10">
-                        <ShoppingBag class="h-5 w-5 text-white" />
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-xl font-bold text-foreground">Simple Store</span>
-                        <span class="hidden text-[10px] font-medium text-brand-gold sm:block">Premium Quality Products</span>
-                    </div>
-                </Link>
+                    <StoreHeader />
                 </Motion>
 
                 <!-- Cart Counter & Auth -->
@@ -484,9 +496,9 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
             <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div class="flex flex-col items-center gap-2">
                     <p class="text-center text-sm text-muted-foreground">
-                        &copy; {{ new Date().getFullYear() }} Simple Store. Dibuat dengan ❤️ oleh Zulfikar Hidayatullah.
+                        &copy; {{ new Date().getFullYear() }} {{ store.name }}. Created By Zulfikar Hidayatullah.
                     </p>
-                    <p class="text-xs text-brand-gold">Premium Quality Products</p>
+                    <p class="text-xs text-brand-gold">{{ store.tagline }}</p>
                 </div>
             </div>
         </footer>

@@ -29,7 +29,7 @@ class CheckoutRequest extends FormRequest
         return [
             'customer_name' => ['required', 'string', 'min:3', 'max:100'],
             'customer_phone' => ['required', 'string', 'min:10', 'max:15', 'regex:/^[0-9+\-\s]+$/'],
-            'customer_address' => ['required', 'string', 'min:10', 'max:500'],
+            'customer_address' => ['nullable', 'string', 'max:500'],
             'notes' => ['nullable', 'string', 'max:500'],
         ];
     }
@@ -53,9 +53,7 @@ class CheckoutRequest extends FormRequest
             'customer_phone.max' => 'Nomor telepon maksimal 15 digit.',
             'customer_phone.regex' => 'Format nomor telepon tidak valid. Gunakan angka, +, atau -.',
 
-            'customer_address.required' => 'Alamat pengiriman harus diisi.',
             'customer_address.string' => 'Alamat harus berupa teks.',
-            'customer_address.min' => 'Alamat terlalu pendek, minimal 10 karakter.',
             'customer_address.max' => 'Alamat terlalu panjang, maksimal 500 karakter.',
 
             'notes.string' => 'Catatan harus berupa teks.',

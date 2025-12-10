@@ -53,6 +53,7 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     // Store settings routes untuk konfigurasi toko
     Route::get('/settings', [StoreSettingController::class, 'index'])->name('settings.index');
     Route::patch('/settings', [StoreSettingController::class, 'update'])->name('settings.update');
+    Route::post('/settings/upload-logo', [StoreSettingController::class, 'uploadLogo'])->name('settings.uploadLogo');
 
     // API routes untuk mobile alert system (polling pending orders)
     Route::get('/api/orders/pending', [OrderApiController::class, 'pendingOrders'])->name('api.orders.pending');

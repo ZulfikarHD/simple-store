@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateStoreSettingsRequest;
+use App\Services\ImageService;
 use App\Services\StoreSettingService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -16,10 +19,11 @@ use Inertia\Response;
 class StoreSettingController extends Controller
 {
     /**
-     * Constructor dengan dependency injection StoreSettingService
+     * Constructor dengan dependency injection untuk services
      */
     public function __construct(
-        public StoreSettingService $settingService
+        public StoreSettingService $settingService,
+        public ImageService $imageService
     ) {}
 
     /**
@@ -49,5 +53,43 @@ class StoreSettingController extends Controller
         return redirect()
             ->back()
             ->with('success', $result['message']);
+    }
+
+    /**
+     * Upload logo toko dengan image processing dan optimasi
+     * Mengembalikan JSON response dengan path logo yang tersimpan
+     */
+    public function uploadLogo(Request $request): JsonResponse
+    {
+        $request->validate([
+            'logo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ], [
+            'logo.required' => 'File logo wajib diupload.',
+            'logo.image' => 'File harus berupa gambar.',
+            'logo.mimes' => 'Format gambar harus JPG, PNG, atau WebP.',
+            'logo.max' => 'Ukuran file maksimal 2MB.',
+        ]);
+
+        try {
+            // Hapus logo lama jika ada
+            $oldLogo = $this->settingService->getSetting('store_logo');
+            if ($oldLogo) {
+                $this->imageService->deleteImage($oldLogo);
+            }
+
+            // Upload dan optimasi logo baru ke direktori 'branding'
+            $path = $this->imageService->uploadAndOptimize($request->file('logo'), 'branding');
+
+            return response()->json([
+                'success' => true,
+                'path' => $path,
+                'message' => 'Logo berhasil diupload.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengupload logo: '.$e->getMessage(),
+            ], 500);
+        }
     }
 }

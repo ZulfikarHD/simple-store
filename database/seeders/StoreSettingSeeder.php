@@ -25,7 +25,19 @@ class StoreSettingSeeder extends Seeder
             // General Settings
             [
                 'key' => 'store_name',
-                'value' => 'F&B Store',
+                'value' => 'Simple Store',
+                'type' => 'string',
+                'group' => 'general',
+            ],
+            [
+                'key' => 'store_tagline',
+                'value' => 'Premium Quality Products',
+                'type' => 'string',
+                'group' => 'general',
+            ],
+            [
+                'key' => 'store_logo',
+                'value' => '',
                 'type' => 'string',
                 'group' => 'general',
             ],

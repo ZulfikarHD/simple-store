@@ -27,7 +27,8 @@ class CheckoutController extends Controller
 
     /**
      * Menampilkan halaman checkout dengan form customer data
-     * dan ringkasan pesanan dari cart
+     * dan ringkasan pesanan dari cart, serta pre-fill data user
+     * yang sudah login untuk mempercepat proses checkout
      */
     public function show(): Response|RedirectResponse
     {
@@ -39,8 +40,21 @@ class CheckoutController extends Controller
                 ->with('error', 'Keranjang belanja kosong. Silakan tambahkan produk terlebih dahulu.');
         }
 
+        // Pre-fill data dari authenticated user jika tersedia
+        $user = auth()->user();
+        $customerData = null;
+
+        if ($user) {
+            $customerData = [
+                'name' => $user->name,
+                'phone' => $user->phone,
+                'address' => $user->address,
+            ];
+        }
+
         return Inertia::render('Checkout', [
             'cart' => $cartData,
+            'customer' => $customerData,
         ]);
     }
 

@@ -37,6 +37,9 @@ import {
     ShoppingBag,
     Timer,
     Ban,
+    ImagePlus,
+    Tag,
+    Trash2,
 } from 'lucide-vue-next'
 import { ref, computed } from 'vue'
 import { Motion } from 'motion-v'
@@ -74,6 +77,8 @@ interface OperatingHours {
  */
 interface Settings {
     store_name: string
+    store_tagline: string
+    store_logo: string | null
     store_address: string
     store_phone: string
     whatsapp_number: string
@@ -115,6 +120,8 @@ const dayLabels: Record<string, string> = {
 // Form state dengan deep copy dari props
 const form = ref<Settings>({
     store_name: props.settings.store_name || '',
+    store_tagline: props.settings.store_tagline || '',
+    store_logo: props.settings.store_logo || null,
     store_address: props.settings.store_address || '',
     store_phone: props.settings.store_phone || '',
     whatsapp_number: props.settings.whatsapp_number || '',
@@ -137,9 +144,89 @@ const form = ref<Settings>({
 // New delivery area input
 const newArea = ref('')
 
+// Logo upload refs
+const logoInput = ref<HTMLInputElement | null>(null)
+const logoPreview = ref<string | null>(props.settings.store_logo ? `/storage/${props.settings.store_logo}` : null)
+const isUploadingLogo = ref(false)
+
 // Errors
 const errors = ref<Record<string, string>>({})
 const isSubmitting = ref(false)
+
+/**
+ * Trigger file input untuk logo upload
+ */
+function triggerLogoUpload() {
+    logoInput.value?.click()
+}
+
+/**
+ * Handle logo file selection dan upload
+ */
+async function handleLogoUpload(event: Event) {
+    const target = event.target as HTMLInputElement
+    const file = target.files?.[0]
+
+    if (!file) return
+
+    // Validasi file type
+    if (!file.type.startsWith('image/')) {
+        errors.value.store_logo = 'File harus berupa gambar'
+        haptic.error()
+        return
+    }
+
+    // Validasi file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+        errors.value.store_logo = 'Ukuran file maksimal 2MB'
+        haptic.error()
+        return
+    }
+
+    isUploadingLogo.value = true
+    haptic.selection()
+
+    try {
+        const formData = new FormData()
+        formData.append('logo', file)
+
+        const response = await fetch('/admin/settings/upload-logo', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            },
+        })
+
+        const data = await response.json()
+
+        if (data.success) {
+            form.value.store_logo = data.path
+            logoPreview.value = `/storage/${data.path}`
+            delete errors.value.store_logo
+            haptic.success()
+        } else {
+            errors.value.store_logo = data.message || 'Gagal mengupload logo'
+            haptic.error()
+        }
+    } catch {
+        errors.value.store_logo = 'Gagal mengupload logo'
+        haptic.error()
+    } finally {
+        isUploadingLogo.value = false
+        // Reset input
+        if (target) target.value = ''
+    }
+}
+
+/**
+ * Hapus logo yang sudah diupload
+ */
+function removeLogo() {
+    haptic.light()
+    form.value.store_logo = null
+    logoPreview.value = null
+}
 
 /**
  * Tambah area pengiriman baru
@@ -255,6 +342,70 @@ function submitForm() {
                                 </div>
                                 <div class="admin-form-section-content">
                                     <div class="flex flex-col gap-5">
+                                        <!-- Store Logo -->
+                                        <div class="admin-input-group">
+                                            <Label class="flex items-center gap-2">
+                                                <ImagePlus class="h-4 w-4 text-primary" />
+                                                Logo Toko
+                                            </Label>
+                                            <div class="flex items-center gap-4">
+                                                <!-- Logo Preview -->
+                                                <div
+                                                    class="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-border bg-muted/30"
+                                                    :class="{ 'border-primary': isUploadingLogo }"
+                                                >
+                                                    <img
+                                                        v-if="logoPreview"
+                                                        :src="logoPreview"
+                                                        alt="Logo Preview"
+                                                        class="h-full w-full object-contain"
+                                                    />
+                                                    <ShoppingBag v-else class="h-8 w-8 text-muted-foreground" />
+                                                    <!-- Loading overlay -->
+                                                    <div
+                                                        v-if="isUploadingLogo"
+                                                        class="absolute inset-0 flex items-center justify-center bg-background/80"
+                                                    >
+                                                        <div class="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                                                    </div>
+                                                </div>
+                                                <!-- Upload/Remove buttons -->
+                                                <div class="flex flex-col gap-2">
+                                                    <input
+                                                        ref="logoInput"
+                                                        type="file"
+                                                        accept="image/*"
+                                                        class="hidden"
+                                                        @change="handleLogoUpload"
+                                                    />
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        class="ios-button gap-2"
+                                                        :disabled="isUploadingLogo"
+                                                        @click="triggerLogoUpload"
+                                                    >
+                                                        <ImagePlus class="h-4 w-4" />
+                                                        {{ logoPreview ? 'Ganti Logo' : 'Upload Logo' }}
+                                                    </Button>
+                                                    <Button
+                                                        v-if="logoPreview"
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        class="ios-button gap-2 text-destructive hover:text-destructive"
+                                                        @click="removeLogo"
+                                                    >
+                                                        <Trash2 class="h-4 w-4" />
+                                                        Hapus Logo
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                            <p class="hint">Format: JPG, PNG, atau WebP. Maksimal 2MB. Rekomendasi: 200x200px</p>
+                                            <InputError :message="errors.store_logo" />
+                                        </div>
+
                                         <!-- Store Name -->
                                         <div class="admin-input-group">
                                             <Label for="store_name" class="flex items-center gap-2">
@@ -270,6 +421,24 @@ function submitForm() {
                                                 :class="{ 'border-destructive': errors.store_name }"
                                             />
                                             <InputError :message="errors.store_name" />
+                                        </div>
+
+                                        <!-- Store Tagline -->
+                                        <div class="admin-input-group">
+                                            <Label for="store_tagline" class="flex items-center gap-2">
+                                                <Tag class="h-4 w-4 text-primary" />
+                                                Tagline Toko
+                                            </Label>
+                                            <Input
+                                                id="store_tagline"
+                                                v-model="form.store_tagline"
+                                                type="text"
+                                                placeholder="Contoh: Premium Quality Products"
+                                                class="admin-input"
+                                                :class="{ 'border-destructive': errors.store_tagline }"
+                                            />
+                                            <p class="hint">Tagline singkat yang ditampilkan di header toko</p>
+                                            <InputError :message="errors.store_tagline" />
                                         </div>
 
                                         <!-- Store Address -->

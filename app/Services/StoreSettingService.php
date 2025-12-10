@@ -18,7 +18,9 @@ class StoreSettingService
      * @var array<string, array{value: mixed, type: string, group: string}>
      */
     public const DEFAULT_SETTINGS = [
-        'store_name' => ['value' => 'F&B Store', 'type' => 'string', 'group' => 'general'],
+        'store_name' => ['value' => 'Simple Store', 'type' => 'string', 'group' => 'general'],
+        'store_tagline' => ['value' => 'Premium Quality Products', 'type' => 'string', 'group' => 'general'],
+        'store_logo' => ['value' => '', 'type' => 'string', 'group' => 'general'],
         'store_address' => ['value' => '', 'type' => 'text', 'group' => 'general'],
         'store_phone' => ['value' => '', 'type' => 'string', 'group' => 'general'],
         'whatsapp_number' => ['value' => '', 'type' => 'string', 'group' => 'whatsapp'],
@@ -114,15 +116,27 @@ class StoreSettingService
     }
 
     /**
-     * Mendapatkan nomor WhatsApp yang sudah di-format
-     * untuk digunakan di frontend checkout
+     * Mendapatkan nomor WhatsApp yang sudah di-format dengan country code
+     * untuk digunakan di WhatsApp API (customer to owner)
      */
     public function getWhatsAppNumber(): string
     {
         $number = $this->getSetting('whatsapp_number', '');
 
         // Remove non-numeric characters
-        return preg_replace('/\D/', '', $number) ?? '';
+        $phone = preg_replace('/\D/', '', $number) ?? '';
+
+        // Jika nomor dimulai dengan 0, ganti dengan 62 (Indonesia)
+        if (str_starts_with($phone, '0')) {
+            $phone = '62'.substr($phone, 1);
+        }
+
+        // Jika nomor tidak dimulai dengan country code, tambahkan 62
+        if (! str_starts_with($phone, '62') && strlen($phone) >= 9) {
+            $phone = '62'.$phone;
+        }
+
+        return $phone;
     }
 
     /**
@@ -178,6 +192,21 @@ class StoreSettingService
     public function getDeliveryAreas(): array
     {
         return $this->getSetting('delivery_areas', []);
+    }
+
+    /**
+     * Mendapatkan data branding toko untuk shared props
+     * yang digunakan di seluruh aplikasi
+     *
+     * @return array{name: string, tagline: string, logo: string|null}
+     */
+    public function getStoreBranding(): array
+    {
+        return [
+            'name' => $this->getSetting('store_name', 'Simple Store'),
+            'tagline' => $this->getSetting('store_tagline', 'Premium Quality Products'),
+            'logo' => $this->getSetting('store_logo'),
+        ];
     }
 
     /**
