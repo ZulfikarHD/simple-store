@@ -30,6 +30,7 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3'
 import { dashboard } from '@/routes/admin'
 import { index as productsIndex, create, edit, destroy } from '@/routes/admin/products'
 import { useHapticFeedback } from '@/composables/useHapticFeedback'
+import SortableHeader from '@/components/admin/SortableHeader.vue'
 import {
     Package,
     Plus,
@@ -44,6 +45,30 @@ import {
     X,
 } from 'lucide-vue-next'
 import { ref, watch, computed } from 'vue'
+
+/**
+ * Type untuk kolom yang dapat di-sort
+ */
+type SortColumn = 'name' | 'category' | 'price' | 'stock' | 'is_active'
+
+/**
+ * Sorting state
+ */
+const sortBy = ref<SortColumn | null>(null)
+const sortDirection = ref<'asc' | 'desc'>('asc')
+
+/**
+ * Handle sort action dengan toggle direction
+ */
+function handleSort(column: string) {
+    const col = column as SortColumn
+    if (sortBy.value === col) {
+        sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+    } else {
+        sortBy.value = col
+        sortDirection.value = 'asc'
+    }
+}
 import { useDebounceFn } from '@vueuse/core'
 import { Motion } from 'motion-v'
 import { springPresets, staggerDelay } from '@/composables/useMotionV'
@@ -112,6 +137,39 @@ const breadcrumbs: BreadcrumbItem[] = [
 // Flash messages dari session
 const flashSuccess = computed(() => (page.props as unknown as { flash?: { success?: string } }).flash?.success)
 const flashError = computed(() => (page.props as unknown as { flash?: { error?: string } }).flash?.error)
+
+/**
+ * Computed untuk sorted products berdasarkan sortBy dan sortDirection
+ * Sorting dilakukan client-side untuk data yang sudah di-paginate
+ */
+const sortedProducts = computed(() => {
+    if (!sortBy.value) return props.products.data
+
+    return [...props.products.data].sort((a, b) => {
+        let comparison = 0
+        const col = sortBy.value as SortColumn
+
+        switch (col) {
+            case 'name':
+                comparison = a.name.localeCompare(b.name, 'id')
+                break
+            case 'category':
+                comparison = (a.category?.name ?? '').localeCompare(b.category?.name ?? '', 'id')
+                break
+            case 'price':
+                comparison = a.price - b.price
+                break
+            case 'stock':
+                comparison = a.stock - b.stock
+                break
+            case 'is_active':
+                comparison = (a.is_active ? 1 : 0) - (b.is_active ? 1 : 0)
+                break
+        }
+
+        return sortDirection.value === 'asc' ? comparison : -comparison
+    })
+})
 
 // Local state untuk filter
 const search = ref(props.filters.search || '')
@@ -385,7 +443,7 @@ function handleAddClick() {
                 <!-- Mobile Product Cards -->
                 <div class="flex flex-col gap-3 md:hidden">
                     <Motion
-                        v-for="(product, index) in products.data"
+                        v-for="(product, index) in sortedProducts"
                         :key="product.id"
                         :initial="{ opacity: 0, y: 20 }"
                         :animate="{ opacity: 1, y: 0 }"
@@ -425,12 +483,12 @@ function handleAddClick() {
                                         <PriceDisplay :price="product.price" size="md" class="font-bold text-primary" />
                                         <span
                                             :class="[
-                                                'admin-badge tabular-nums',
+                                                'ios-badge tabular-nums',
                                                 product.stock > 10
-                                                    ? 'admin-badge--success'
+                                                    ? 'ios-badge--stock-high'
                                                     : product.stock > 0
-                                                      ? 'admin-badge--pending'
-                                                      : 'admin-badge--destructive',
+                                                      ? 'ios-badge--stock-low'
+                                                      : 'ios-badge--stock-out',
                                             ]"
                                         >
                                             Stok: {{ product.stock }}
@@ -443,11 +501,12 @@ function handleAddClick() {
                             <div class="flex items-center justify-between border-t bg-muted/30 px-4 py-3">
                                 <span
                                     :class="[
-                                        'admin-badge',
-                                        product.is_active ? 'admin-badge--success' : 'bg-muted text-muted-foreground',
+                                        'ios-badge',
+                                        product.is_active ? 'ios-badge--success' : 'ios-badge--muted',
                                     ]"
                                 >
-                                    {{ product.is_active ? 'Aktif' : 'Tidak Aktif' }}
+                                    <span class="ios-badge-dot" />
+                                    {{ product.is_active ? 'Aktif' : 'Nonaktif' }}
                                 </span>
                                 <div class="flex items-center gap-2">
                                     <Link :href="edit(product.id).url">
@@ -471,7 +530,7 @@ function handleAddClick() {
                     </Motion>
 
                     <!-- Mobile Empty State -->
-                    <div v-if="products.data.length === 0" class="admin-form-section">
+                    <div v-if="sortedProducts.length === 0" class="admin-form-section">
                         <div class="admin-empty-state">
                             <div class="icon-wrapper">
                                 <Package />
@@ -517,36 +576,64 @@ function handleAddClick() {
                     :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
                     class="hidden md:block"
                 >
-                    <div class="rounded-2xl border border-border/50 bg-card shadow-sm">
+                    <div class="ios-table-container">
                         <div class="overflow-x-auto">
-                            <table class="w-full border-collapse">
+                            <table class="ios-table w-full">
                                 <thead>
-                                    <tr class="border-b bg-muted/50">
-                                        <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="min-width: 280px;">
-                                            Produk
-                                        </th>
-                                        <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 150px;">
-                                            Kategori
-                                        </th>
-                                        <th class="whitespace-nowrap px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 120px;">
-                                            Harga
-                                        </th>
-                                        <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 80px;">
-                                            Stok
-                                        </th>
-                                        <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 100px;">
-                                            Status
-                                        </th>
+                                    <tr>
+                                        <SortableHeader
+                                            column="name"
+                                            label="Produk"
+                                            :current-sort="sortBy"
+                                            :current-direction="sortDirection"
+                                            style="min-width: 280px;"
+                                            @sort="handleSort"
+                                        />
+                                        <SortableHeader
+                                            column="category"
+                                            label="Kategori"
+                                            :current-sort="sortBy"
+                                            :current-direction="sortDirection"
+                                            style="width: 150px;"
+                                            @sort="handleSort"
+                                        />
+                                        <SortableHeader
+                                            column="price"
+                                            label="Harga"
+                                            :current-sort="sortBy"
+                                            :current-direction="sortDirection"
+                                            align="right"
+                                            style="width: 120px;"
+                                            @sort="handleSort"
+                                        />
+                                        <SortableHeader
+                                            column="stock"
+                                            label="Stok"
+                                            :current-sort="sortBy"
+                                            :current-direction="sortDirection"
+                                            align="center"
+                                            style="width: 80px;"
+                                            @sort="handleSort"
+                                        />
+                                        <SortableHeader
+                                            column="is_active"
+                                            label="Status"
+                                            :current-sort="sortBy"
+                                            :current-direction="sortDirection"
+                                            align="center"
+                                            style="width: 100px;"
+                                            @sort="handleSort"
+                                        />
                                         <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 140px;">
                                             Aksi
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-border/50">
+                                <tbody>
                                     <tr
-                                        v-for="product in products.data"
+                                        v-for="product in sortedProducts"
                                         :key="product.id"
-                                        class="group transition-colors hover:bg-muted/30"
+                                        class="ios-table-row"
                                     >
                                         <!-- Product Info -->
                                         <td class="px-4 py-3">
@@ -592,12 +679,12 @@ function handleAddClick() {
                                         <td class="px-4 py-3 text-center">
                                             <span
                                                 :class="[
-                                                    'admin-badge tabular-nums',
+                                                    'ios-badge tabular-nums',
                                                     product.stock > 10
-                                                        ? 'admin-badge--success'
+                                                        ? 'ios-badge--stock-high'
                                                         : product.stock > 0
-                                                          ? 'admin-badge--pending'
-                                                          : 'admin-badge--destructive',
+                                                          ? 'ios-badge--stock-low'
+                                                          : 'ios-badge--stock-out',
                                                 ]"
                                             >
                                                 {{ product.stock }}
@@ -608,10 +695,11 @@ function handleAddClick() {
                                         <td class="px-4 py-3 text-center">
                                             <span
                                                 :class="[
-                                                    'admin-badge',
-                                                    product.is_active ? 'admin-badge--success' : 'bg-muted text-muted-foreground',
+                                                    'ios-badge',
+                                                    product.is_active ? 'ios-badge--success' : 'ios-badge--muted',
                                                 ]"
                                             >
+                                                <span class="ios-badge-dot" />
                                                 {{ product.is_active ? 'Aktif' : 'Nonaktif' }}
                                             </span>
                                         </td>
@@ -643,7 +731,7 @@ function handleAddClick() {
                                     </tr>
 
                                     <!-- Empty State -->
-                                    <tr v-if="products.data.length === 0">
+                                    <tr v-if="sortedProducts.length === 0">
                                         <td colspan="6" class="px-4 py-16">
                                             <div class="flex flex-col items-center justify-center text-center">
                                                 <div class="mb-4 rounded-2xl bg-muted p-4">

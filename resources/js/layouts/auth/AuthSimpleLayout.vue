@@ -2,19 +2,43 @@
 /**
  * AuthSimpleLayout - Layout untuk halaman autentikasi
  * Dengan iOS-like design menggunakan motion-v, spring animations, dan glass effects
+ * Logo dinamis dari store settings
  *
  * @author Zulfikar Hidayatullah
  */
 import { Motion } from 'motion-v'
-import AppLogoIcon from '@/components/AppLogoIcon.vue'
 import { home } from '@/routes'
-import { Link } from '@inertiajs/vue3'
+import { Link, usePage } from '@inertiajs/vue3'
 import { springPresets } from '@/composables/useMotionV'
+import { computed } from 'vue'
+import { ShoppingBag } from 'lucide-vue-next'
+
+/**
+ * Interface untuk store branding dari shared props
+ */
+interface StoreBranding {
+    name: string
+    tagline: string
+    logo: string | null
+}
 
 defineProps<{
     title?: string
     description?: string
 }>()
+
+const page = usePage()
+
+/**
+ * Computed untuk mendapatkan data store dari shared props
+ */
+const store = computed<StoreBranding>(() => {
+    return (page.props as { store?: StoreBranding }).store ?? {
+        name: 'Simple Store',
+        tagline: 'Premium Quality Products',
+        logo: null,
+    }
+})
 
 /**
  * Spring transitions untuk iOS-like animations
@@ -57,17 +81,25 @@ const bouncyTransition = { type: 'spring' as const, ...springPresets.bouncy }
                         >
                             <Link
                                 :href="home()"
-                            class="ios-button flex flex-col items-center gap-2 font-medium"
-                        >
-                            <div
-                                class="mb-1 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary shadow-lg transition-transform duration-200 hover:scale-105"
+                                class="ios-button flex flex-col items-center gap-2 font-medium"
                             >
-                                <AppLogoIcon
-                                    class="size-8 fill-current text-primary-foreground"
-                                />
-                            </div>
-                            <span class="sr-only">{{ title }}</span>
-                        </Link>
+                                <!-- Logo dinamis dari store settings tanpa background wrapper -->
+                                <div class="mb-1 flex h-14 w-14 items-center justify-center transition-transform duration-200 hover:scale-105">
+                                    <img
+                                        v-if="store.logo"
+                                        :src="`/storage/${store.logo}`"
+                                        :alt="store.name"
+                                        class="h-14 w-14 rounded-2xl object-contain"
+                                    />
+                                    <div
+                                        v-else
+                                        class="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary shadow-lg"
+                                    >
+                                        <ShoppingBag class="h-7 w-7 text-primary-foreground" />
+                                    </div>
+                                </div>
+                                <span class="sr-only">{{ store.name }}</span>
+                            </Link>
                         </Motion>
 
                         <!-- Title and description with staggered animation -->
@@ -112,7 +144,7 @@ const bouncyTransition = { type: 'spring' as const, ...springPresets.bouncy }
                 :transition="{ delay: 0.5, duration: 0.3 }"
                 class="mt-6 text-center text-xs text-muted-foreground/60"
             >
-                &copy; {{ new Date().getFullYear() }} Simple Store
+                &copy; {{ new Date().getFullYear() }} {{ store.name }}
             </Motion>
         </Motion>
     </div>

@@ -19,6 +19,99 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0] - 2025-12-10
+
+### Added - Admin Table Sorting & iOS UI Enhancements
+
+#### Admin Table Sorting
+- **Sortable Column Headers**
+  - Kolom tabel admin sekarang dapat di-sort dengan klik header
+  - Sort indicators (chevrons) menunjukkan kolom dan direction aktif
+  - Toggle ascending/descending dengan klik berulang
+  - Haptic feedback untuk iOS-like tactile response
+
+- **Categories Table Sorting**
+  - Sort by: Nama, Jumlah Produk, Urutan, Status
+  - Client-side sorting untuk response cepat
+
+- **Products Table Sorting**
+  - Sort by: Nama, Kategori, Harga, Stok, Status
+  - Client-side sorting untuk paginated data
+
+- **Orders Table Sorting**
+  - Sort by: No. Pesanan, Customer, Total, Items, Status, Tanggal
+  - Client-side sorting untuk paginated data
+
+#### iOS-like Table Styling
+- **New Table Components**
+  - `ios-table-container`: Rounded container dengan subtle shadow
+  - `ios-table`: Clean table dengan smooth header gradient
+  - `ios-table-row`: Rows dengan smooth hover/active states
+
+- **iOS Badge System**
+  - `ios-badge`: Pill-shaped badges dengan status indicator dot
+  - Status variants: success, warning, pending, confirmed, preparing, ready, delivered, cancelled
+  - Stock level variants: stock-high (green), stock-low (amber), stock-out (red)
+  - Outline variant untuk subtle badges
+
+#### Dynamic Logo in Auth Pages
+- **AuthSimpleLayout Enhancement**
+  - Logo sekarang dinamis dari store settings
+  - Removed background color wrapper untuk cleaner look
+  - Fallback ke ShoppingBag icon jika logo tidak ada
+  - Footer copyright menggunakan dynamic store name
+
+- **AuthSplitLayout Enhancement**
+  - Desktop dan mobile logo sekarang dinamis
+  - Konsisten dengan AuthSimpleLayout styling
+
+### Changed
+
+- **Admin Table Headers**
+  - Dari static headers ke interactive sortable headers
+  - Added SortableHeader component untuk reusability
+
+- **Badge Styling**
+  - Dari `admin-badge` classes ke `ios-badge` classes
+  - More iOS-like pill shape dengan status dots
+  - Better dark mode support
+
+- **Auth Layout Logo**
+  - Dari static AppLogoIcon ke dynamic store logo
+  - Removed `bg-primary` wrapper untuk cleaner appearance
+
+### Technical Details
+
+**New Component:**
+- `resources/js/components/admin/SortableHeader.vue`
+  - Reusable sortable column header
+  - Props: column, label, currentSort, currentDirection, align
+  - Emits: sort event with column name
+
+**New CSS Classes (app.css):**
+- `.ios-table-container` - Table wrapper styling
+- `.ios-table` - Table base styles
+- `.ios-table-row` - Row interaction styles
+- `.ios-badge` - Base badge style
+- `.ios-badge--{variant}` - Status-specific variants
+- `.ios-badge-dot` - Status indicator dot
+
+**Modified Files:**
+- `resources/js/pages/Admin/Categories/Index.vue`
+- `resources/js/pages/Admin/Products/Index.vue`
+- `resources/js/pages/Admin/Orders/Index.vue`
+- `resources/js/layouts/auth/AuthSimpleLayout.vue`
+- `resources/js/layouts/auth/AuthSplitLayout.vue`
+- `resources/css/app.css`
+
+### Testing
+
+- Build successful dengan `yarn run build`
+- Linting passed untuk semua modified files
+- No breaking changes
+
+---
+
 ## [1.2.0] - 2025-12-10
 
 ### Added - Store Branding & Checkout Enhancements
@@ -355,6 +448,7 @@ None introduced in this release.
 
 | Version | Release Date | Key Features |
 |---------|--------------|--------------|
+| 1.3.0   | 2025-12-10   | Admin Table Sorting, iOS Badge & Table Styling, Dynamic Auth Logo |
 | 1.2.0   | 2025-12-10   | Store Branding, Checkout Autofill, WhatsApp Phone Formatting |
 | 1.1.0   | 2025-12-10   | WhatsApp Integration, Auto-Cancel, Rate Limiting |
 | 1.0.0   | 2024-11-25   | Initial Release (Product Management, Cart, Auth, 2FA) |

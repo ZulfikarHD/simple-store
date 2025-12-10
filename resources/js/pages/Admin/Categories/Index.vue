@@ -31,6 +31,7 @@ import { Head, router, usePage } from '@inertiajs/vue3'
 import { dashboard } from '@/routes/admin'
 import { index as categoriesIndex, store, update, destroy } from '@/routes/admin/categories'
 import { useHapticFeedback } from '@/composables/useHapticFeedback'
+import SortableHeader from '@/components/admin/SortableHeader.vue'
 import {
     FolderTree,
     Plus,
@@ -43,6 +44,30 @@ import {
     Image,
 } from 'lucide-vue-next'
 import { ref, computed } from 'vue'
+
+/**
+ * Type untuk kolom yang dapat di-sort
+ */
+type SortColumn = 'name' | 'products_count' | 'sort_order' | 'is_active'
+
+/**
+ * Sorting state
+ */
+const sortBy = ref<SortColumn | null>(null)
+const sortDirection = ref<'asc' | 'desc'>('asc')
+
+/**
+ * Handle sort action dengan toggle direction
+ */
+function handleSort(column: string) {
+    const col = column as SortColumn
+    if (sortBy.value === col) {
+        sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+    } else {
+        sortBy.value = col
+        sortDirection.value = 'asc'
+    }
+}
 import { Motion } from 'motion-v'
 import { springPresets, staggerDelay } from '@/composables/useMotionV'
 
@@ -66,8 +91,37 @@ interface Props {
     categories: Category[]
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 const page = usePage()
+
+/**
+ * Computed untuk sorted categories berdasarkan sortBy dan sortDirection
+ */
+const sortedCategories = computed(() => {
+    if (!sortBy.value) return props.categories
+
+    return [...props.categories].sort((a, b) => {
+        let comparison = 0
+        const col = sortBy.value as SortColumn
+
+        switch (col) {
+            case 'name':
+                comparison = a.name.localeCompare(b.name, 'id')
+                break
+            case 'products_count':
+                comparison = a.products_count - b.products_count
+                break
+            case 'sort_order':
+                comparison = a.sort_order - b.sort_order
+                break
+            case 'is_active':
+                comparison = (a.is_active ? 1 : 0) - (b.is_active ? 1 : 0)
+                break
+        }
+
+        return sortDirection.value === 'asc' ? comparison : -comparison
+    })
+})
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: dashboard().url },
@@ -361,7 +415,7 @@ const existingImageUrl = computed(() => {
                 <!-- Mobile Category Cards -->
                 <div class="flex flex-col gap-3 md:hidden">
                     <Motion
-                        v-for="(category, index) in categories"
+                        v-for="(category, index) in sortedCategories"
                         :key="category.id"
                         :initial="{ opacity: 0, y: 20 }"
                         :animate="{ opacity: 1, y: 0 }"
@@ -389,19 +443,20 @@ const existingImageUrl = computed(() => {
                                     {{ category.description }}
                                 </p>
                                 <div class="flex items-center gap-3 mt-2">
-                                    <span class="flex items-center gap-1 text-sm text-muted-foreground">
-                                        <Package class="h-3.5 w-3.5" />
-                                        {{ category.products_count }} produk
-                                    </span>
-                                    <span
-                                        :class="[
-                                            'admin-badge',
-                                            category.is_active ? 'admin-badge--success' : 'admin-badge--muted',
-                                        ]"
-                                    >
-                                        {{ category.is_active ? 'Aktif' : 'Nonaktif' }}
-                                    </span>
-                                </div>
+                                                    <span class="ios-badge ios-badge--outline tabular-nums">
+                                                        <Package class="h-3 w-3" />
+                                                        {{ category.products_count }} produk
+                                                    </span>
+                                                    <span
+                                                        :class="[
+                                                            'ios-badge',
+                                                            category.is_active ? 'ios-badge--success' : 'ios-badge--muted',
+                                                        ]"
+                                                    >
+                                                        <span class="ios-badge-dot" />
+                                                        {{ category.is_active ? 'Aktif' : 'Nonaktif' }}
+                                                    </span>
+                                                </div>
                             </div>
                         </div>
                         <div class="flex justify-end gap-2 mt-4 pt-3 border-t border-border/50">
@@ -428,7 +483,7 @@ const existingImageUrl = computed(() => {
                     </Motion>
 
                     <!-- Mobile Empty State -->
-                    <div v-if="categories.length === 0" class="admin-form-section">
+                    <div v-if="sortedCategories.length === 0" class="admin-form-section">
                         <div class="admin-empty-state">
                             <div class="icon-wrapper">
                                 <FolderTree />
@@ -450,36 +505,59 @@ const existingImageUrl = computed(() => {
                     :transition="{ ...springPresets.ios, delay: staggerDelay(0) }"
                     class="hidden md:block"
                 >
-                    <div class="rounded-2xl border border-border/50 bg-card shadow-sm">
+                    <div class="ios-table-container">
                         <div class="overflow-x-auto">
-                            <table class="w-full border-collapse">
+                            <table class="ios-table w-full">
                                 <thead>
-                                    <tr class="border-b bg-muted/50">
-                                        <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 280px;">
-                                            Kategori
-                                        </th>
+                                    <tr>
+                                        <SortableHeader
+                                            column="name"
+                                            label="Kategori"
+                                            :current-sort="sortBy"
+                                            :current-direction="sortDirection"
+                                            style="width: 280px;"
+                                            @sort="handleSort"
+                                        />
                                         <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="min-width: 200px;">
                                             Deskripsi
                                         </th>
-                                        <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 100px;">
-                                            Produk
-                                        </th>
-                                        <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 80px;">
-                                            Urutan
-                                        </th>
-                                        <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 100px;">
-                                            Status
-                                        </th>
+                                        <SortableHeader
+                                            column="products_count"
+                                            label="Produk"
+                                            :current-sort="sortBy"
+                                            :current-direction="sortDirection"
+                                            align="center"
+                                            style="width: 100px;"
+                                            @sort="handleSort"
+                                        />
+                                        <SortableHeader
+                                            column="sort_order"
+                                            label="Urutan"
+                                            :current-sort="sortBy"
+                                            :current-direction="sortDirection"
+                                            align="center"
+                                            style="width: 80px;"
+                                            @sort="handleSort"
+                                        />
+                                        <SortableHeader
+                                            column="is_active"
+                                            label="Status"
+                                            :current-sort="sortBy"
+                                            :current-direction="sortDirection"
+                                            align="center"
+                                            style="width: 100px;"
+                                            @sort="handleSort"
+                                        />
                                         <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 160px;">
                                             Aksi
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-border/50">
+                                <tbody>
                                     <tr
-                                        v-for="category in categories"
+                                        v-for="category in sortedCategories"
                                         :key="category.id"
-                                        class="group transition-colors hover:bg-muted/30"
+                                        class="ios-table-row"
                                     >
                                         <!-- Category Info -->
                                         <td class="px-4 py-3">
@@ -515,10 +593,10 @@ const existingImageUrl = computed(() => {
 
                                         <!-- Products Count -->
                                         <td class="px-4 py-3 text-center">
-                                            <Badge variant="outline" class="gap-1 tabular-nums">
+                                            <span class="ios-badge ios-badge--outline tabular-nums">
                                                 <Package class="h-3 w-3" />
                                                 {{ category.products_count }}
-                                            </Badge>
+                                            </span>
                                         </td>
 
                                         <!-- Sort Order -->
@@ -530,10 +608,11 @@ const existingImageUrl = computed(() => {
                                         <td class="px-4 py-3 text-center">
                                             <span
                                                 :class="[
-                                                    'admin-badge',
-                                                    category.is_active ? 'admin-badge--success' : 'admin-badge--muted',
+                                                    'ios-badge',
+                                                    category.is_active ? 'ios-badge--success' : 'ios-badge--muted',
                                                 ]"
                                             >
+                                                <span class="ios-badge-dot" />
                                                 {{ category.is_active ? 'Aktif' : 'Nonaktif' }}
                                             </span>
                                         </td>
@@ -565,7 +644,7 @@ const existingImageUrl = computed(() => {
                                     </tr>
 
                                     <!-- Empty State -->
-                                    <tr v-if="categories.length === 0">
+                                    <tr v-if="sortedCategories.length === 0">
                                         <td colspan="6" class="px-4 py-16">
                                             <div class="flex flex-col items-center justify-center text-center">
                                                 <div class="mb-4 rounded-2xl bg-muted p-4">

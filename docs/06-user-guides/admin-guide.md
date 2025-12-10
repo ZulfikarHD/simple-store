@@ -1,7 +1,7 @@
 # Admin Guide - F&B Web App
 
 **Zulfikar Hidayatullah**  
-**Version**: 1.4.0  
+**Version**: 1.5.0  
 **Last Updated**: 2025-12-10
 
 ## Overview
@@ -178,6 +178,24 @@ Tabel menampilkan informasi produk, antara lain:
 - Default: 10 produk per halaman
 - Navigasi: Tombol Previous/Next
 - Informasi: "Menampilkan X - Y dari Z produk"
+
+#### Sorting Tabel
+
+Klik pada header kolom untuk mengurutkan data:
+
+| Kolom | Fungsi |
+|-------|--------|
+| **Produk** | Urutkan berdasarkan nama produk (A-Z atau Z-A) |
+| **Kategori** | Urutkan berdasarkan nama kategori |
+| **Harga** | Urutkan berdasarkan harga (rendah-tinggi atau tinggi-rendah) |
+| **Stok** | Urutkan berdasarkan jumlah stok |
+| **Status** | Urutkan berdasarkan status aktif/nonaktif |
+
+**Cara Menggunakan:**
+1. Klik header kolom yang ingin di-sort
+2. Icon chevron akan muncul menunjukkan direction sorting
+3. Klik lagi untuk toggle ascending/descending
+4. Sorting dilakukan client-side untuk response cepat
 
 ---
 
@@ -360,6 +378,22 @@ Tabel menampilkan informasi kategori, antara lain:
 Kategori diurutkan berdasarkan `sort_order` (ascending), kemudian nama:
 - Angka lebih kecil akan ditampilkan lebih dulu
 - Berguna untuk mengatur urutan tampilan kategori di customer page
+
+#### Sorting Tabel
+
+Klik pada header kolom untuk mengurutkan data:
+
+| Kolom | Fungsi |
+|-------|--------|
+| **Kategori** | Urutkan berdasarkan nama kategori (A-Z atau Z-A) |
+| **Produk** | Urutkan berdasarkan jumlah produk dalam kategori |
+| **Urutan** | Urutkan berdasarkan sort order |
+| **Status** | Urutkan berdasarkan status aktif/nonaktif |
+
+**Cara Menggunakan:**
+1. Klik header kolom yang ingin di-sort
+2. Icon chevron akan muncul menunjukkan direction sorting
+3. Klik lagi untuk toggle ascending/descending
 
 ---
 
@@ -563,6 +597,25 @@ Tabel menampilkan informasi pesanan, antara lain:
 - Default: 10 pesanan per halaman
 - Navigasi: Tombol Previous/Next
 - Informasi: "Menampilkan X - Y dari Z pesanan"
+
+#### Sorting Tabel
+
+Klik pada header kolom untuk mengurutkan data:
+
+| Kolom | Fungsi |
+|-------|--------|
+| **No. Pesanan** | Urutkan berdasarkan nomor pesanan |
+| **Customer** | Urutkan berdasarkan nama customer (A-Z atau Z-A) |
+| **Total** | Urutkan berdasarkan total harga (rendah-tinggi atau tinggi-rendah) |
+| **Items** | Urutkan berdasarkan jumlah item dalam pesanan |
+| **Status** | Urutkan berdasarkan status pesanan |
+| **Tanggal** | Urutkan berdasarkan tanggal pesanan (terbaru atau terlama) |
+
+**Cara Menggunakan:**
+1. Klik header kolom yang ingin di-sort
+2. Icon chevron akan muncul menunjukkan direction sorting
+3. Klik lagi untuk toggle ascending/descending
+4. Sorting dilakukan client-side untuk response cepat
 
 ---
 
@@ -1161,6 +1214,15 @@ Jika mengalami masalah yang tidak dapat diselesaikan dengan panduan ini, silakan
 ---
 
 ## Changelog
+
+### Version 1.5.0 (2025-12-10)
+- Tambah fitur sorting untuk tabel admin (Produk, Kategori, Pesanan)
+- Sortable column headers dengan click interaction
+- Sort indicators (chevron icons) menunjukkan direction aktif
+- Update table styling ke iOS-like design
+- Update badge styling dari `admin-badge` ke `ios-badge`
+- iOS badge dengan status dot indicator
+- Stock level badges dengan color coding
 
 ### Version 1.4.0 (2025-12-10)
 - Tambah password confirmation untuk delete produk

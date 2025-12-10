@@ -22,6 +22,7 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3'
 import { dashboard } from '@/routes/admin'
 import { index as ordersIndex, show } from '@/routes/admin/orders'
 import { useHapticFeedback } from '@/composables/useHapticFeedback'
+import SortableHeader from '@/components/admin/SortableHeader.vue'
 import {
     ShoppingBag,
     Search,
@@ -32,9 +33,7 @@ import {
     Phone,
     Calendar,
     Package,
-    SlidersHorizontal,
     X,
-    Sparkles,
     Clock,
     CheckCircle2,
     ChefHat,
@@ -43,6 +42,30 @@ import {
     XCircle,
 } from 'lucide-vue-next'
 import { ref, watch, computed } from 'vue'
+
+/**
+ * Type untuk kolom yang dapat di-sort
+ */
+type SortColumn = 'order_number' | 'customer_name' | 'total' | 'items' | 'status' | 'created_at'
+
+/**
+ * Sorting state
+ */
+const sortBy = ref<SortColumn | null>(null)
+const sortDirection = ref<'asc' | 'desc'>('asc')
+
+/**
+ * Handle sort action dengan toggle direction
+ */
+function handleSort(column: string) {
+    const col = column as SortColumn
+    if (sortBy.value === col) {
+        sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+    } else {
+        sortBy.value = col
+        sortDirection.value = 'asc'
+    }
+}
 import { useDebounceFn } from '@vueuse/core'
 import { Motion } from 'motion-v'
 import { springPresets, staggerDelay } from '@/composables/useMotionV'
@@ -126,6 +149,42 @@ const breadcrumbs: BreadcrumbItem[] = [
 const flashSuccess = computed(() => (page.props as unknown as { flash?: { success?: string } }).flash?.success)
 const flashError = computed(() => (page.props as unknown as { flash?: { error?: string } }).flash?.error)
 
+/**
+ * Computed untuk sorted orders berdasarkan sortBy dan sortDirection
+ * Sorting dilakukan client-side untuk data yang sudah di-paginate
+ */
+const sortedOrders = computed(() => {
+    if (!sortBy.value) return props.orders.data
+
+    return [...props.orders.data].sort((a, b) => {
+        let comparison = 0
+        const col = sortBy.value as SortColumn
+
+        switch (col) {
+            case 'order_number':
+                comparison = a.order_number.localeCompare(b.order_number)
+                break
+            case 'customer_name':
+                comparison = a.customer_name.localeCompare(b.customer_name, 'id')
+                break
+            case 'total':
+                comparison = a.total - b.total
+                break
+            case 'items':
+                comparison = a.items.length - b.items.length
+                break
+            case 'status':
+                comparison = a.status.localeCompare(b.status)
+                break
+            case 'created_at':
+                comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+                break
+        }
+
+        return sortDirection.value === 'asc' ? comparison : -comparison
+    })
+})
+
 // Local state untuk filter
 const search = ref(props.filters.search || '')
 const status = ref(props.filters.status || '')
@@ -149,18 +208,6 @@ function toggleMobileFilter() {
  */
 const hasActiveFilters = computed(() => {
     return search.value || status.value || startDate.value || endDate.value
-})
-
-/**
- * Count active filters
- */
-const activeFilterCount = computed(() => {
-    let count = 0
-    if (search.value) count++
-    if (status.value) count++
-    if (startDate.value) count++
-    if (endDate.value) count++
-    return count
 })
 
 /**
@@ -269,24 +316,24 @@ function goToPage(url: string | null) {
 }
 
 /**
- * Get status badge class untuk styling
+ * Get status badge class untuk iOS styling
  */
-function getStatusClass(orderStatus: string): string {
+function getStatusBadgeClass(orderStatus: string): string {
     switch (orderStatus) {
         case 'pending':
-            return 'admin-badge--pending'
+            return 'ios-badge--pending'
         case 'confirmed':
-            return 'admin-badge--confirmed'
+            return 'ios-badge--confirmed'
         case 'preparing':
-            return 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
+            return 'ios-badge--preparing'
         case 'ready':
-            return 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300'
+            return 'ios-badge--ready'
         case 'delivered':
-            return 'admin-badge--success'
+            return 'ios-badge--delivered'
         case 'cancelled':
-            return 'admin-badge--destructive'
+            return 'ios-badge--cancelled'
         default:
-            return ''
+            return 'ios-badge--muted'
     }
 }
 
@@ -658,39 +705,73 @@ function openWhatsApp(phone: string) {
                     :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
                     class="hidden md:block"
                 >
-                    <div class="rounded-2xl border border-border/50 bg-card shadow-sm">
+                    <div class="ios-table-container">
                         <div class="overflow-x-auto">
-                            <table class="w-full border-collapse">
+                            <table class="ios-table w-full">
                                 <thead>
-                                    <tr class="border-b bg-muted/50">
-                                        <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 180px;">
-                                            No. Pesanan
-                                        </th>
-                                        <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="min-width: 200px;">
-                                            Customer
-                                        </th>
-                                        <th class="whitespace-nowrap px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 120px;">
-                                            Total
-                                        </th>
-                                        <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 80px;">
-                                            Items
-                                        </th>
-                                        <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 120px;">
-                                            Status
-                                        </th>
-                                        <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 160px;">
-                                            Tanggal
-                                        </th>
+                                    <tr>
+                                        <SortableHeader
+                                            column="order_number"
+                                            label="No. Pesanan"
+                                            :current-sort="sortBy"
+                                            :current-direction="sortDirection"
+                                            style="width: 180px;"
+                                            @sort="handleSort"
+                                        />
+                                        <SortableHeader
+                                            column="customer_name"
+                                            label="Customer"
+                                            :current-sort="sortBy"
+                                            :current-direction="sortDirection"
+                                            style="min-width: 200px;"
+                                            @sort="handleSort"
+                                        />
+                                        <SortableHeader
+                                            column="total"
+                                            label="Total"
+                                            :current-sort="sortBy"
+                                            :current-direction="sortDirection"
+                                            align="right"
+                                            style="width: 120px;"
+                                            @sort="handleSort"
+                                        />
+                                        <SortableHeader
+                                            column="items"
+                                            label="Items"
+                                            :current-sort="sortBy"
+                                            :current-direction="sortDirection"
+                                            align="center"
+                                            style="width: 80px;"
+                                            @sort="handleSort"
+                                        />
+                                        <SortableHeader
+                                            column="status"
+                                            label="Status"
+                                            :current-sort="sortBy"
+                                            :current-direction="sortDirection"
+                                            align="center"
+                                            style="width: 120px;"
+                                            @sort="handleSort"
+                                        />
+                                        <SortableHeader
+                                            column="created_at"
+                                            label="Tanggal"
+                                            :current-sort="sortBy"
+                                            :current-direction="sortDirection"
+                                            align="center"
+                                            style="width: 160px;"
+                                            @sort="handleSort"
+                                        />
                                         <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 100px;">
                                             Aksi
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-border/50">
+                                <tbody>
                                     <tr
-                                        v-for="order in orders.data"
+                                        v-for="order in sortedOrders"
                                         :key="order.id"
-                                        class="group transition-colors hover:bg-muted/30"
+                                        class="ios-table-row"
                                     >
                                         <td class="px-4 py-3">
                                             <Link
@@ -716,13 +797,14 @@ function openWhatsApp(phone: string) {
                                             <PriceDisplay :price="order.total" size="sm" class="font-semibold text-primary" />
                                         </td>
                                         <td class="px-4 py-3 text-center">
-                                            <Badge variant="outline" class="gap-1 tabular-nums">
+                                            <span class="ios-badge ios-badge--outline tabular-nums">
                                                 <Package class="h-3 w-3" />
                                                 {{ order.items.length }}
-                                            </Badge>
+                                            </span>
                                         </td>
                                         <td class="px-4 py-3 text-center">
-                                            <span :class="['admin-badge', getStatusClass(order.status)]">
+                                            <span :class="['ios-badge', getStatusBadgeClass(order.status)]">
+                                                <span class="ios-badge-dot" />
                                                 {{ statuses[order.status] || order.status }}
                                             </span>
                                         </td>
@@ -746,7 +828,7 @@ function openWhatsApp(phone: string) {
                                     </tr>
 
                                     <!-- Empty State -->
-                                    <tr v-if="orders.data.length === 0">
+                                    <tr v-if="sortedOrders.length === 0">
                                         <td colspan="7" class="px-4 py-16">
                                             <div class="flex flex-col items-center justify-center text-center">
                                                 <div class="mb-4 rounded-2xl bg-muted p-4">

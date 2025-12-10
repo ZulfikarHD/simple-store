@@ -1435,4 +1435,204 @@
     .admin-fab svg {
         @apply h-6 w-6 text-white;
     }
+
+    /* =============================================
+       iOS TABLE STYLES
+       Premium iOS-like table dengan smooth interactions
+       ============================================= */
+
+    /* iOS Table Container */
+    .ios-table-container {
+        @apply rounded-2xl overflow-hidden border border-border/40;
+        background: var(--card);
+        box-shadow:
+            0 1px 2px oklch(0 0 0 / 0.03),
+            0 4px 12px oklch(0 0 0 / 0.04);
+    }
+
+    /* iOS Table */
+    .ios-table {
+        @apply w-full border-collapse;
+    }
+
+    .ios-table thead {
+        background: linear-gradient(180deg, oklch(from var(--muted) l c h / 0.6) 0%, oklch(from var(--muted) l c h / 0.4) 100%);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .ios-table thead th {
+        @apply px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground;
+    }
+
+    .ios-table tbody {
+        @apply divide-y divide-border/30;
+    }
+
+    /* iOS Table Row dengan smooth hover */
+    .ios-table-row {
+        @apply transition-all duration-150;
+        background: transparent;
+    }
+
+    .ios-table-row:hover {
+        background: oklch(from var(--muted) l c h / 0.4);
+    }
+
+    .ios-table-row:active {
+        background: oklch(from var(--muted) l c h / 0.6);
+        transform: scale(0.995);
+    }
+
+    .ios-table-row td {
+        @apply px-4 py-4;
+    }
+
+    /* =============================================
+       iOS BADGE STYLES
+       Premium pill-shaped badges dengan subtle styling
+       ============================================= */
+
+    /* Base iOS Badge */
+    .ios-badge {
+        @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium;
+        transition: all var(--ios-duration-fast) ease;
+    }
+
+    /* iOS Badge Dot indicator */
+    .ios-badge-dot {
+        @apply w-1.5 h-1.5 rounded-full;
+        background: currentColor;
+        opacity: 0.8;
+    }
+
+    /* Badge Variants */
+    .ios-badge--success {
+        @apply bg-green-100 text-green-700;
+    }
+
+    .dark .ios-badge--success {
+        @apply bg-green-900/40 text-green-400;
+    }
+
+    .ios-badge--warning {
+        @apply bg-amber-100 text-amber-700;
+    }
+
+    .dark .ios-badge--warning {
+        @apply bg-amber-900/40 text-amber-400;
+    }
+
+    .ios-badge--destructive {
+        @apply bg-red-100 text-red-700;
+    }
+
+    .dark .ios-badge--destructive {
+        @apply bg-red-900/40 text-red-400;
+    }
+
+    .ios-badge--pending {
+        @apply bg-amber-50 text-amber-600;
+        border: 1px solid oklch(from var(--color-brand-gold-300) l c h / 0.5);
+    }
+
+    .dark .ios-badge--pending {
+        @apply bg-amber-900/30 text-amber-400;
+        border: 1px solid oklch(from var(--color-brand-gold-600) l c h / 0.4);
+    }
+
+    .ios-badge--confirmed {
+        @apply bg-blue-50 text-blue-600;
+        border: 1px solid oklch(from var(--color-brand-blue-300) l c h / 0.5);
+    }
+
+    .dark .ios-badge--confirmed {
+        @apply bg-blue-900/30 text-blue-400;
+        border: 1px solid oklch(from var(--color-brand-blue-600) l c h / 0.4);
+    }
+
+    .ios-badge--preparing {
+        @apply bg-purple-50 text-purple-600;
+        border: 1px solid oklch(0.75 0.15 300 / 0.5);
+    }
+
+    .dark .ios-badge--preparing {
+        @apply bg-purple-900/30 text-purple-400;
+        border: 1px solid oklch(0.55 0.15 300 / 0.4);
+    }
+
+    .ios-badge--ready {
+        @apply bg-cyan-50 text-cyan-600;
+        border: 1px solid oklch(0.75 0.15 200 / 0.5);
+    }
+
+    .dark .ios-badge--ready {
+        @apply bg-cyan-900/30 text-cyan-400;
+        border: 1px solid oklch(0.55 0.15 200 / 0.4);
+    }
+
+    .ios-badge--delivered {
+        @apply bg-green-50 text-green-600;
+        border: 1px solid oklch(0.75 0.18 145 / 0.5);
+    }
+
+    .dark .ios-badge--delivered {
+        @apply bg-green-900/30 text-green-400;
+        border: 1px solid oklch(0.55 0.18 145 / 0.4);
+    }
+
+    .ios-badge--cancelled {
+        @apply bg-red-50 text-red-600;
+        border: 1px solid oklch(0.75 0.2 25 / 0.5);
+    }
+
+    .dark .ios-badge--cancelled {
+        @apply bg-red-900/30 text-red-400;
+        border: 1px solid oklch(0.55 0.2 25 / 0.4);
+    }
+
+    .ios-badge--muted {
+        @apply bg-muted text-muted-foreground;
+    }
+
+    .ios-badge--outline {
+        @apply bg-transparent text-muted-foreground;
+        border: 1px solid var(--border);
+    }
+
+    .ios-badge--outline:hover {
+        @apply bg-muted/50;
+    }
+
+    /* iOS Badge with Icon */
+    .ios-badge svg {
+        @apply h-3 w-3;
+    }
+
+    /* Stock Level Badges */
+    .ios-badge--stock-high {
+        @apply bg-green-50 text-green-600;
+        border: 1px solid oklch(0.75 0.18 145 / 0.4);
+    }
+
+    .dark .ios-badge--stock-high {
+        @apply bg-green-900/30 text-green-400;
+    }
+
+    .ios-badge--stock-low {
+        @apply bg-amber-50 text-amber-600;
+        border: 1px solid oklch(0.75 0.15 85 / 0.4);
+    }
+
+    .dark .ios-badge--stock-low {
+        @apply bg-amber-900/30 text-amber-400;
+    }
+
+    .ios-badge--stock-out {
+        @apply bg-red-50 text-red-600;
+        border: 1px solid oklch(0.75 0.2 25 / 0.4);
+    }
+
+    .dark .ios-badge--stock-out {
+        @apply bg-red-900/30 text-red-400;
+    }
 }

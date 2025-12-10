@@ -2,18 +2,39 @@
 /**
  * AuthSplitLayout - Layout autentikasi dengan split view design
  * iOS-like design dengan glass effects, spring animations, dan gradient overlays
+ * Logo dinamis dari store settings
  *
  * @author Zulfikar Hidayatullah
  */
-import AppLogoIcon from '@/components/AppLogoIcon.vue'
 import { home } from '@/routes'
 import { Link, usePage } from '@inertiajs/vue3'
 import { Motion } from 'motion-v'
 import { springPresets } from '@/composables/useMotionV'
+import { computed } from 'vue'
+import { ShoppingBag } from 'lucide-vue-next'
+
+/**
+ * Interface untuk store branding dari shared props
+ */
+interface StoreBranding {
+    name: string
+    tagline: string
+    logo: string | null
+}
 
 const page = usePage()
-const name = page.props.name
 const quote = page.props.quote
+
+/**
+ * Computed untuk mendapatkan data store dari shared props
+ */
+const store = computed<StoreBranding>(() => {
+    return (page.props as { store?: StoreBranding }).store ?? {
+        name: 'Simple Store',
+        tagline: 'Premium Quality Products',
+        logo: null,
+    }
+})
 
 defineProps<{
     title?: string
@@ -43,7 +64,7 @@ const springTransition = { type: 'spring' as const, ...springPresets.ios }
                 <div class="absolute -bottom-20 -right-20 h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
             </div>
 
-            <!-- Logo dengan animation -->
+            <!-- Logo dengan animation - dinamis dari store settings -->
             <Motion
                 :initial="{ opacity: 0, x: -20 }"
                 :animate="{ opacity: 1, x: 0 }"
@@ -53,10 +74,21 @@ const springTransition = { type: 'spring' as const, ...springPresets.ios }
                     :href="home()"
                     class="ios-press relative z-20 flex items-center gap-3 text-lg font-medium transition-transform active:scale-[0.97]"
                 >
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm">
-                        <AppLogoIcon class="size-6 fill-current text-white" />
+                    <div class="flex h-10 w-10 items-center justify-center">
+                        <img
+                            v-if="store.logo"
+                            :src="`/storage/${store.logo}`"
+                            :alt="store.name"
+                            class="h-10 w-10 rounded-xl object-contain"
+                        />
+                        <div
+                            v-else
+                            class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm"
+                        >
+                            <ShoppingBag class="h-5 w-5 text-white" />
+                        </div>
                     </div>
-                    <span class="font-bold tracking-tight">{{ name }}</span>
+                    <span class="font-bold tracking-tight">{{ store.name }}</span>
                 </Link>
             </Motion>
 
@@ -93,7 +125,7 @@ const springTransition = { type: 'spring' as const, ...springPresets.ios }
                 :transition="springTransition"
                 class="relative mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[380px]"
             >
-                <!-- Mobile Logo -->
+                <!-- Mobile Logo - dinamis dari store settings -->
                 <Motion
                     :initial="{ opacity: 0, scale: 0.8 }"
                     :animate="{ opacity: 1, scale: 1 }"
@@ -104,8 +136,19 @@ const springTransition = { type: 'spring' as const, ...springPresets.ios }
                         :href="home()"
                         class="ios-press flex items-center gap-2 transition-transform active:scale-[0.97]"
                     >
-                        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary shadow-lg">
-                            <AppLogoIcon class="size-7 fill-current text-primary-foreground" />
+                        <div class="flex h-12 w-12 items-center justify-center">
+                            <img
+                                v-if="store.logo"
+                                :src="`/storage/${store.logo}`"
+                                :alt="store.name"
+                                class="h-12 w-12 rounded-2xl object-contain"
+                            />
+                            <div
+                                v-else
+                                class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary shadow-lg"
+                            >
+                                <ShoppingBag class="h-6 w-6 text-primary-foreground" />
+                            </div>
                         </div>
                     </Link>
                 </Motion>
