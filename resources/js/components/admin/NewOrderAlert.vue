@@ -43,7 +43,6 @@ interface PendingOrder {
  */
 const pendingOrders = ref<PendingOrder[]>([])
 const totalPending = ref(0)
-const isLoading = ref(false)
 const isConfirming = ref<number | null>(null)
 const isDismissed = ref(false)
 const isExpanded = ref(false)
@@ -67,10 +66,6 @@ const latestOrder = computed(() => pendingOrders.value[0] ?? null)
 /**
  * Computed untuk cek apakah ada order baru sejak terakhir dilihat
  */
-const hasNewOrder = computed(() => {
-    if (!latestOrder.value || !lastSeenOrderId.value) return true
-    return latestOrder.value.id > lastSeenOrderId.value
-})
 
 /**
  * Fetch pending orders dari API

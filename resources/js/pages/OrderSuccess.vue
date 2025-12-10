@@ -7,7 +7,7 @@
  * @author Zulfikar Hidayatullah
  */
 import { Head, Link } from '@inertiajs/vue3'
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { home } from '@/routes'
 import CartCounter from '@/components/store/CartCounter.vue'
 import UserBottomNav from '@/components/mobile/UserBottomNav.vue'

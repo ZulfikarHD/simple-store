@@ -11,7 +11,6 @@ import { home } from '@/routes'
 import UserBottomNav from '@/components/mobile/UserBottomNav.vue'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { OrderStatusBadge } from '@/components/store'
 import PriceDisplay from '@/components/store/PriceDisplay.vue'
 import {
@@ -54,7 +53,7 @@ interface Props {
     orders: Order[]
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 /**
  * Format tanggal

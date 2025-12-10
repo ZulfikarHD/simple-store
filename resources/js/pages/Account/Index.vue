@@ -12,7 +12,7 @@ import { computed } from 'vue'
 import { home } from '@/routes'
 import { login, register } from '@/routes'
 import UserBottomNav from '@/components/mobile/UserBottomNav.vue'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -25,9 +25,6 @@ import {
     ChevronRight,
     ShieldCheck,
     Package,
-    Heart,
-    HelpCircle,
-    FileText,
 } from 'lucide-vue-next'
 
 const page = usePage()

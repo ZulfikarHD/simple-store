@@ -4,7 +4,6 @@
  * Menampilkan filter kategori dalam bentuk tabs horizontal
  * untuk memfilter produk berdasarkan kategori
  */
-import { computed } from 'vue'
 
 /**
  * Props definition untuk CategoryFilter

@@ -9,7 +9,7 @@
 import { Head, Link } from '@inertiajs/vue3'
 import { Form } from '@inertiajs/vue3'
 import { computed, ref } from 'vue'
-import { home, show as showCart } from '@/routes/cart'
+import { show as showCart } from '@/routes/cart'
 import { store as checkoutStore } from '@/actions/App/Http/Controllers/CheckoutController'
 import CartCounter from '@/components/store/CartCounter.vue'
 import UserBottomNav from '@/components/mobile/UserBottomNav.vue'

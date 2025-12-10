@@ -19,7 +19,7 @@ interface Props {
     actionUrl?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
     icon: '📦',
 })
 

@@ -9,17 +9,14 @@
 import { computed } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
 import { Badge } from '@/components/ui/badge'
-import { dashboard } from '@/routes/admin'
 import { index as ordersIndex } from '@/routes/admin/orders'
 import { index as productsIndex } from '@/routes/admin/products'
 import { index as categoriesIndex } from '@/routes/admin/categories'
 import { index as settingsIndex } from '@/routes/admin/settings'
 import {
-    LayoutGrid,
     ShoppingBag,
     Package,
     FolderTree,
-    Settings,
     MoreHorizontal,
 } from 'lucide-vue-next'
 

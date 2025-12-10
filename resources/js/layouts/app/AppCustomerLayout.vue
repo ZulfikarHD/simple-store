@@ -6,7 +6,7 @@
  *
  * @author Zulfikar Hidayatullah
  */
-import { Head, Link } from '@inertiajs/vue3'
+import { Link } from '@inertiajs/vue3'
 import { home } from '@/routes'
 import { ShoppingBag } from 'lucide-vue-next'
 import NavUser from '@/components/NavUser.vue'

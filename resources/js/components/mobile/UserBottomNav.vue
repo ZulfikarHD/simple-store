@@ -90,8 +90,7 @@ const navItems = computed(() => [
 /**
  * Handle press start dengan haptic feedback
  */
-function handlePressStart(itemId: string) {
-    pressedItem.value = itemId
+function handlePressStart() {
     haptic.light()
 }
 
@@ -105,7 +104,7 @@ function handlePressEnd() {
 /**
  * Handle navigation dengan medium haptic
  */
-function handleNavigation(itemId: string) {
+function handleNavigation() {
     haptic.medium()
 }
 </script>
@@ -133,7 +132,7 @@ function handleNavigation(itemId: string) {
                 @touchstart.passive="handlePressStart(item.id)"
                 @touchend="handlePressEnd"
                 @touchcancel="handlePressEnd"
-                @click="handleNavigation(item.id)"
+                @click="handleNavigation()"
             >
                 <!-- Icon Container with Spring Animation -->
                 <div

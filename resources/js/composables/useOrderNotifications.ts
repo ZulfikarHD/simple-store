@@ -5,7 +5,7 @@
  *
  * @author Zulfikar Hidayatullah
  */
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { usePage } from '@inertiajs/vue3'
 
 /**
@@ -19,7 +19,6 @@ const isSupported = ref(false)
  */
 export function useOrderNotifications() {
     const page = usePage()
-    const previousPendingCount = ref(0)
 
     /**
      * Cek apakah browser support notifications

@@ -5,7 +5,7 @@
  *
  * @author Zulfikar Hidayatullah
  */
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 
 /**
  * Type untuk berbagai jenis haptic feedback

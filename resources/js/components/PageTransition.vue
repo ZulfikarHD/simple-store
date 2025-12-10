@@ -6,7 +6,7 @@
  *
  * @author Zulfikar Hidayatullah
  */
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { router } from '@inertiajs/vue3'
 
 /**
@@ -19,7 +19,7 @@ interface Props {
     mode?: 'fade' | 'slide' | 'scale' | 'slide-up'
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
     duration: 300,
     mode: 'fade',
 })
