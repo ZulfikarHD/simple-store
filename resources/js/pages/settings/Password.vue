@@ -5,6 +5,8 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { edit } from '@/routes/user-password';
 import { Form, Head } from '@inertiajs/vue3';
+import { Motion, AnimatePresence } from 'motion-v';
+import { springPresets, staggerDelay } from '@/composables/useMotionV';
 
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import { Button } from '@/components/ui/button';
@@ -26,25 +28,36 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
         <SettingsLayout>
             <div class="space-y-6">
-                <HeadingSmall
-                    title="Update password"
-                    description="Ensure your account is using a long, random password to stay secure"
-                />
-
-                <Form
-                    v-bind="PasswordController.update.form()"
-                    :options="{
-                        preserveScroll: true,
-                    }"
-                    reset-on-success
-                    :reset-on-error="[
-                        'password',
-                        'password_confirmation',
-                        'current_password',
-                    ]"
-                    class="space-y-6"
-                    v-slot="{ errors, processing, recentlySuccessful }"
+                <Motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="springPresets.ios"
                 >
+                    <HeadingSmall
+                        title="Update password"
+                        description="Ensure your account is using a long, random password to stay secure"
+                    />
+                </Motion>
+
+                <Motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
+                >
+                    <Form
+                        v-bind="PasswordController.update.form()"
+                        :options="{
+                            preserveScroll: true,
+                        }"
+                        reset-on-success
+                        :reset-on-error="[
+                            'password',
+                            'password_confirmation',
+                            'current_password',
+                        ]"
+                        class="space-y-6"
+                        v-slot="{ errors, processing, recentlySuccessful }"
+                    >
                     <div class="grid gap-2">
                         <Label for="current_password">Current password</Label>
                         <Input
@@ -93,21 +106,22 @@ const breadcrumbItems: BreadcrumbItem[] = [
                             >Save password</Button
                         >
 
-                        <Transition
-                            enter-active-class="transition ease-in-out"
-                            enter-from-class="opacity-0"
-                            leave-active-class="transition ease-in-out"
-                            leave-to-class="opacity-0"
-                        >
-                            <p
-                                v-show="recentlySuccessful"
-                                class="text-sm text-neutral-600"
+                        <AnimatePresence>
+                            <Motion
+                                v-if="recentlySuccessful"
+                                :initial="{ opacity: 0, scale: 0.9 }"
+                                :animate="{ opacity: 1, scale: 1 }"
+                                :exit="{ opacity: 0, scale: 0.9 }"
+                                :transition="springPresets.bouncy"
                             >
-                                Saved.
-                            </p>
-                        </Transition>
+                                <p class="text-sm text-neutral-600">
+                                    Saved.
+                                </p>
+                            </Motion>
+                        </AnimatePresence>
                     </div>
-                </Form>
+                    </Form>
+                </Motion>
             </div>
         </SettingsLayout>
     </AppLayout>

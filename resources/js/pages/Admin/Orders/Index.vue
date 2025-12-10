@@ -39,6 +39,8 @@ import {
 } from 'lucide-vue-next'
 import { ref, watch, computed } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
+import { Motion } from 'motion-v'
+import { springPresets, staggerDelay } from '@/composables/useMotionV'
 
 /**
  * Haptic feedback untuk iOS-like tactile response
@@ -285,18 +287,10 @@ function navigateToDetail(orderId: number) {
         <PullToRefresh>
             <div class="flex flex-col gap-6 p-4 md:p-6">
                 <!-- Page Header dengan spring animation -->
-                <div
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, y: 20 }"
-                    :enter="{
-                        opacity: 1,
-                        y: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                        },
-                    }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="springPresets.ios"
                     class="flex flex-col gap-2"
                 >
                     <h1 class="text-2xl font-bold tracking-tight md:text-3xl">
@@ -305,7 +299,7 @@ function navigateToDetail(orderId: number) {
                     <p class="text-muted-foreground">
                         Kelola dan pantau pesanan customer
                     </p>
-                </div>
+                </Motion>
 
                 <!-- Flash Messages -->
                 <Transition
@@ -340,19 +334,10 @@ function navigateToDetail(orderId: number) {
                 </Transition>
 
                 <!-- Mobile Search Bar + Filter Toggle -->
-                <div
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, y: 20 }"
-                    :enter="{
-                        opacity: 1,
-                        y: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 50,
-                        },
-                    }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(0) }"
                     class="flex gap-2 md:hidden"
                 >
                     <div class="relative flex-1">
@@ -373,7 +358,7 @@ function navigateToDetail(orderId: number) {
                     >
                         <SlidersHorizontal class="h-4 w-4" />
                     </Button>
-                </div>
+                </Motion>
 
                 <!-- Mobile Filter Panel (Collapsible) -->
                 <Transition
@@ -443,21 +428,13 @@ function navigateToDetail(orderId: number) {
                 </Transition>
 
                 <!-- Desktop Filters Card -->
-                <Card
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, y: 20 }"
-                    :enter="{
-                        opacity: 1,
-                        y: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 50,
-                        },
-                    }"
-                    class="ios-card hidden md:block"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(0) }"
+                    class="hidden md:block"
                 >
+                    <Card class="ios-card">
                     <CardHeader>
                         <CardTitle class="flex items-center gap-2 text-base">
                             <Filter class="h-4 w-4" />
@@ -528,6 +505,7 @@ function navigateToDetail(orderId: number) {
                         </div>
                     </CardContent>
                 </Card>
+                </Motion>
 
                 <!-- Mobile Order Cards View - Visible Only on Mobile (<768px) -->
                 <div class="flex flex-col gap-3 md:hidden">
@@ -589,21 +567,13 @@ function navigateToDetail(orderId: number) {
                 </div>
 
                 <!-- Desktop Orders Table -->
-                <Card
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, y: 20 }"
-                    :enter="{
-                        opacity: 1,
-                        y: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 100,
-                        },
-                    }"
-                    class="ios-card hidden md:block"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
+                    class="hidden md:block"
                 >
+                    <Card class="ios-card">
                     <CardContent class="p-0">
                         <div class="overflow-x-auto">
                             <table class="w-full">
@@ -633,21 +603,13 @@ function navigateToDetail(orderId: number) {
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y">
-                                    <tr
+                                    <Motion
                                         v-for="(order, index) in orders.data"
                                         :key="order.id"
-                                        v-motion
+                                        tag="tr"
                                         :initial="{ opacity: 0, x: -20 }"
-                                        :enter="{
-                                            opacity: 1,
-                                            x: 0,
-                                            transition: {
-                                                type: 'spring',
-                                                stiffness: 300,
-                                                damping: 25,
-                                                delay: 150 + index * 30,
-                                            },
-                                        }"
+                                        :animate="{ opacity: 1, x: 0 }"
+                                        :transition="{ ...springPresets.ios, delay: 0.15 + index * 0.03 }"
                                         class="cursor-pointer transition-all duration-150 hover:bg-muted/50"
                                         :class="{ 'scale-[0.99] bg-muted/30': pressedRow === order.id }"
                                         @mousedown="handleRowPress(order.id)"
@@ -723,23 +685,15 @@ function navigateToDetail(orderId: number) {
                                                 </Link>
                                             </div>
                                         </td>
-                                    </tr>
+                                    </Motion>
 
                                     <!-- Empty State -->
                                     <tr v-if="orders.data.length === 0">
                                         <td colspan="7" class="px-4 py-12">
-                                            <div
-                                                v-motion
+                                            <Motion
                                                 :initial="{ opacity: 0, scale: 0.95 }"
-                                                :enter="{
-                                                    opacity: 1,
-                                                    scale: 1,
-                                                    transition: {
-                                                        type: 'spring',
-                                                        stiffness: 300,
-                                                        damping: 25,
-                                                    },
-                                                }"
+                                                :animate="{ opacity: 1, scale: 1 }"
+                                                :transition="springPresets.ios"
                                                 class="flex flex-col items-center justify-center text-center"
                                             >
                                                 <ShoppingBag class="mb-4 h-12 w-12 text-muted-foreground/50" />
@@ -749,7 +703,7 @@ function navigateToDetail(orderId: number) {
                                                 <p class="mt-1 text-sm text-muted-foreground">
                                                     Pesanan customer akan muncul di sini
                                                 </p>
-                                            </div>
+                                            </Motion>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -790,6 +744,7 @@ function navigateToDetail(orderId: number) {
                         </div>
                     </CardContent>
                 </Card>
+                </Motion>
 
                 <!-- Bottom padding untuk mobile nav -->
                 <div class="h-20 md:hidden" />

@@ -1,18 +1,22 @@
 <script setup lang="ts">
 /**
  * Account Orders Page
- * Halaman riwayat pesanan user dengan list pesanan
- * dan status tracking untuk setiap pesanan
+ * Halaman riwayat pesanan user dengan iOS-like animations
+ * menggunakan motion-v, list pesanan, dan status tracking
  *
  * @author Zulfikar Hidayatullah
  */
 import { Head, Link } from '@inertiajs/vue3'
+import { Motion, AnimatePresence } from 'motion-v'
+import { ref } from 'vue'
 import { home } from '@/routes'
 import UserBottomNav from '@/components/mobile/UserBottomNav.vue'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { OrderStatusBadge } from '@/components/store'
 import PriceDisplay from '@/components/store/PriceDisplay.vue'
+import { useHapticFeedback } from '@/composables/useHapticFeedback'
+import { springPresets } from '@/composables/useMotionV'
 import {
     ShoppingBag,
     ArrowLeft,
@@ -55,6 +59,14 @@ interface Props {
 
 defineProps<Props>()
 
+const haptic = useHapticFeedback()
+
+/**
+ * Press states untuk iOS-like feedback
+ */
+const isBackPressed = ref(false)
+const pressedOrderId = ref<number | null>(null)
+
 /**
  * Format tanggal
  */
@@ -67,6 +79,21 @@ function formatDate(dateString: string): string {
         minute: '2-digit',
     })
 }
+
+/**
+ * Handle order card press
+ */
+function handleOrderPress(orderId: number) {
+    pressedOrderId.value = orderId
+    haptic.light()
+}
+
+/**
+ * Spring transitions untuk iOS-like animations
+ */
+const springTransition = { type: 'spring' as const, ...springPresets.ios }
+const bouncyTransition = { type: 'spring' as const, ...springPresets.bouncy }
+const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
 </script>
 
 <template>
@@ -76,16 +103,22 @@ function formatDate(dateString: string): string {
     </Head>
 
     <div class="min-h-screen bg-background">
-        <!-- Header Navigation (Fixed) -->
-        <header class="fixed inset-x-0 top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <!-- Header Navigation dengan iOS Glass Effect (Fixed) -->
+        <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-border/30">
             <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                 <!-- Logo & Brand -->
+                <Motion
+                    :initial="{ opacity: 0, x: -20 }"
+                    :animate="{ opacity: 1, x: 0 }"
+                    :transition="springTransition"
+                >
                 <Link :href="home()" class="flex items-center gap-2 sm:gap-3">
-                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary sm:h-10 sm:w-10">
+                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm sm:h-10 sm:w-10">
                         <ShoppingBag class="h-4 w-4 text-primary-foreground sm:h-5 sm:w-5" />
                     </div>
                     <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
                 </Link>
+                </Motion>
             </div>
         </header>
 
@@ -94,51 +127,117 @@ function formatDate(dateString: string): string {
 
         <!-- Main Content -->
         <main class="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
-            <!-- Back Button -->
+            <!-- Back Button dengan iOS press feedback -->
+            <Motion
+                :initial="{ opacity: 0, x: -20 }"
+                :animate="{ opacity: 1, x: 0 }"
+                :transition="springTransition"
+            >
+                <Motion
+                    :animate="{ scale: isBackPressed ? 0.95 : 1, opacity: isBackPressed ? 0.7 : 1 }"
+                    :transition="snappyTransition"
+                >
             <Link
                 href="/account"
-                class="mb-4 inline-flex h-11 items-center gap-2 rounded-lg px-3 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:mb-6 sm:h-auto sm:px-0"
+                        class="ios-button mb-4 inline-flex h-11 items-center gap-2 rounded-xl px-3 text-sm text-muted-foreground hover:bg-accent hover:text-foreground sm:mb-6 sm:h-auto sm:px-0"
+                        @mousedown="isBackPressed = true"
+                        @mouseup="isBackPressed = false"
+                        @mouseleave="isBackPressed = false"
+                        @touchstart.passive="isBackPressed = true"
+                        @touchend="isBackPressed = false"
             >
                 <ArrowLeft class="h-4 w-4" />
                 Kembali ke Akun
             </Link>
+                </Motion>
+            </Motion>
 
             <!-- Page Title -->
-            <div class="mb-6">
+            <Motion
+                :initial="{ opacity: 0, y: 20 }"
+                :animate="{ opacity: 1, y: 0 }"
+                :transition="{ ...springTransition, delay: 0.05 }"
+                class="mb-6"
+            >
                 <h1 class="text-2xl font-bold tracking-tight text-foreground">
                     Riwayat Pesanan
                 </h1>
                 <p class="mt-1 text-sm text-muted-foreground">
                     {{ orders.length }} pesanan ditemukan
                 </p>
-            </div>
+            </Motion>
 
-            <!-- Empty State -->
-            <div
+            <!-- Empty State dengan animation -->
+            <AnimatePresence>
+                <Motion
                 v-if="orders.length === 0"
+                    :initial="{ opacity: 0, scale: 0.95 }"
+                    :animate="{ opacity: 1, scale: 1 }"
+                    :exit="{ opacity: 0, scale: 0.95 }"
+                    :transition="{ ...springTransition, delay: 0.1 }"
                 class="flex flex-col items-center justify-center py-12"
             >
-                <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                    <Motion
+                        :initial="{ scale: 0 }"
+                        :animate="{ scale: 1 }"
+                        :transition="{ ...bouncyTransition, delay: 0.15 }"
+                        class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted"
+                    >
                     <ShoppingCart class="h-8 w-8 text-muted-foreground" />
-                </div>
+                    </Motion>
+                    <Motion
+                        :initial="{ opacity: 0, y: 10 }"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springTransition, delay: 0.2 }"
+                    >
                 <h2 class="mb-2 text-lg font-semibold text-foreground">Belum Ada Pesanan</h2>
+                    </Motion>
+                    <Motion
+                        :initial="{ opacity: 0, y: 10 }"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springTransition, delay: 0.25 }"
+                    >
                 <p class="mb-6 text-center text-muted-foreground">
                     Anda belum pernah melakukan pemesanan. Yuk mulai belanja!
                 </p>
+                    </Motion>
+                    <Motion
+                        :initial="{ opacity: 0, y: 10 }"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springTransition, delay: 0.3 }"
+                    >
                 <Link :href="home()">
-                    <Button class="gap-2">
+                            <Button class="ios-button gap-2 rounded-xl">
                         <ShoppingBag class="h-4 w-4" />
                         Mulai Belanja
                     </Button>
                 </Link>
-            </div>
+                    </Motion>
+                </Motion>
+            </AnimatePresence>
 
-            <!-- Orders List -->
-            <div v-else class="space-y-4">
-                <Card
-                    v-for="order in orders"
+            <!-- Orders List dengan staggered animation -->
+            <div v-if="orders.length > 0" class="space-y-4">
+                <Motion
+                    v-for="(order, index) in orders"
                     :key="order.id"
-                    class="overflow-hidden"
+                    :initial="{ opacity: 0, y: 20 }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springTransition, delay: 0.1 + index * 0.05 }"
+                >
+                    <Motion
+                        :animate="{
+                            scale: pressedOrderId === order.id ? 0.98 : 1,
+                        }"
+                        :transition="snappyTransition"
+                    >
+                        <Card
+                            class="ios-card cursor-pointer overflow-hidden rounded-2xl border-border/50"
+                            @mousedown="handleOrderPress(order.id)"
+                            @mouseup="pressedOrderId = null"
+                            @mouseleave="pressedOrderId = null"
+                            @touchstart.passive="handleOrderPress(order.id)"
+                            @touchend="pressedOrderId = null"
                 >
                     <CardContent class="p-4">
                         <!-- Header Row -->
@@ -156,26 +255,33 @@ function formatDate(dateString: string): string {
                         </div>
 
                         <!-- Items Preview -->
-                        <div class="mt-3 rounded-lg bg-muted/50 p-3">
+                                <Motion
+                                    :initial="{ opacity: 0 }"
+                                    :animate="{ opacity: 1 }"
+                                    :transition="{ ...springTransition, delay: 0.15 + index * 0.05 }"
+                                    class="mt-3 rounded-xl bg-muted/50 p-3"
+                                >
                             <div class="flex items-center gap-2 text-sm">
                                 <Package class="h-4 w-4 text-muted-foreground" />
                                 <span class="text-muted-foreground">{{ order.items_count }} item</span>
                             </div>
-                            <p class="mt-1 text-sm text-muted-foreground truncate">
+                                    <p class="mt-1 truncate text-sm text-muted-foreground">
                                 {{ order.items.map(item => item.product_name).join(', ') }}
                             </p>
-                        </div>
+                                </Motion>
 
                         <!-- Footer Row -->
                         <div class="mt-3 flex items-center justify-between">
                             <PriceDisplay :price="order.total" size="lg" class="font-bold" />
-                            <Button variant="ghost" size="sm" class="gap-1">
+                                    <Button variant="ghost" size="sm" class="ios-button gap-1 rounded-lg">
                                 Detail
                                 <ChevronRight class="h-4 w-4" />
                             </Button>
                         </div>
                     </CardContent>
                 </Card>
+                    </Motion>
+                </Motion>
             </div>
         </main>
 
@@ -186,5 +292,3 @@ function formatDate(dateString: string): string {
         <UserBottomNav />
     </div>
 </template>
-
-

@@ -18,6 +18,8 @@ import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 import { Form, Head } from '@inertiajs/vue3';
+import { Motion } from 'motion-v';
+import { springPresets, staggerDelay } from '@/composables/useMotionV';
 import { ref } from 'vue';
 import { useHapticFeedback } from '@/composables/useHapticFeedback';
 import { useShakeAnimation } from '@/composables/useSpringAnimation';
@@ -76,23 +78,15 @@ function handleFormError() {
         <Head title="Masuk" />
 
         <!-- Success status message -->
-        <div
+        <Motion
             v-if="status"
-            v-motion
             :initial="{ opacity: 0, y: -10 }"
-            :enter="{
-                opacity: 1,
-                y: 0,
-                transition: {
-                    type: 'spring',
-                    stiffness: 400,
-                    damping: 20,
-                },
-            }"
+            :animate="{ opacity: 1, y: 0 }"
+            :transition="springPresets.bouncy"
             class="mb-4 rounded-xl bg-green-100 px-4 py-3 text-center text-sm font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400"
         >
             {{ status }}
-        </div>
+        </Motion>
 
         <Form
             v-bind="store.form()"
@@ -104,19 +98,10 @@ function handleFormError() {
         >
             <div class="grid gap-5">
                 <!-- Email Field -->
-                <div
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, x: -20 }"
-                    :enter="{
-                        opacity: 1,
-                        x: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 50,
-                        },
-                    }"
+                    :animate="{ opacity: 1, x: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(0) }"
                     class="grid gap-2"
                 >
                     <Label for="email" class="text-sm font-medium">Email</Label>
@@ -139,22 +124,13 @@ function handleFormError() {
                         />
                     </div>
                     <InputError :message="errors.email" class="animate-ios-shake" />
-                </div>
+                </Motion>
 
                 <!-- Password Field -->
-                <div
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, x: -20 }"
-                    :enter="{
-                        opacity: 1,
-                        x: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 100,
-                        },
-                    }"
+                    :animate="{ opacity: 1, x: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
                     class="grid gap-2"
                 >
                     <div class="flex items-center justify-between">
@@ -186,22 +162,13 @@ function handleFormError() {
                         />
                     </div>
                     <InputError :message="errors.password" class="animate-ios-shake" />
-                </div>
+                </Motion>
 
                 <!-- Remember Me -->
-                <div
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, x: -20 }"
-                    :enter="{
-                        opacity: 1,
-                        x: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 150,
-                        },
-                    }"
+                    :animate="{ opacity: 1, x: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(2) }"
                     class="flex items-center justify-between"
                 >
                     <Label for="remember" class="flex cursor-pointer items-center space-x-3">
@@ -214,51 +181,39 @@ function handleFormError() {
                         />
                         <span class="text-sm text-muted-foreground">Ingat saya</span>
                     </Label>
-                </div>
+                </Motion>
 
                 <!-- Submit Button -->
-                <Button
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, y: 20 }"
-                    :enter="{
-                        opacity: 1,
-                        y: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 200,
-                        },
-                    }"
-                    type="submit"
-                    class="ios-button mt-2 h-13 w-full rounded-2xl text-base font-semibold shadow-lg transition-all duration-150"
-                    :class="{ 'scale-95': isSubmitPressed }"
-                    :tabindex="4"
-                    :disabled="processing"
-                    data-test="login-button"
-                    @mousedown="isSubmitPressed = true; haptic.medium()"
-                    @mouseup="isSubmitPressed = false"
-                    @mouseleave="isSubmitPressed = false"
-                    @touchstart.passive="isSubmitPressed = true; haptic.medium()"
-                    @touchend="isSubmitPressed = false"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(3) }"
                 >
-                    <Spinner v-if="processing" class="mr-2" />
-                    {{ processing ? 'Memproses...' : 'Masuk' }}
-                </Button>
+                    <Button
+                        type="submit"
+                        class="ios-button mt-2 h-13 w-full rounded-2xl text-base font-semibold shadow-lg transition-all duration-150"
+                        :class="{ 'scale-95': isSubmitPressed }"
+                        :tabindex="4"
+                        :disabled="processing"
+                        data-test="login-button"
+                        @mousedown="isSubmitPressed = true; haptic.medium()"
+                        @mouseup="isSubmitPressed = false"
+                        @mouseleave="isSubmitPressed = false"
+                        @touchstart.passive="isSubmitPressed = true; haptic.medium()"
+                        @touchend="isSubmitPressed = false"
+                    >
+                        <Spinner v-if="processing" class="mr-2" />
+                        {{ processing ? 'Memproses...' : 'Masuk' }}
+                    </Button>
+                </Motion>
             </div>
 
             <!-- Register Link -->
-            <div
+            <Motion
                 v-if="canRegister"
-                v-motion
                 :initial="{ opacity: 0 }"
-                :enter="{
-                    opacity: 1,
-                    transition: {
-                        delay: 300,
-                        duration: 300,
-                    },
-                }"
+                :animate="{ opacity: 1 }"
+                :transition="{ ...springPresets.smooth, delay: staggerDelay(4) }"
                 class="text-center text-sm text-muted-foreground"
             >
                 Belum punya akun?
@@ -269,7 +224,7 @@ function handleFormError() {
                 >
                     Daftar sekarang
                 </TextLink>
-            </div>
+            </Motion>
         </Form>
     </AuthBase>
 </template>

@@ -1,13 +1,12 @@
 /**
  * useSpringAnimation Composable
  * Menyediakan spring physics animations untuk iOS-like interactions
- * dengan konfigurasi yang mudah digunakan dan performa optimal
+ * menggunakan motion-v library dengan konfigurasi presets yang mudah digunakan
  *
  * @author Zulfikar Hidayatullah
  */
-import { useMotion } from '@vueuse/motion'
-import type { MaybeRef, Ref } from 'vue'
-import { computed, ref, unref, watch } from 'vue'
+import type { Ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 /**
  * Preset konfigurasi spring untuk berbagai use case
@@ -68,6 +67,15 @@ export const springPresets = {
         damping: 20,
         mass: 1.5,
     },
+    /**
+     * iOS - Native iOS-like spring
+     */
+    ios: {
+        type: 'spring' as const,
+        stiffness: 300,
+        damping: 25,
+        mass: 1,
+    },
 } as const
 
 export type SpringPreset = keyof typeof springPresets
@@ -99,99 +107,17 @@ export interface PressState {
 }
 
 /**
- * Composable untuk animasi spring pada element
- * dengan preset dan konfigurasi yang mudah
- *
- * @param target - Element ref yang akan dianimasi
- * @param preset - Preset spring yang digunakan
+ * Get spring transition untuk motion-v
+ * @param preset - Spring preset name
+ * @param delay - Optional delay dalam seconds
  */
-export function useSpringAnimation<T extends HTMLElement>(
-    target: MaybeRef<T | null>,
-    preset: SpringPreset = 'default'
+export function getSpringTransition(
+    preset: SpringPreset = 'default',
+    delay: number = 0
 ) {
-    const springConfig = springPresets[preset]
-
-    const motionInstance = useMotion(target, {
-        initial: {
-            scale: 1,
-            opacity: 1,
-            x: 0,
-            y: 0,
-        },
-        enter: {
-            scale: 1,
-            opacity: 1,
-            x: 0,
-            y: 0,
-            transition: springConfig,
-        },
-    })
-
-    /**
-     * Animasi scale dengan spring physics
-     */
-    function animateScale(scale: number) {
-        motionInstance.apply({
-            scale,
-            transition: springConfig,
-        })
-    }
-
-    /**
-     * Animasi posisi dengan spring physics
-     */
-    function animatePosition(x: number, y: number) {
-        motionInstance.apply({
-            x,
-            y,
-            transition: springConfig,
-        })
-    }
-
-    /**
-     * Animasi opacity dengan spring physics
-     */
-    function animateOpacity(opacity: number) {
-        motionInstance.apply({
-            opacity,
-            transition: springConfig,
-        })
-    }
-
-    /**
-     * Animasi custom dengan multiple properties
-     */
-    function animate(config: AnimationConfig) {
-        const { delay, ...animationProps } = config
-        motionInstance.apply({
-            ...animationProps,
-            transition: {
-                ...springConfig,
-                delay: delay ?? 0,
-            },
-        })
-    }
-
-    /**
-     * Reset ke state awal
-     */
-    function reset() {
-        motionInstance.apply({
-            scale: 1,
-            opacity: 1,
-            x: 0,
-            y: 0,
-            transition: springConfig,
-        })
-    }
-
     return {
-        motionInstance,
-        animateScale,
-        animatePosition,
-        animateOpacity,
-        animate,
-        reset,
+        ...springPresets[preset],
+        delay,
     }
 }
 
@@ -226,19 +152,14 @@ export function usePressAnimation(options: {
         },
     }
 
-    const motionConfig = computed(() => ({
-        initial: { scale: 1 },
-        press: {
-            scale: isPressed.value ? scale : 1,
-            transition: springPresets[preset],
-        },
-    }))
+    const pressScale = computed(() => isPressed.value ? scale : 1)
+    const pressTransition = springPresets[preset]
 
     return {
         isPressed,
         pressHandlers,
-        motionConfig,
-        pressScale: scale,
+        pressScale,
+        pressTransition,
     }
 }
 
@@ -250,7 +171,6 @@ export function usePressAnimation(options: {
  * @param options - Konfigurasi stagger
  */
 export function useStaggerAnimation(
-    itemCount: MaybeRef<number>,
     options: {
         baseDelay?: number
         staggerDelay?: number
@@ -260,29 +180,19 @@ export function useStaggerAnimation(
     const { baseDelay = 0, staggerDelay = 50, preset = 'smooth' } = options
 
     /**
-     * Generate delay untuk item berdasarkan index
+     * Generate delay untuk item berdasarkan index (dalam seconds untuk motion-v)
      */
     function getDelay(index: number): number {
-        return baseDelay + index * staggerDelay
+        return (baseDelay + index * staggerDelay) / 1000
     }
 
     /**
-     * Generate motion config untuk item
+     * Generate transition untuk item
      */
-    function getItemConfig(index: number) {
+    function getItemTransition(index: number) {
         return {
-            initial: {
-                opacity: 0,
-                y: 20,
-            },
-            enter: {
-                opacity: 1,
-                y: 0,
-                transition: {
                     ...springPresets[preset],
                     delay: getDelay(index),
-                },
-            },
         }
     }
 
@@ -291,13 +201,13 @@ export function useStaggerAnimation(
      */
     function getDelayStyle(index: number): { animationDelay: string } {
         return {
-            animationDelay: `${getDelay(index)}ms`,
+            animationDelay: `${baseDelay + index * staggerDelay}ms`,
         }
     }
 
     return {
         getDelay,
-        getItemConfig,
+        getItemTransition,
         getDelayStyle,
     }
 }
@@ -308,32 +218,34 @@ export function useStaggerAnimation(
  *
  * @param direction - Arah transisi (forward/backward)
  */
-export function usePageTransition(direction: MaybeRef<'forward' | 'backward'> = 'forward') {
-    const currentDirection = computed(() => unref(direction))
+export function usePageTransition(direction: Ref<'forward' | 'backward'> | 'forward' | 'backward' = 'forward') {
+    const currentDirection = computed(() =>
+        typeof direction === 'string' ? direction : direction.value
+    )
 
-    const enterConfig = computed(() => ({
+    const enterAnimation = computed(() => ({
         initial: {
             opacity: 0,
             x: currentDirection.value === 'forward' ? 30 : -30,
         },
-        enter: {
+        animate: {
             opacity: 1,
             x: 0,
-            transition: springPresets.smooth,
         },
+        transition: springPresets.smooth,
     }))
 
-    const leaveConfig = computed(() => ({
-        leave: {
+    const leaveAnimation = computed(() => ({
+        exit: {
             opacity: 0,
             x: currentDirection.value === 'forward' ? -30 : 30,
-            transition: springPresets.snappy,
         },
+        transition: springPresets.snappy,
     }))
 
     return {
-        enterConfig,
-        leaveConfig,
+        enterAnimation,
+        leaveAnimation,
         currentDirection,
     }
 }
@@ -355,19 +267,16 @@ export function useBounceAnimation(trigger: Ref<boolean | number>) {
         }
     })
 
-    const bounceConfig = computed(() => ({
-        initial: { scale: 1 },
-        bounce: shouldBounce.value
-            ? {
-                  scale: [1, 1.2, 1],
-                  transition: springPresets.bouncy,
-              }
+    const bounceAnimation = computed(() => ({
+        animate: shouldBounce.value
+            ? { scale: [1, 1.2, 1] }
             : { scale: 1 },
+        transition: springPresets.bouncy,
     }))
 
     return {
         shouldBounce,
-        bounceConfig,
+        bounceAnimation,
     }
 }
 
@@ -392,4 +301,3 @@ export function useShakeAnimation() {
         shakeClass,
     }
 }
-

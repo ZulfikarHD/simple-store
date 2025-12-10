@@ -1,12 +1,14 @@
 <script setup lang="ts">
 /**
  * Cart Page - Halaman Keranjang Belanja
- * Menampilkan daftar item di keranjang dengan iOS-like interactions,
- * swipe-to-delete, spring animations, dan checkout button dengan pulse effect
+ * Menampilkan daftar item di keranjang dengan iOS-like interactions
+ * menggunakan motion-v, swipe-to-delete, spring animations,
+ * dan checkout button dengan pulse effect
  *
  * @author Zulfikar Hidayatullah
  */
 import { Head, Link } from '@inertiajs/vue3'
+import { Motion, AnimatePresence } from 'motion-v'
 import { computed, ref } from 'vue'
 import { home } from '@/routes'
 import { show as checkoutShow } from '@/actions/App/Http/Controllers/CheckoutController'
@@ -17,6 +19,7 @@ import UserBottomNav from '@/components/mobile/UserBottomNav.vue'
 import PullToRefresh from '@/components/mobile/PullToRefresh.vue'
 import { Button } from '@/components/ui/button'
 import { useHapticFeedback } from '@/composables/useHapticFeedback'
+import { springPresets } from '@/composables/useMotionV'
 import {
     ShoppingBag,
     ArrowLeft,
@@ -94,6 +97,13 @@ const formattedSubtotal = computed(() => {
 function handleCheckoutClick() {
     haptic.medium()
 }
+
+/**
+ * Spring transitions untuk iOS-like animations
+ */
+const springTransition = { type: 'spring' as const, ...springPresets.ios }
+const bouncyTransition = { type: 'spring' as const, ...springPresets.bouncy }
+const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
 </script>
 
 <template>
@@ -107,26 +117,19 @@ function handleCheckoutClick() {
         <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-border/30">
                 <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                     <!-- Logo & Brand -->
-                    <Link
+                <Motion
+                    tag="a"
                         :href="home()"
-                        v-motion
                         :initial="{ opacity: 0, x: -20 }"
-                        :enter="{
-                            opacity: 1,
-                            x: 0,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 25,
-                            },
-                        }"
+                    :animate="{ opacity: 1, x: 0 }"
+                    :transition="springTransition"
                         class="flex items-center gap-2 sm:gap-3"
                     >
                         <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm sm:h-10 sm:w-10">
                             <ShoppingBag class="h-4 w-4 text-primary-foreground sm:h-5 sm:w-5" />
                         </div>
                         <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
-                    </Link>
+                </Motion>
 
                     <!-- Cart Counter & Auth -->
                     <nav class="flex items-center gap-2 sm:gap-3">
@@ -164,21 +167,18 @@ function handleCheckoutClick() {
             <PullToRefresh>
             <main class="mx-auto max-w-7xl px-4 py-6 pb-40 sm:px-6 sm:py-8 sm:pb-8 lg:px-8">
                 <!-- Back Button dengan iOS press feedback -->
-                <Link
-                    :href="home()"
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, x: -20 }"
-                    :enter="{
-                        opacity: 1,
-                        x: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                        },
-                    }"
-                    class="ios-button mb-4 inline-flex h-11 items-center gap-2 rounded-xl px-3 text-sm text-muted-foreground transition-all duration-150 hover:bg-accent hover:text-foreground sm:mb-6 sm:h-auto sm:px-0"
-                    :class="{ 'scale-95 opacity-70': isBackPressed }"
+                    :animate="{ opacity: 1, x: 0 }"
+                    :transition="springTransition"
+                >
+                    <Motion
+                        :animate="{ scale: isBackPressed ? 0.95 : 1, opacity: isBackPressed ? 0.7 : 1 }"
+                        :transition="snappyTransition"
+                    >
+                        <Link
+                            :href="home()"
+                            class="ios-button mb-4 inline-flex h-11 items-center gap-2 rounded-xl px-3 text-sm text-muted-foreground hover:bg-accent hover:text-foreground sm:mb-6 sm:h-auto sm:px-0"
                     @mousedown="isBackPressed = true"
                     @mouseup="isBackPressed = false"
                     @mouseleave="isBackPressed = false"
@@ -188,21 +188,14 @@ function handleCheckoutClick() {
                     <ArrowLeft class="h-4 w-4" />
                     Kembali ke Katalog
                 </Link>
+                    </Motion>
+                </Motion>
 
                 <!-- Page Title dengan animation -->
-                <div
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, y: 20 }"
-                    :enter="{
-                        opacity: 1,
-                        y: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 50,
-                        },
-                    }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springTransition, delay: 0.05 }"
                     class="mb-6 sm:mb-8"
                 >
                     <h1 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
@@ -211,23 +204,16 @@ function handleCheckoutClick() {
                     <p class="mt-1 text-sm text-muted-foreground sm:mt-2 sm:text-base">
                         {{ isEmpty ? 'Keranjang Anda kosong' : `${cart.total_items} item dalam keranjang` }}
                     </p>
-                </div>
+                </Motion>
 
                 <!-- Empty State dengan animation -->
-                <div
+                <AnimatePresence>
+                    <Motion
                     v-if="isEmpty"
-                    v-motion
                     :initial="{ opacity: 0, scale: 0.95 }"
-                    :enter="{
-                        opacity: 1,
-                        scale: 1,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 100,
-                        },
-                    }"
+                        :animate="{ opacity: 1, scale: 1 }"
+                        :exit="{ opacity: 0, scale: 0.95 }"
+                        :transition="{ ...springTransition, delay: 0.1 }"
                 >
                     <EmptyState
                         icon="🛒"
@@ -243,10 +229,11 @@ function handleCheckoutClick() {
                             </Link>
                         </template>
                     </EmptyState>
-                </div>
+                    </Motion>
+                </AnimatePresence>
 
                 <!-- Cart Content -->
-                <div v-else class="grid gap-6 lg:grid-cols-3 lg:gap-8">
+                <div v-if="!isEmpty" class="grid gap-6 lg:grid-cols-3 lg:gap-8">
                     <!-- Cart Items dengan staggered animations -->
                     <div class="lg:col-span-2">
                         <div class="space-y-3 sm:space-y-4">
@@ -260,19 +247,10 @@ function handleCheckoutClick() {
                     </div>
 
                     <!-- Order Summary - Desktop Only dengan slide animation -->
-                    <div
-                        v-motion
+                    <Motion
                         :initial="{ opacity: 0, x: 20 }"
-                        :enter="{
-                            opacity: 1,
-                            x: 0,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 25,
-                                delay: 200,
-                            },
-                        }"
+                        :animate="{ opacity: 1, x: 0 }"
+                        :transition="{ ...springTransition, delay: 0.2 }"
                         class="hidden lg:col-span-1 lg:block"
                     >
                         <div class="ios-card sticky top-24 rounded-2xl border border-border/50 p-6">
@@ -284,23 +262,15 @@ function handleCheckoutClick() {
                             <div class="space-y-3">
                                 <div class="flex items-center justify-between text-sm">
                                     <span class="text-muted-foreground">Subtotal ({{ cart.total_items }} item)</span>
-                                    <span
+                                    <Motion
                                         :key="cart.subtotal"
-                                        v-motion
                                         :initial="{ scale: 1.1, opacity: 0 }"
-                                        :enter="{
-                                            scale: 1,
-                                            opacity: 1,
-                                            transition: {
-                                                type: 'spring',
-                                                stiffness: 400,
-                                                damping: 20,
-                                            },
-                                        }"
+                                        :animate="{ scale: 1, opacity: 1 }"
+                                        :transition="bouncyTransition"
                                         class="font-medium text-foreground"
                                     >
                                         {{ formattedSubtotal }}
-                                    </span>
+                                    </Motion>
                                 </div>
 
                                 <div class="flex items-center justify-between text-sm">
@@ -312,32 +282,27 @@ function handleCheckoutClick() {
 
                                 <div class="flex items-center justify-between">
                                     <span class="font-semibold text-foreground">Total</span>
-                                    <span
+                                    <Motion
                                         :key="cart.subtotal"
-                                        v-motion
                                         :initial="{ scale: 1.1, opacity: 0 }"
-                                        :enter="{
-                                            scale: 1,
-                                            opacity: 1,
-                                            transition: {
-                                                type: 'spring',
-                                                stiffness: 400,
-                                                damping: 20,
-                                            },
-                                        }"
+                                        :animate="{ scale: 1, opacity: 1 }"
+                                        :transition="bouncyTransition"
                                         class="text-xl font-bold text-primary"
                                     >
                                         {{ formattedSubtotal }}
-                                    </span>
+                                    </Motion>
                                 </div>
                             </div>
 
                             <!-- Checkout Button dengan pulse animation -->
+                            <Motion
+                                :animate="{ scale: isCheckoutPressed ? 0.95 : 1 }"
+                                :transition="snappyTransition"
+                            >
                             <Link :href="checkoutShow()" @click="handleCheckoutClick">
                                 <Button
                                     size="lg"
-                                    class="ios-button mt-6 h-13 w-full gap-2 rounded-2xl shadow-lg transition-transform duration-150"
-                                    :class="{ 'scale-95': isCheckoutPressed }"
+                                        class="ios-button mt-6 h-13 w-full gap-2 rounded-2xl shadow-lg"
                                     @mousedown="isCheckoutPressed = true"
                                     @mouseup="isCheckoutPressed = false"
                                     @mouseleave="isCheckoutPressed = false"
@@ -346,6 +311,7 @@ function handleCheckoutClick() {
                                     <ArrowRight class="h-4 w-4" />
                                 </Button>
                             </Link>
+                            </Motion>
 
                             <!-- Continue Shopping Link -->
                             <Link
@@ -355,41 +321,41 @@ function handleCheckoutClick() {
                                 atau lanjut belanja
                             </Link>
                         </div>
-                    </div>
+                    </Motion>
                 </div>
             </main>
 
             <!-- Mobile Sticky Checkout Footer dengan iOS Glass Effect -->
-            <div
+            <AnimatePresence>
+                <Motion
                 v-if="!isEmpty"
+                    :initial="{ y: 100, opacity: 0 }"
+                    :animate="{ y: 0, opacity: 1 }"
+                    :exit="{ y: 100, opacity: 0 }"
+                    :transition="springTransition"
                 class="ios-glass fixed inset-x-0 bottom-16 z-40 border-t border-border/30 p-4 md:bottom-0 lg:hidden"
             >
                 <div class="mx-auto max-w-7xl">
                     <div class="mb-3 flex items-center justify-between">
                         <span class="text-sm text-muted-foreground">Total ({{ cart.total_items }} item)</span>
-                        <span
+                            <Motion
                             :key="cart.subtotal"
-                            v-motion
                             :initial="{ scale: 1.1, opacity: 0 }"
-                            :enter="{
-                                scale: 1,
-                                opacity: 1,
-                                transition: {
-                                    type: 'spring',
-                                    stiffness: 400,
-                                    damping: 20,
-                                },
-                            }"
+                                :animate="{ scale: 1, opacity: 1 }"
+                                :transition="bouncyTransition"
                             class="text-lg font-bold text-primary"
                         >
                             {{ formattedSubtotal }}
-                        </span>
+                            </Motion>
                     </div>
+                        <Motion
+                            :animate="{ scale: isCheckoutPressed ? 0.95 : 1 }"
+                            :transition="snappyTransition"
+                        >
                     <Link :href="checkoutShow()" class="block" @click="handleCheckoutClick">
                         <Button
                             size="lg"
-                            class="ios-button h-13 w-full gap-2 rounded-2xl text-base shadow-lg transition-transform duration-150"
-                            :class="{ 'scale-95': isCheckoutPressed }"
+                                    class="ios-button h-13 w-full gap-2 rounded-2xl text-base shadow-lg"
                             @mousedown="isCheckoutPressed = true"
                             @mouseup="isCheckoutPressed = false"
                             @mouseleave="isCheckoutPressed = false"
@@ -400,8 +366,10 @@ function handleCheckoutClick() {
                             <ArrowRight class="h-4 w-4" />
                         </Button>
                     </Link>
+                        </Motion>
                 </div>
-            </div>
+                </Motion>
+            </AnimatePresence>
 
             <!-- Footer -->
             <footer class="mt-16 hidden border-t border-border bg-muted/30 md:block">

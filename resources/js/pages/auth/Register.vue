@@ -16,6 +16,8 @@ import AuthBase from '@/layouts/AuthLayout.vue';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
 import { Form, Head } from '@inertiajs/vue3';
+import { Motion } from 'motion-v';
+import { springPresets, staggerDelay } from '@/composables/useMotionV';
 import { ref } from 'vue';
 import { useHapticFeedback } from '@/composables/useHapticFeedback';
 import { useShakeAnimation } from '@/composables/useSpringAnimation';
@@ -77,19 +79,10 @@ function handleFormError() {
         >
             <div class="grid gap-4">
                 <!-- Name Field -->
-                <div
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, x: -20 }"
-                    :enter="{
-                        opacity: 1,
-                        x: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 50,
-                        },
-                    }"
+                    :animate="{ opacity: 1, x: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(0) }"
                     class="grid gap-2"
                 >
                     <Label for="name" class="text-sm font-medium">Nama Lengkap</Label>
@@ -112,22 +105,13 @@ function handleFormError() {
                         />
                     </div>
                     <InputError :message="errors.name" class="animate-ios-shake" />
-                </div>
+                </Motion>
 
                 <!-- Email Field -->
-                <div
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, x: -20 }"
-                    :enter="{
-                        opacity: 1,
-                        x: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 100,
-                        },
-                    }"
+                    :animate="{ opacity: 1, x: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
                     class="grid gap-2"
                 >
                     <Label for="email" class="text-sm font-medium">Email</Label>
@@ -149,22 +133,13 @@ function handleFormError() {
                         />
                     </div>
                     <InputError :message="errors.email" class="animate-ios-shake" />
-                </div>
+                </Motion>
 
                 <!-- Password Field -->
-                <div
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, x: -20 }"
-                    :enter="{
-                        opacity: 1,
-                        x: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 150,
-                        },
-                    }"
+                    :animate="{ opacity: 1, x: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(2) }"
                     class="grid gap-2"
                 >
                     <Label for="password" class="text-sm font-medium">Password</Label>
@@ -186,22 +161,13 @@ function handleFormError() {
                         />
                     </div>
                     <InputError :message="errors.password" class="animate-ios-shake" />
-                </div>
+                </Motion>
 
                 <!-- Confirm Password Field -->
-                <div
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, x: -20 }"
-                    :enter="{
-                        opacity: 1,
-                        x: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 200,
-                        },
-                    }"
+                    :animate="{ opacity: 1, x: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(3) }"
                     class="grid gap-2"
                 >
                     <Label for="password_confirmation" class="text-sm font-medium">Konfirmasi Password</Label>
@@ -223,50 +189,38 @@ function handleFormError() {
                         />
                     </div>
                     <InputError :message="errors.password_confirmation" class="animate-ios-shake" />
-                </div>
+                </Motion>
 
                 <!-- Submit Button -->
-                <Button
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, y: 20 }"
-                    :enter="{
-                        opacity: 1,
-                        y: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 250,
-                        },
-                    }"
-                    type="submit"
-                    class="ios-button mt-2 h-13 w-full rounded-2xl text-base font-semibold shadow-lg transition-all duration-150"
-                    :class="{ 'scale-95': isSubmitPressed }"
-                    tabindex="5"
-                    :disabled="processing"
-                    data-test="register-user-button"
-                    @mousedown="isSubmitPressed = true; haptic.medium()"
-                    @mouseup="isSubmitPressed = false"
-                    @mouseleave="isSubmitPressed = false"
-                    @touchstart.passive="isSubmitPressed = true; haptic.medium()"
-                    @touchend="isSubmitPressed = false"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(4) }"
                 >
-                    <Spinner v-if="processing" class="mr-2" />
-                    {{ processing ? 'Memproses...' : 'Buat Akun' }}
-                </Button>
+                    <Button
+                        type="submit"
+                        class="ios-button mt-2 h-13 w-full rounded-2xl text-base font-semibold shadow-lg transition-all duration-150"
+                        :class="{ 'scale-95': isSubmitPressed }"
+                        tabindex="5"
+                        :disabled="processing"
+                        data-test="register-user-button"
+                        @mousedown="isSubmitPressed = true; haptic.medium()"
+                        @mouseup="isSubmitPressed = false"
+                        @mouseleave="isSubmitPressed = false"
+                        @touchstart.passive="isSubmitPressed = true; haptic.medium()"
+                        @touchend="isSubmitPressed = false"
+                    >
+                        <Spinner v-if="processing" class="mr-2" />
+                        {{ processing ? 'Memproses...' : 'Buat Akun' }}
+                    </Button>
+                </Motion>
             </div>
 
             <!-- Login Link -->
-            <div
-                v-motion
+            <Motion
                 :initial="{ opacity: 0 }"
-                :enter="{
-                    opacity: 1,
-                    transition: {
-                        delay: 350,
-                        duration: 300,
-                    },
-                }"
+                :animate="{ opacity: 1 }"
+                :transition="{ ...springPresets.smooth, delay: staggerDelay(5) }"
                 class="text-center text-sm text-muted-foreground"
             >
                 Sudah punya akun?
@@ -277,7 +231,7 @@ function handleFormError() {
                 >
                     Masuk
                 </TextLink>
-            </div>
+            </Motion>
         </Form>
     </AuthBase>
 </template>

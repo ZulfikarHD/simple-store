@@ -1,13 +1,14 @@
 <script setup lang="ts">
 /**
  * ProductDetail Page - Halaman Detail Produk
- * Menampilkan informasi lengkap produk dengan iOS-like spring animations,
- * parallax image effect, haptic feedback pada quantity selector,
+ * Menampilkan informasi lengkap produk dengan iOS-like spring animations
+ * menggunakan motion-v, parallax image effect, haptic feedback pada quantity selector,
  * dan smooth transitions
  *
  * @author Zulfikar Hidayatullah
  */
 import { Head, Link, router } from '@inertiajs/vue3'
+import { Motion, AnimatePresence } from 'motion-v'
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { home } from '@/routes'
 import { store as storeCart } from '@/actions/App/Http/Controllers/CartController'
@@ -17,6 +18,7 @@ import UserBottomNav from '@/components/mobile/UserBottomNav.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useHapticFeedback } from '@/composables/useHapticFeedback'
+import { springPresets } from '@/composables/useMotionV'
 import {
     ShoppingBag,
     ShoppingCart,
@@ -208,6 +210,13 @@ function handleBack() {
     haptic.light()
     router.visit(home())
 }
+
+/**
+ * Spring transitions untuk iOS-like animations
+ */
+const springTransition = { type: 'spring' as const, ...springPresets.ios }
+const bouncyTransition = { type: 'spring' as const, ...springPresets.bouncy }
+const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
 </script>
 
 <template>
@@ -222,26 +231,20 @@ function handleBack() {
         <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-border/30">
             <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                 <!-- Logo & Brand -->
-                <Link
+                <Motion
+                    tag="a"
                     :href="home()"
-                    v-motion
                     :initial="{ opacity: 0, x: -20 }"
-                    :enter="{
-                        opacity: 1,
-                        x: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                        },
-                    }"
+                    :animate="{ opacity: 1, x: 0 }"
+                    :transition="springTransition"
                     class="flex items-center gap-2 sm:gap-3"
+                    @click.prevent="() => router.visit(home())"
                 >
                     <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm sm:h-10 sm:w-10">
                         <ShoppingBag class="h-4 w-4 text-primary-foreground sm:h-5 sm:w-5" />
                     </div>
                     <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
-                </Link>
+                </Motion>
 
                 <!-- Cart Counter & Auth Navigation -->
                 <nav class="flex items-center gap-2 sm:gap-3">
@@ -278,18 +281,11 @@ function handleBack() {
         <!-- Main Content -->
         <main class="mx-auto max-w-7xl px-4 pb-36 pt-6 sm:px-6 sm:pb-8 sm:pt-8 lg:px-8">
             <!-- Breadcrumb Navigation dengan fade in -->
-            <nav
-                v-motion
+            <Motion
+                tag="nav"
                 :initial="{ opacity: 0, y: -10 }"
-                :enter="{
-                    opacity: 1,
-                    y: 0,
-                    transition: {
-                        type: 'spring',
-                        stiffness: 300,
-                        damping: 25,
-                    },
-                }"
+                :animate="{ opacity: 1, y: 0 }"
+                :transition="springTransition"
                 class="mb-4 hidden items-center gap-2 text-sm text-muted-foreground sm:mb-6 sm:flex"
             >
                 <Link :href="home()" class="transition-colors hover:text-foreground">
@@ -308,26 +304,22 @@ function handleBack() {
                 <span class="max-w-[200px] truncate font-medium text-foreground">
                     {{ product.name }}
                 </span>
-            </nav>
+            </Motion>
 
             <!-- Back Button dengan iOS press feedback -->
-            <Button
-                v-motion
+            <Motion
                 :initial="{ opacity: 0, x: -20 }"
-                :enter="{
-                    opacity: 1,
-                    x: 0,
-                    transition: {
-                        type: 'spring',
-                        stiffness: 300,
-                        damping: 25,
-                        delay: 50,
-                    },
-                }"
+                :animate="{ opacity: 1, x: 0 }"
+                :transition="{ ...springTransition, delay: 0.05 }"
+            >
+                <Motion
+                    :animate="{ scale: isBackPressed ? 0.95 : 1, opacity: isBackPressed ? 0.7 : 1 }"
+                    :transition="snappyTransition"
+                >
+                    <Button
                 variant="ghost"
                 size="default"
                 class="ios-button mb-4 flex h-11 items-center gap-2 rounded-xl sm:mb-6 sm:h-10"
-                :class="{ 'scale-95 opacity-70': isBackPressed }"
                 @click="handleBack"
                 @mousedown="isBackPressed = true"
                 @mouseup="isBackPressed = false"
@@ -338,23 +330,16 @@ function handleBack() {
                 <ArrowLeft class="h-4 w-4" />
                 Kembali ke Katalog
             </Button>
+                </Motion>
+            </Motion>
 
             <!-- Product Detail Section -->
             <div class="grid gap-6 lg:grid-cols-2 lg:gap-8">
                 <!-- Product Image dengan parallax effect -->
-                <div
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, scale: 0.95 }"
-                    :enter="{
-                        opacity: 1,
-                        scale: 1,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 100,
-                        },
-                    }"
+                    :animate="{ opacity: 1, scale: 1 }"
+                    :transition="{ ...springTransition, delay: 0.1 }"
                     class="relative overflow-hidden rounded-2xl border border-border/50 bg-card shadow-lg sm:rounded-3xl"
                 >
                     <div
@@ -376,137 +361,96 @@ function handleBack() {
                     </div>
 
                     <!-- Stock Status Badge dengan bounce animation -->
-                    <Badge
+                    <AnimatePresence>
+                        <Motion
                         v-if="product.stock_status && (product.stock_status.status === 'out_of_stock' || product.stock_status.status === 'unavailable')"
-                        v-motion
                         :initial="{ scale: 0 }"
-                        :enter="{
-                            scale: 1,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 500,
-                                damping: 20,
-                                delay: 300,
-                            },
-                        }"
+                            :animate="{ scale: 1 }"
+                            :exit="{ scale: 0 }"
+                            :transition="{ ...bouncyTransition, delay: 0.3 }"
+                            class="absolute left-3 top-3 sm:left-4 sm:top-4"
+                        >
+                            <Badge
                         variant="destructive"
-                        class="absolute left-3 top-3 text-xs font-medium shadow-sm sm:left-4 sm:top-4 sm:text-sm"
+                                class="text-xs font-medium shadow-sm sm:text-sm"
                     >
                         {{ product.stock_status.label }}
                     </Badge>
-                    <Badge
+                        </Motion>
+                        <Motion
                         v-else-if="product.stock_status?.status === 'low_stock'"
-                        v-motion
                         :initial="{ scale: 0 }"
-                        :enter="{
-                            scale: 1,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 500,
-                                damping: 20,
-                                delay: 300,
-                            },
-                        }"
-                        class="absolute left-3 top-3 bg-amber-100 text-xs font-medium text-amber-700 shadow-sm hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400 sm:left-4 sm:top-4 sm:text-sm"
+                            :animate="{ scale: 1 }"
+                            :exit="{ scale: 0 }"
+                            :transition="{ ...bouncyTransition, delay: 0.3 }"
+                            class="absolute left-3 top-3 sm:left-4 sm:top-4"
+                        >
+                            <Badge
+                                class="bg-amber-100 text-xs font-medium text-amber-700 shadow-sm hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400 sm:text-sm"
                     >
                         Stok Terbatas
                     </Badge>
-                    <Badge
+                        </Motion>
+                        <Motion
                         v-else-if="!product.is_available"
-                        v-motion
                         :initial="{ scale: 0 }"
-                        :enter="{
-                            scale: 1,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 500,
-                                damping: 20,
-                                delay: 300,
-                            },
-                        }"
+                            :animate="{ scale: 1 }"
+                            :exit="{ scale: 0 }"
+                            :transition="{ ...bouncyTransition, delay: 0.3 }"
+                            class="absolute left-3 top-3 sm:left-4 sm:top-4"
+                        >
+                            <Badge
                         variant="destructive"
-                        class="absolute left-3 top-3 text-xs font-medium shadow-sm sm:left-4 sm:top-4 sm:text-sm"
+                                class="text-xs font-medium shadow-sm sm:text-sm"
                     >
                         Stok Habis
                     </Badge>
-                </div>
+                        </Motion>
+                    </AnimatePresence>
+                </Motion>
 
                 <!-- Product Info dengan staggered animations -->
                 <div class="flex flex-col">
                     <!-- Category -->
-                    <p
+                    <Motion
                         v-if="product.category"
-                        v-motion
+                        tag="p"
                         :initial="{ opacity: 0, y: 10 }"
-                        :enter="{
-                            opacity: 1,
-                            y: 0,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 25,
-                                delay: 150,
-                            },
-                        }"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springTransition, delay: 0.15 }"
                         class="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground/80 sm:mb-2 sm:text-sm"
                     >
                         {{ product.category.name }}
-                    </p>
+                    </Motion>
 
                     <!-- Product Name -->
-                    <h1
-                        v-motion
+                    <Motion
+                        tag="h1"
                         :initial="{ opacity: 0, y: 10 }"
-                        :enter="{
-                            opacity: 1,
-                            y: 0,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 25,
-                                delay: 200,
-                            },
-                        }"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springTransition, delay: 0.2 }"
                         class="mb-3 text-2xl font-bold tracking-tight text-foreground sm:mb-4 sm:text-3xl lg:text-4xl"
                     >
                         {{ product.name }}
-                    </h1>
+                    </Motion>
 
                     <!-- Price dengan slide animation -->
-                    <div
-                        v-motion
+                    <Motion
                         :initial="{ opacity: 0, x: -20 }"
-                        :enter="{
-                            opacity: 1,
-                            x: 0,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 25,
-                                delay: 250,
-                            },
-                        }"
+                        :animate="{ opacity: 1, x: 0 }"
+                        :transition="{ ...springTransition, delay: 0.25 }"
                         class="mb-4 sm:mb-6"
                     >
                         <p class="text-2xl font-bold text-primary sm:text-3xl">
                             {{ formattedPrice }}
                         </p>
-                    </div>
+                    </Motion>
 
                     <!-- Stock Status -->
-                    <div
-                        v-motion
+                    <Motion
                         :initial="{ opacity: 0, y: 10 }"
-                        :enter="{
-                            opacity: 1,
-                            y: 0,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 25,
-                                delay: 300,
-                            },
-                        }"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springTransition, delay: 0.3 }"
                         class="mb-4 flex flex-wrap items-center gap-2 sm:mb-6"
                     >
                         <div
@@ -540,22 +484,13 @@ function handleBack() {
                         >
                             (Sisa {{ product.stock_status.stock }} unit)
                         </span>
-                    </div>
+                    </Motion>
 
                     <!-- Description -->
-                    <div
-                        v-motion
+                    <Motion
                         :initial="{ opacity: 0, y: 10 }"
-                        :enter="{
-                            opacity: 1,
-                            y: 0,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 25,
-                                delay: 350,
-                            },
-                        }"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springTransition, delay: 0.35 }"
                         class="mb-6 sm:mb-8"
                     >
                         <h2 class="mb-2 text-base font-semibold text-foreground sm:mb-3 sm:text-lg">Deskripsi</h2>
@@ -568,32 +503,26 @@ function handleBack() {
                         <p v-else class="text-sm italic text-muted-foreground sm:text-base">
                             Belum ada deskripsi untuk produk ini.
                         </p>
-                    </div>
+                    </Motion>
 
                     <!-- Desktop Quantity Selector dengan iOS interactions -->
-                    <div
-                        v-motion
+                    <Motion
                         :initial="{ opacity: 0, y: 20 }"
-                        :enter="{
-                            opacity: 1,
-                            y: 0,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 25,
-                                delay: 400,
-                            },
-                        }"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springTransition, delay: 0.4 }"
                         class="mt-auto hidden space-y-4 sm:block"
                     >
                         <div class="flex items-center gap-4">
                             <span class="text-sm font-medium text-foreground">Jumlah:</span>
                             <div class="flex items-center gap-2">
+                                <Motion
+                                    :animate="{ scale: isMinusPressed ? 0.9 : 1 }"
+                                    :transition="snappyTransition"
+                                >
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    class="h-11 w-11 rounded-xl transition-transform duration-150 ease-[var(--ios-spring-snappy)]"
-                                    :class="{ 'scale-90': isMinusPressed }"
+                                        class="h-11 w-11 rounded-xl"
                                     :disabled="quantity <= 1 || !product.is_available"
                                     aria-label="Kurangi jumlah"
                                     @click="decrementQuantity"
@@ -605,19 +534,26 @@ function handleBack() {
                                 >
                                     <Minus class="h-4 w-4" />
                                 </Button>
+                                </Motion>
 
-                                <span
-                                    class="w-14 text-center text-xl font-semibold transition-transform duration-200"
+                                <Motion
                                     :key="quantity"
+                                    :initial="{ scale: 1.2, opacity: 0 }"
+                                    :animate="{ scale: 1, opacity: 1 }"
+                                    :transition="bouncyTransition"
+                                    class="w-14 text-center text-xl font-semibold"
                                 >
                                     {{ quantity }}
-                                </span>
+                                </Motion>
 
+                                <Motion
+                                    :animate="{ scale: isPlusPressed ? 0.9 : 1 }"
+                                    :transition="snappyTransition"
+                                >
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    class="h-11 w-11 rounded-xl transition-transform duration-150 ease-[var(--ios-spring-snappy)]"
-                                    :class="{ 'scale-90': isPlusPressed }"
+                                        class="h-11 w-11 rounded-xl"
                                     :disabled="quantity >= 99 || !product.is_available"
                                     aria-label="Tambah jumlah"
                                     @click="incrementQuantity"
@@ -629,17 +565,21 @@ function handleBack() {
                                 >
                                     <Plus class="h-4 w-4" />
                                 </Button>
+                                </Motion>
                             </div>
                         </div>
 
                         <!-- Add to Cart Button -->
+                        <Motion
+                            :animate="{ scale: isAddCartPressed ? 0.95 : 1 }"
+                            :transition="snappyTransition"
+                        >
                         <Button
                             size="lg"
                             :disabled="!product.is_available || isAdding"
-                            class="ios-button h-14 w-full gap-2 rounded-2xl text-base shadow-lg transition-all duration-200"
+                                class="ios-button h-14 w-full gap-2 rounded-2xl text-base shadow-lg"
                             :class="{
                                 'bg-green-600 hover:bg-green-600': showSuccess,
-                                'scale-95': isAddCartPressed,
                             }"
                             @click="handleAddToCart"
                             @mousedown="isAddCartPressed = true"
@@ -649,44 +589,35 @@ function handleBack() {
                             @touchend="isAddCartPressed = false"
                         >
                             <Loader2 v-if="isAdding" class="h-5 w-5 animate-spin" />
-                            <Check
-                                v-else-if="showSuccess"
-                                v-motion
+                                <AnimatePresence mode="wait">
+                                    <Motion
+                                        v-if="showSuccess"
+                                        :key="'success'"
                                 :initial="{ scale: 0 }"
-                                :enter="{
-                                    scale: 1,
-                                    transition: {
-                                        type: 'spring',
-                                        stiffness: 600,
-                                        damping: 15,
-                                    },
-                                }"
-                                class="h-5 w-5"
-                            />
-                            <Plus v-else class="h-5 w-5" />
+                                        :animate="{ scale: 1 }"
+                                        :exit="{ scale: 0 }"
+                                        :transition="bouncyTransition"
+                                    >
+                                        <Check class="h-5 w-5" />
+                                    </Motion>
+                                    <Plus v-else-if="!isAdding" class="h-5 w-5" />
+                                </AnimatePresence>
                             <span v-if="showSuccess">Ditambahkan ke Keranjang!</span>
                             <span v-else-if="product.is_available">Tambah ke Keranjang</span>
                             <span v-else>Stok Habis</span>
                         </Button>
-                    </div>
+                        </Motion>
+                    </Motion>
                 </div>
             </div>
 
             <!-- Related Products Section dengan staggered cards -->
-            <section
+            <Motion
                 v-if="relatedProducts.data.length > 0"
-                v-motion
+                tag="section"
                 :initial="{ opacity: 0, y: 30 }"
-                :enter="{
-                    opacity: 1,
-                    y: 0,
-                    transition: {
-                        type: 'spring',
-                        stiffness: 200,
-                        damping: 25,
-                        delay: 500,
-                    },
-                }"
+                :animate="{ opacity: 1, y: 0 }"
+                :transition="{ ...springPresets.smooth, delay: 0.5 }"
                 class="mt-12 sm:mt-16"
             >
                 <h2 class="mb-6 text-2xl font-bold tracking-tight text-foreground">
@@ -703,7 +634,7 @@ function handleBack() {
                         class="ios-snap-item w-44 shrink-0 sm:w-auto"
                     />
                 </div>
-            </section>
+            </Motion>
         </main>
 
         <!-- Footer -->
@@ -727,11 +658,14 @@ function handleBack() {
                     </p>
                     <!-- Quantity Selector dengan iOS press feedback -->
                     <div class="flex items-center gap-2">
+                        <Motion
+                            :animate="{ scale: isMinusPressed ? 0.9 : 1 }"
+                            :transition="snappyTransition"
+                        >
                         <Button
                             variant="outline"
                             size="icon"
-                            class="h-11 w-11 rounded-xl transition-transform duration-150 ease-[var(--ios-spring-snappy)]"
-                            :class="{ 'scale-90': isMinusPressed }"
+                                class="h-11 w-11 rounded-xl"
                             :disabled="quantity <= 1 || !product.is_available"
                             aria-label="Kurangi jumlah"
                             @click="decrementQuantity"
@@ -743,19 +677,26 @@ function handleBack() {
                         >
                             <Minus class="h-4 w-4" />
                         </Button>
+                        </Motion>
 
-                        <span
-                            class="w-10 text-center text-lg font-semibold"
+                        <Motion
                             :key="quantity"
+                            :initial="{ scale: 1.2, opacity: 0 }"
+                            :animate="{ scale: 1, opacity: 1 }"
+                            :transition="bouncyTransition"
+                            class="w-10 text-center text-lg font-semibold"
                         >
                             {{ quantity }}
-                        </span>
+                        </Motion>
 
+                        <Motion
+                            :animate="{ scale: isPlusPressed ? 0.9 : 1 }"
+                            :transition="snappyTransition"
+                        >
                         <Button
                             variant="outline"
                             size="icon"
-                            class="h-11 w-11 rounded-xl transition-transform duration-150 ease-[var(--ios-spring-snappy)]"
-                            :class="{ 'scale-90': isPlusPressed }"
+                                class="h-11 w-11 rounded-xl"
                             :disabled="quantity >= 99 || !product.is_available"
                             aria-label="Tambah jumlah"
                             @click="incrementQuantity"
@@ -767,17 +708,21 @@ function handleBack() {
                         >
                             <Plus class="h-4 w-4" />
                         </Button>
+                        </Motion>
                     </div>
                 </div>
 
                 <!-- Add to Cart Button -->
+                <Motion
+                    :animate="{ scale: isAddCartPressed ? 0.95 : 1 }"
+                    :transition="snappyTransition"
+                >
                 <Button
                     size="lg"
                     :disabled="!product.is_available || isAdding"
-                    class="ios-button h-13 w-full gap-2 rounded-2xl text-base shadow-lg transition-all duration-200"
+                        class="ios-button h-13 w-full gap-2 rounded-2xl text-base shadow-lg"
                     :class="{
                         'bg-green-600 hover:bg-green-600': showSuccess,
-                        'scale-95': isAddCartPressed,
                     }"
                     @click="handleAddToCart"
                     @mousedown="isAddCartPressed = true"
@@ -787,25 +732,24 @@ function handleBack() {
                     @touchend="isAddCartPressed = false"
                 >
                     <Loader2 v-if="isAdding" class="h-5 w-5 animate-spin" />
-                    <Check
-                        v-else-if="showSuccess"
-                        v-motion
+                        <AnimatePresence mode="wait">
+                            <Motion
+                                v-if="showSuccess"
+                                :key="'success-mobile'"
                         :initial="{ scale: 0 }"
-                        :enter="{
-                            scale: 1,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 600,
-                                damping: 15,
-                            },
-                        }"
-                        class="h-5 w-5"
-                    />
-                    <Plus v-else class="h-5 w-5" />
+                                :animate="{ scale: 1 }"
+                                :exit="{ scale: 0 }"
+                                :transition="bouncyTransition"
+                            >
+                                <Check class="h-5 w-5" />
+                            </Motion>
+                            <Plus v-else-if="!isAdding" class="h-5 w-5" />
+                        </AnimatePresence>
                     <span v-if="showSuccess">Ditambahkan!</span>
                     <span v-else-if="product.is_available">Tambah ke Keranjang</span>
                     <span v-else>Stok Habis</span>
                 </Button>
+                </Motion>
             </div>
         </div>
 

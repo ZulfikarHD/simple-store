@@ -34,6 +34,8 @@ import {
     X,
 } from 'lucide-vue-next'
 import { ref, computed } from 'vue'
+import { Motion } from 'motion-v'
+import { springPresets, staggerDelay } from '@/composables/useMotionV'
 
 /**
  * Haptic feedback untuk iOS-like tactile response
@@ -179,18 +181,10 @@ function submitForm() {
         <PullToRefresh>
             <div class="flex flex-col gap-6 p-4 md:p-6">
                 <!-- Page Header dengan spring animation -->
-                <div
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, y: 20 }"
-                    :enter="{
-                        opacity: 1,
-                        y: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                        },
-                    }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="springPresets.ios"
                     class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                     <div class="flex flex-col gap-2">
@@ -201,7 +195,7 @@ function submitForm() {
                             Kelola informasi dan konfigurasi toko Anda
                         </p>
                     </div>
-                </div>
+                </Motion>
 
                 <!-- Flash Messages -->
                 <Transition
@@ -240,21 +234,12 @@ function submitForm() {
                     <!-- Main Content (2 columns) -->
                     <div class="lg:col-span-2 flex flex-col gap-6">
                         <!-- Store Information Card -->
-                        <Card
-                            v-motion
+                        <Motion
                             :initial="{ opacity: 0, y: 20 }"
-                            :enter="{
-                                opacity: 1,
-                                y: 0,
-                                transition: {
-                                    type: 'spring',
-                                    stiffness: 300,
-                                    damping: 25,
-                                    delay: 50,
-                                },
-                            }"
-                            class="ios-card"
+                            :animate="{ opacity: 1, y: 0 }"
+                            :transition="{ ...springPresets.ios, delay: staggerDelay(0) }"
                         >
+                            <Card class="ios-card">
                             <CardHeader>
                                 <CardTitle class="flex items-center gap-2">
                                     <Store class="h-5 w-5" />
@@ -307,24 +292,16 @@ function submitForm() {
                                     <InputError :message="errors.store_phone" />
                                 </div>
                             </CardContent>
-                        </Card>
+                            </Card>
+                        </Motion>
 
                         <!-- WhatsApp Settings Card -->
-                        <Card
-                            v-motion
+                        <Motion
                             :initial="{ opacity: 0, y: 20 }"
-                            :enter="{
-                                opacity: 1,
-                                y: 0,
-                                transition: {
-                                    type: 'spring',
-                                    stiffness: 300,
-                                    damping: 25,
-                                    delay: 100,
-                                },
-                            }"
-                            class="ios-card"
+                            :animate="{ opacity: 1, y: 0 }"
+                            :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
                         >
+                            <Card class="ios-card">
                             <CardHeader>
                                 <CardTitle class="flex items-center gap-2">
                                     <MessageSquare class="h-5 w-5" />
@@ -352,24 +329,16 @@ function submitForm() {
                                     <InputError :message="errors.whatsapp_number" />
                                 </div>
                             </CardContent>
-                        </Card>
+                            </Card>
+                        </Motion>
 
                         <!-- Operating Hours Card -->
-                        <Card
-                            v-motion
+                        <Motion
                             :initial="{ opacity: 0, y: 20 }"
-                            :enter="{
-                                opacity: 1,
-                                y: 0,
-                                transition: {
-                                    type: 'spring',
-                                    stiffness: 300,
-                                    damping: 25,
-                                    delay: 150,
-                                },
-                            }"
-                            class="ios-card"
+                            :animate="{ opacity: 1, y: 0 }"
+                            :transition="{ ...springPresets.ios, delay: staggerDelay(2) }"
                         >
+                            <Card class="ios-card">
                             <CardHeader>
                                 <CardTitle class="flex items-center gap-2">
                                     <Clock class="h-5 w-5" />
@@ -381,21 +350,12 @@ function submitForm() {
                             </CardHeader>
                             <CardContent>
                                 <div class="flex flex-col gap-4">
-                                    <div
+                                    <Motion
                                         v-for="(hours, day, index) in form.operating_hours"
                                         :key="day"
-                                        v-motion
                                         :initial="{ opacity: 0, x: -20 }"
-                                        :enter="{
-                                            opacity: 1,
-                                            x: 0,
-                                            transition: {
-                                                type: 'spring',
-                                                stiffness: 300,
-                                                damping: 25,
-                                                delay: 200 + index * 30,
-                                            },
-                                        }"
+                                        :animate="{ opacity: 1, x: 0 }"
+                                        :transition="{ ...springPresets.ios, delay: 0.2 + (index as number) * 0.03 }"
                                         class="flex flex-col gap-2 rounded-xl border p-4 transition-colors hover:bg-muted/50 sm:flex-row sm:items-center sm:justify-between"
                                     >
                                         <div class="flex items-center gap-3">
@@ -436,31 +396,23 @@ function submitForm() {
                                         >
                                             Toko tutup hari ini
                                         </div>
-                                    </div>
+                                    </Motion>
                                 </div>
                                 <InputError :message="errors.operating_hours" class="mt-2" />
                             </CardContent>
-                        </Card>
+                            </Card>
+                        </Motion>
                     </div>
 
                     <!-- Sidebar (1 column) -->
                     <div class="flex flex-col gap-6">
                         <!-- Delivery Settings Card -->
-                        <Card
-                            v-motion
+                        <Motion
                             :initial="{ opacity: 0, y: 20 }"
-                            :enter="{
-                                opacity: 1,
-                                y: 0,
-                                transition: {
-                                    type: 'spring',
-                                    stiffness: 300,
-                                    damping: 25,
-                                    delay: 200,
-                                },
-                            }"
-                            class="ios-card"
+                            :animate="{ opacity: 1, y: 0 }"
+                            :transition="{ ...springPresets.ios, delay: staggerDelay(3) }"
                         >
+                            <Card class="ios-card">
                             <CardHeader>
                                 <CardTitle class="flex items-center gap-2">
                                     <Truck class="h-5 w-5" />
@@ -528,22 +480,17 @@ function submitForm() {
                                         v-if="form.delivery_areas.length > 0"
                                         class="flex flex-wrap gap-2 mt-2"
                                     >
-                                        <Badge
+                                        <Motion
                                             v-for="(area, index) in form.delivery_areas"
                                             :key="index"
-                                            v-motion
                                             :initial="{ scale: 0 }"
-                                            :enter="{
-                                                scale: 1,
-                                                transition: {
-                                                    type: 'spring',
-                                                    stiffness: 400,
-                                                    damping: 20,
-                                                },
-                                            }"
-                                            variant="secondary"
-                                            class="gap-1 pr-1"
+                                            :animate="{ scale: 1 }"
+                                            :transition="springPresets.bouncy"
                                         >
+                                            <Badge
+                                                variant="secondary"
+                                                class="gap-1 pr-1"
+                                            >
                                             {{ area }}
                                             <button
                                                 type="button"
@@ -552,7 +499,8 @@ function submitForm() {
                                             >
                                                 <X class="h-3 w-3" />
                                             </button>
-                                        </Badge>
+                                            </Badge>
+                                        </Motion>
                                     </div>
                                     <p
                                         v-else
@@ -563,35 +511,28 @@ function submitForm() {
                                     <InputError :message="errors.delivery_areas" />
                                 </div>
                             </CardContent>
-                        </Card>
+                            </Card>
+                        </Motion>
 
                         <!-- Actions Card -->
-                        <Card
-                            v-motion
+                        <Motion
                             :initial="{ opacity: 0, y: 20 }"
-                            :enter="{
-                                opacity: 1,
-                                y: 0,
-                                transition: {
-                                    type: 'spring',
-                                    stiffness: 300,
-                                    damping: 25,
-                                    delay: 250,
-                                },
-                            }"
-                            class="ios-card"
+                            :animate="{ opacity: 1, y: 0 }"
+                            :transition="{ ...springPresets.ios, delay: staggerDelay(4) }"
                         >
-                            <CardContent class="flex flex-col gap-3 pt-6">
-                                <Button
-                                    type="submit"
-                                    class="ios-button w-full gap-2"
-                                    :disabled="isSubmitting"
-                                >
-                                    <Save class="h-4 w-4" />
-                                    {{ isSubmitting ? 'Menyimpan...' : 'Simpan Pengaturan' }}
-                                </Button>
-                            </CardContent>
-                        </Card>
+                            <Card class="ios-card">
+                                <CardContent class="flex flex-col gap-3 pt-6">
+                                    <Button
+                                        type="submit"
+                                        class="ios-button w-full gap-2"
+                                        :disabled="isSubmitting"
+                                    >
+                                        <Save class="h-4 w-4" />
+                                        {{ isSubmitting ? 'Menyimpan...' : 'Simpan Pengaturan' }}
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        </Motion>
                     </div>
                 </form>
 

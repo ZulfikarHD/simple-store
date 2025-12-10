@@ -3,6 +3,8 @@ import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileCo
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
 import { Form, Head, Link, usePage } from '@inertiajs/vue3';
+import { Motion, AnimatePresence } from 'motion-v';
+import { springPresets, staggerDelay } from '@/composables/useMotionV';
 
 import DeleteUser from '@/components/DeleteUser.vue';
 import HeadingSmall from '@/components/HeadingSmall.vue';
@@ -38,16 +40,27 @@ const user = page.props.auth.user;
 
         <SettingsLayout>
             <div class="flex flex-col space-y-6">
-                <HeadingSmall
-                    title="Profile information"
-                    description="Update your name and email address"
-                />
-
-                <Form
-                    v-bind="ProfileController.update.form()"
-                    class="space-y-6"
-                    v-slot="{ errors, processing, recentlySuccessful }"
+                <Motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="springPresets.ios"
                 >
+                    <HeadingSmall
+                        title="Profile information"
+                        description="Update your name and email address"
+                    />
+                </Motion>
+
+                <Motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
+                >
+                    <Form
+                        v-bind="ProfileController.update.form()"
+                        class="space-y-6"
+                        v-slot="{ errors, processing, recentlySuccessful }"
+                    >
                     <div class="grid gap-2">
                         <Label for="name">Name</Label>
                         <Input
@@ -105,24 +118,31 @@ const user = page.props.auth.user;
                             >Save</Button
                         >
 
-                        <Transition
-                            enter-active-class="transition ease-in-out"
-                            enter-from-class="opacity-0"
-                            leave-active-class="transition ease-in-out"
-                            leave-to-class="opacity-0"
-                        >
-                            <p
-                                v-show="recentlySuccessful"
-                                class="text-sm text-neutral-600"
+                        <AnimatePresence>
+                            <Motion
+                                v-if="recentlySuccessful"
+                                :initial="{ opacity: 0, scale: 0.9 }"
+                                :animate="{ opacity: 1, scale: 1 }"
+                                :exit="{ opacity: 0, scale: 0.9 }"
+                                :transition="springPresets.bouncy"
                             >
-                                Saved.
-                            </p>
-                        </Transition>
+                                <p class="text-sm text-neutral-600">
+                                    Saved.
+                                </p>
+                            </Motion>
+                        </AnimatePresence>
                     </div>
-                </Form>
+                    </Form>
+                </Motion>
             </div>
 
-            <DeleteUser />
+            <Motion
+                :initial="{ opacity: 0, y: 20 }"
+                :animate="{ opacity: 1, y: 0 }"
+                :transition="{ ...springPresets.ios, delay: staggerDelay(2) }"
+            >
+                <DeleteUser />
+            </Motion>
         </SettingsLayout>
     </AppLayout>
 </template>

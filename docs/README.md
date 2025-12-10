@@ -13,6 +13,7 @@ Selamat datang di dokumentasi aplikasi F&B Web App. Aplikasi ini merupakan platf
 
 ### Untuk Designer
 - [Design System](03-design/ui-ux/design-system.md) ⭐ **Updated dengan Vue Components**
+- [Animation System](03-design/ui-ux/animation-system.md) 🆕 **iOS Spring Physics**
 - [Wireframes](03-design/ui-ux/wireframes/)
 - [Mockups](03-design/ui-ux/mockups/)
 - [User Flows](03-design/ui-ux/user-flows.md)
@@ -67,10 +68,10 @@ import { ProductCard, CartItem, SearchBar } from '@/components/store'
 
 ## Project Status
 
-- **Current Version**: 0.5.0 (Development)
-- **Last Updated**: 2025-11-26
-- **Project Status**: In Development - Sprint 6 In Progress
-- **Latest Feature**: ✅ Sprint 6 - Enhancement & Polish (ENH-001 to ENH-004)
+- **Current Version**: 0.6.0 (Development)
+- **Last Updated**: 2025-12-10
+- **Project Status**: In Development - Sprint 7 In Progress
+- **Latest Feature**: ✅ Sprint 7 - Animation System Overhaul (ANI-001)
 
 ### Sprint 1 Progress
 
@@ -119,6 +120,15 @@ import { ProductCard, CartItem, SearchBar } from '@/components/store'
 | ENH-002 | Fast Page Loading | ✅ Completed |
 | ENH-003 | Product Availability Badges | ✅ Completed |
 | ENH-004 | Order Notifications | ✅ Completed |
+
+### Sprint 7 Progress (Animation System)
+
+| Story | Description | Status |
+|-------|-------------|--------|
+| ANI-001 | Motion-V Animation System Migration | ✅ Completed |
+| ANI-002 | iOS Spring Physics Implementation | ✅ Completed |
+| ANI-003 | Staggered Animations for Lists | ✅ Completed |
+| ANI-004 | Press Feedback Implementation | ✅ Completed |
 
 ---
 

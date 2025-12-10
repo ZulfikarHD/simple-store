@@ -14,6 +14,7 @@
  */
 import { onMounted, ref } from 'vue'
 import { router } from '@inertiajs/vue3'
+import { Motion } from 'motion-v'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -29,6 +30,7 @@ import { index as categoriesIndex } from '@/routes/admin/categories'
 import { show as orderShow } from '@/routes/admin/orders'
 import { useOrderNotifications } from '@/composables/useOrderNotifications'
 import { useHapticFeedback } from '@/composables/useHapticFeedback'
+import { springPresets, staggerDelay } from '@/composables/useMotionV'
 import {
     ShoppingBag,
     Clock,
@@ -178,18 +180,10 @@ function navigateToOrder(orderId: number) {
         <PullToRefresh>
             <div class="flex flex-col gap-6 p-4 md:p-6">
                 <!-- Page Header dengan spring animation -->
-                <div
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, y: 20 }"
-                    :enter="{
-                        opacity: 1,
-                        y: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                        },
-                    }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="springPresets.ios"
                     class="flex flex-col gap-2"
                 >
                     <h1 class="text-2xl font-bold tracking-tight md:text-3xl">
@@ -198,24 +192,17 @@ function navigateToOrder(orderId: number) {
                     <p class="text-muted-foreground">
                         Overview statistik dan monitoring performa toko
                     </p>
-                </div>
+                </Motion>
 
                 <!-- Stats Cards Grid dengan staggered animation -->
                 <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <!-- Total Sales Card -->
-                    <Card
-                        v-motion
+                    <Motion
                         :initial="{ opacity: 0, y: 20 }"
-                        :enter="{
-                            opacity: 1,
-                            y: 0,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 25,
-                                delay: 50,
-                            },
-                        }"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springPresets.ios, delay: staggerDelay(0) }"
+                    >
+                        <Card
                         class="ios-card overflow-hidden transition-transform duration-150"
                         :class="{ 'scale-[0.97]': pressedCard === 'sales' }"
                         @mousedown="handleCardPress('sales')"
@@ -248,23 +235,17 @@ function navigateToOrder(orderId: number) {
                             </div>
                         </CardContent>
                     </Card>
+                    </Motion>
 
                     <!-- Other Stats Cards -->
-                    <Card
+                    <Motion
                         v-for="(stat, index) in statsCards"
                         :key="stat.id"
-                        v-motion
                         :initial="{ opacity: 0, y: 20 }"
-                        :enter="{
-                            opacity: 1,
-                            y: 0,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 25,
-                                delay: 100 + index * 50,
-                            },
-                        }"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springPresets.ios, delay: staggerDelay(index + 1) }"
+                    >
+                        <Card
                         class="ios-card overflow-hidden transition-transform duration-150"
                         :class="{ 'scale-[0.97]': pressedCard === stat.id }"
                         @mousedown="handleCardPress(stat.id)"
@@ -300,26 +281,18 @@ function navigateToOrder(orderId: number) {
                             </div>
                         </CardContent>
                     </Card>
+                    </Motion>
                 </div>
 
                 <!-- Order Status Breakdown -->
                 <div class="grid gap-4 md:grid-cols-2">
                     <!-- Recent Orders -->
-                    <Card
-                        v-motion
+                    <Motion
                         :initial="{ opacity: 0, y: 20 }"
-                        :enter="{
-                            opacity: 1,
-                            y: 0,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 25,
-                                delay: 250,
-                            },
-                        }"
-                        class="ios-card"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springPresets.ios, delay: 0.25 }"
                     >
+                        <Card class="ios-card">
                         <CardHeader>
                             <CardTitle class="flex items-center gap-2">
                                 <ShoppingBag class="h-5 w-5" />
@@ -343,21 +316,12 @@ function navigateToOrder(orderId: number) {
                                 v-else
                                 class="space-y-4"
                             >
-                                <div
+                                    <Motion
                                     v-for="(order, orderIndex) in stats.recent_orders"
                                     :key="order.id"
-                                    v-motion
                                     :initial="{ opacity: 0, x: -20 }"
-                                    :enter="{
-                                        opacity: 1,
-                                        x: 0,
-                                        transition: {
-                                            type: 'spring',
-                                            stiffness: 300,
-                                            damping: 25,
-                                            delay: 300 + orderIndex * 50,
-                                        },
-                                    }"
+                                        :animate="{ opacity: 1, x: 0 }"
+                                        :transition="{ ...springPresets.ios, delay: 0.3 + orderIndex * 0.05 }"
                                     class="ios-list-item flex flex-col gap-2 rounded-xl border p-4 transition-all duration-150 hover:bg-accent"
                                     role="button"
                                     tabindex="0"
@@ -400,27 +364,19 @@ function navigateToOrder(orderId: number) {
                                             {{ order.created_at_human }}
                                         </span>
                                     </div>
-                                </div>
+                                    </Motion>
                             </div>
                         </CardContent>
                     </Card>
+                    </Motion>
 
                     <!-- Status Breakdown -->
-                    <Card
-                        v-motion
+                    <Motion
                         :initial="{ opacity: 0, y: 20 }"
-                        :enter="{
-                            opacity: 1,
-                            y: 0,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 25,
-                                delay: 300,
-                            },
-                        }"
-                        class="ios-card"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springPresets.ios, delay: 0.3 }"
                     >
+                        <Card class="ios-card">
                         <CardHeader>
                             <CardTitle class="flex items-center gap-2">
                                 <TrendingUp class="h-5 w-5" />
@@ -429,25 +385,16 @@ function navigateToOrder(orderId: number) {
                         </CardHeader>
                         <CardContent>
                             <div class="space-y-3">
-                                <div
+                                    <Motion
                                     v-for="(count, status, statusIndex) in stats.order_status_breakdown"
                                     :key="status"
-                                    v-motion
                                     :initial="{ opacity: 0, x: 20 }"
-                                    :enter="{
-                                        opacity: 1,
-                                        x: 0,
-                                        transition: {
-                                            type: 'spring',
-                                            stiffness: 300,
-                                            damping: 25,
-                                            delay: 350 + statusIndex * 50,
-                                        },
-                                    }"
+                                        :animate="{ opacity: 1, x: 0 }"
+                                        :transition="{ ...springPresets.ios, delay: 0.35 + (statusIndex as number) * 0.05 }"
                                     class="flex items-center justify-between rounded-xl border p-3 transition-colors hover:bg-accent"
                                 >
                                     <div class="flex items-center gap-3">
-                                        <OrderStatusBadge :status="status" />
+                                            <OrderStatusBadge :status="status as string" />
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <span class="text-2xl font-bold">
@@ -457,7 +404,7 @@ function navigateToOrder(orderId: number) {
                                             orders
                                         </span>
                                     </div>
-                                </div>
+                                    </Motion>
 
                                 <!-- Empty State -->
                                 <div
@@ -477,24 +424,16 @@ function navigateToOrder(orderId: number) {
                             </div>
                         </CardContent>
                     </Card>
+                    </Motion>
                 </div>
 
                 <!-- Quick Actions -->
-                <Card
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, y: 20 }"
-                    :enter="{
-                        opacity: 1,
-                        y: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 400,
-                        },
-                    }"
-                    class="ios-card"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springPresets.ios, delay: 0.4 }"
                 >
+                    <Card class="ios-card">
                     <CardHeader>
                         <CardTitle>Quick Actions</CardTitle>
                     </CardHeader>
@@ -549,6 +488,7 @@ function navigateToOrder(orderId: number) {
                         </div>
                     </CardContent>
                 </Card>
+                </Motion>
 
                 <!-- Bottom padding untuk mobile nav -->
                 <div class="h-20 md:hidden" />

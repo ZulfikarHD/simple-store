@@ -2,19 +2,20 @@
 /**
  * ProductCard Component
  * Menampilkan informasi produk dalam format card dengan iOS-style design
- * mencakup gambar, nama, kategori, harga, dan status ketersediaan
- * dengan spring animations, press feedback, dan haptic response
+ * menggunakan motion-v untuk spring animations, press feedback, dan haptic response
  *
  * @author Zulfikar Hidayatullah
  */
 import { computed, ref } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
+import { Motion, AnimatePresence } from 'motion-v'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Plus, ShoppingCart, Loader2, Check } from 'lucide-vue-next'
 import { show } from '@/actions/App/Http/Controllers/ProductController'
 import { store } from '@/actions/App/Http/Controllers/CartController'
 import { useHapticFeedback } from '@/composables/useHapticFeedback'
+import { springPresets } from '@/composables/useMotionV'
 
 /**
  * Interface untuk status stok dari backend
@@ -95,11 +96,9 @@ const formattedPrice = computed(() => {
 })
 
 /**
- * Staggered animation delay berdasarkan index
+ * Animation delay berdasarkan index
  */
-const animationDelay = computed(() => ({
-    animationDelay: `${props.index * 50}ms`,
-}))
+const animationDelay = computed(() => props.index * 0.05)
 
 /**
  * Handle press start untuk card
@@ -172,29 +171,30 @@ const imageUrl = computed(() => {
     }
     return null
 })
+
+/**
+ * Spring transitions untuk iOS-like animations
+ */
+const springTransition = { type: 'spring' as const, ...springPresets.ios }
+const bouncyTransition = { type: 'spring' as const, ...springPresets.bouncy }
+const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
 </script>
 
 <template>
-    <article
-        v-motion
+    <Motion
+        tag="article"
         :initial="{ opacity: 0, y: 20, scale: 0.95 }"
-        :enter="{
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            transition: {
-                type: 'spring',
-                stiffness: 300,
-                damping: 25,
-                delay: index * 50,
-            },
-        }"
+        :animate="{ opacity: 1, y: 0, scale: 1 }"
+        :transition="{ ...springTransition, delay: animationDelay }"
         class="product-card group cursor-pointer"
         :class="[
             mode === 'grid' ? 'flex flex-col' : 'flex flex-row gap-4',
-            isPressed ? 'scale-[0.97]' : 'scale-100',
         ]"
-        :style="animationDelay"
+    >
+        <Motion
+            :animate="{ scale: isPressed ? 0.97 : 1 }"
+            :transition="snappyTransition"
+            class="contents"
         @mousedown="handlePressStart"
         @mouseup="handlePressEnd"
         @mouseleave="handlePressEnd"
@@ -228,20 +228,16 @@ const imageUrl = computed(() => {
             </div>
 
             <!-- Stock Status Badge - Enhanced dengan animation -->
-            <Badge
+                <AnimatePresence>
+                    <Motion
                 v-if="product.stock_status"
-                v-motion
                 :initial="{ scale: 0, opacity: 0 }"
-                :enter="{
-                    scale: 1,
-                    opacity: 1,
-                    transition: {
-                        type: 'spring',
-                        stiffness: 400,
-                        damping: 20,
-                        delay: index * 50 + 200,
-                    },
-                }"
+                        :animate="{ scale: 1, opacity: 1 }"
+                        :exit="{ scale: 0, opacity: 0 }"
+                        :transition="{ ...bouncyTransition, delay: animationDelay + 0.2 }"
+                        class="absolute left-2 top-2 sm:left-3 sm:top-3"
+                    >
+                        <Badge
                 :variant="
                     product.stock_status.status === 'out_of_stock' || product.stock_status.status === 'unavailable'
                         ? 'destructive'
@@ -250,33 +246,31 @@ const imageUrl = computed(() => {
                           : 'default'
                 "
                 :class="[
-                    'absolute left-2 top-2 text-[10px] font-medium shadow-sm sm:left-3 sm:top-3 sm:text-xs',
+                                'text-[10px] font-medium shadow-sm sm:text-xs',
                     product.stock_status.status === 'in_stock' && 'bg-green-100 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400',
                     product.stock_status.status === 'low_stock' && 'bg-amber-100 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400',
                 ]"
             >
                 {{ product.stock_status.label }}
             </Badge>
+                    </Motion>
             <!-- Fallback untuk backward compatibility -->
-            <Badge
+                    <Motion
                 v-else-if="!product.is_available"
-                v-motion
                 :initial="{ scale: 0, opacity: 0 }"
-                :enter="{
-                    scale: 1,
-                    opacity: 1,
-                    transition: {
-                        type: 'spring',
-                        stiffness: 400,
-                        damping: 20,
-                        delay: index * 50 + 200,
-                    },
-                }"
+                        :animate="{ scale: 1, opacity: 1 }"
+                        :exit="{ scale: 0, opacity: 0 }"
+                        :transition="{ ...bouncyTransition, delay: animationDelay + 0.2 }"
+                        class="absolute left-2 top-2 sm:left-3 sm:top-3"
+                    >
+                        <Badge
                 variant="destructive"
-                class="absolute left-2 top-2 text-[10px] font-medium shadow-sm sm:left-3 sm:top-3 sm:text-xs"
+                            class="text-[10px] font-medium shadow-sm sm:text-xs"
             >
                 Habis
             </Badge>
+                    </Motion>
+                </AnimatePresence>
         </Link>
 
         <!-- Product Info - Optimized untuk mobile -->
@@ -321,29 +315,25 @@ const imageUrl = computed(() => {
                 </p>
 
                 <!-- Add to Cart Button dengan iOS-like spring animation -->
-                <Button
+                    <Motion
                     v-if="mode === 'grid'"
-                    v-motion
                     :initial="{ scale: 0, opacity: 0 }"
-                    :enter="{
-                        scale: 1,
-                        opacity: 1,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 500,
-                            damping: 25,
-                            delay: index * 50 + 300,
-                        },
-                    }"
+                        :animate="{ scale: 1, opacity: 1 }"
+                        :transition="{ ...bouncyTransition, delay: animationDelay + 0.3 }"
+                    >
+                        <Motion
+                            :animate="{ scale: isButtonPressed ? 0.9 : 1 }"
+                            :transition="snappyTransition"
+                        >
+                            <Button
                     size="icon"
                     variant="secondary"
                     :disabled="!product.is_available || isAdding"
-                    class="h-11 w-11 shrink-0 rounded-full transition-all duration-150 ease-[var(--ios-spring-snappy)]"
+                                class="h-11 w-11 shrink-0 rounded-full"
                     :class="[
                         showSuccess
                             ? 'bg-green-100 text-green-600 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400'
                             : 'bg-primary/10 text-primary hover:bg-primary/20',
-                        isButtonPressed ? 'scale-90' : 'scale-100',
                         'disabled:opacity-50',
                     ]"
                     aria-label="Tambah ke keranjang"
@@ -360,24 +350,25 @@ const imageUrl = computed(() => {
                         class="h-5 w-5 animate-spin"
                     />
                     <!-- Success check dengan bounce animation -->
-                    <Check
-                        v-else-if="showSuccess"
-                        v-motion
+                                <AnimatePresence mode="wait">
+                                    <Motion
+                                        v-if="showSuccess"
+                                        :key="'success'"
                         :initial="{ scale: 0 }"
-                        :enter="{
-                            scale: 1,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 600,
-                                damping: 15,
-                            },
-                        }"
-                        class="h-5 w-5"
-                    />
+                                        :animate="{ scale: 1 }"
+                                        :exit="{ scale: 0 }"
+                                        :transition="bouncyTransition"
+                                    >
+                                        <Check class="h-5 w-5" />
+                                    </Motion>
                     <!-- Plus icon default -->
-                    <Plus v-else class="h-5 w-5" />
+                                    <Plus v-else-if="!isAdding" class="h-5 w-5" />
+                                </AnimatePresence>
                 </Button>
+                        </Motion>
+                    </Motion>
+                </div>
             </div>
-        </div>
-    </article>
+        </Motion>
+    </Motion>
 </template>

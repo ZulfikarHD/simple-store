@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
+import { Motion } from 'motion-v';
+import { springPresets, staggerDelay } from '@/composables/useMotionV';
 
 import AppearanceTabs from '@/components/AppearanceTabs.vue';
 import HeadingSmall from '@/components/HeadingSmall.vue';
@@ -23,11 +25,23 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
         <SettingsLayout>
             <div class="space-y-6">
-                <HeadingSmall
-                    title="Appearance settings"
-                    description="Update your account's appearance settings"
-                />
-                <AppearanceTabs />
+                <Motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="springPresets.ios"
+                >
+                    <HeadingSmall
+                        title="Appearance settings"
+                        description="Update your account's appearance settings"
+                    />
+                </Motion>
+                <Motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
+                >
+                    <AppearanceTabs />
+                </Motion>
             </div>
         </SettingsLayout>
     </AppLayout>

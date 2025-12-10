@@ -10,6 +10,8 @@ import {
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { store } from '@/routes/two-factor/login';
 import { Form, Head } from '@inertiajs/vue3';
+import { Motion } from 'motion-v';
+import { springPresets, staggerDelay } from '@/composables/useMotionV';
 import { computed, ref } from 'vue';
 
 interface AuthConfigContent {
@@ -65,7 +67,10 @@ const codeValue = computed<string>(() => code.value.join(''));
                     #default="{ errors, processing, clearErrors }"
                 >
                     <input type="hidden" name="code" :value="codeValue" />
-                    <div
+                    <Motion
+                        :initial="{ opacity: 0, y: 20 }"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springPresets.ios, delay: staggerDelay(0) }"
                         class="flex flex-col items-center justify-center space-y-3 text-center"
                     >
                         <div class="flex w-full items-center justify-center">
@@ -88,11 +93,22 @@ const codeValue = computed<string>(() => code.value.join(''));
                             </PinInput>
                         </div>
                         <InputError :message="errors.code" />
-                    </div>
-                    <Button type="submit" class="w-full" :disabled="processing"
-                        >Continue</Button
+                    </Motion>
+                    <Motion
+                        :initial="{ opacity: 0, y: 20 }"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
                     >
-                    <div class="text-center text-sm text-muted-foreground">
+                        <Button type="submit" class="w-full" :disabled="processing"
+                            >Continue</Button
+                        >
+                    </Motion>
+                    <Motion
+                        :initial="{ opacity: 0 }"
+                        :animate="{ opacity: 1 }"
+                        :transition="{ ...springPresets.smooth, delay: staggerDelay(2) }"
+                        class="text-center text-sm text-muted-foreground"
+                    >
                         <span>or you can </span>
                         <button
                             type="button"
@@ -101,7 +117,7 @@ const codeValue = computed<string>(() => code.value.join(''));
                         >
                             {{ authConfigContent.toggleText }}
                         </button>
-                    </div>
+                    </Motion>
                 </Form>
             </template>
 
@@ -112,19 +128,36 @@ const codeValue = computed<string>(() => code.value.join(''));
                     reset-on-error
                     #default="{ errors, processing, clearErrors }"
                 >
-                    <Input
-                        name="recovery_code"
-                        type="text"
-                        placeholder="Enter recovery code"
-                        :autofocus="showRecoveryInput"
-                        required
-                    />
-                    <InputError :message="errors.recovery_code" />
-                    <Button type="submit" class="w-full" :disabled="processing"
-                        >Continue</Button
+                    <Motion
+                        :initial="{ opacity: 0, y: 20 }"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springPresets.ios, delay: staggerDelay(0) }"
                     >
+                        <Input
+                            name="recovery_code"
+                            type="text"
+                            placeholder="Enter recovery code"
+                            :autofocus="showRecoveryInput"
+                            required
+                        />
+                        <InputError :message="errors.recovery_code" class="mt-2" />
+                    </Motion>
+                    <Motion
+                        :initial="{ opacity: 0, y: 20 }"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
+                    >
+                        <Button type="submit" class="w-full" :disabled="processing"
+                            >Continue</Button
+                        >
+                    </Motion>
 
-                    <div class="text-center text-sm text-muted-foreground">
+                    <Motion
+                        :initial="{ opacity: 0 }"
+                        :animate="{ opacity: 1 }"
+                        :transition="{ ...springPresets.smooth, delay: staggerDelay(2) }"
+                        class="text-center text-sm text-muted-foreground"
+                    >
                         <span>or you can </span>
                         <button
                             type="button"
@@ -133,7 +166,7 @@ const codeValue = computed<string>(() => code.value.join(''));
                         >
                             {{ authConfigContent.toggleText }}
                         </button>
-                    </div>
+                    </Motion>
                 </Form>
             </template>
         </div>

@@ -31,6 +31,8 @@ import {
     Save,
 } from 'lucide-vue-next'
 import { ref } from 'vue'
+import { Motion } from 'motion-v'
+import { springPresets, staggerDelay } from '@/composables/useMotionV'
 
 /**
  * Haptic feedback untuk iOS-like tactile response
@@ -149,18 +151,10 @@ function cancel() {
         <PullToRefresh>
             <div class="flex flex-col gap-6 p-4 md:p-6">
                 <!-- Page Header dengan spring animation -->
-                <div
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, y: 20 }"
-                    :enter="{
-                        opacity: 1,
-                        y: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                        },
-                    }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="springPresets.ios"
                     class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                     <div class="flex flex-col gap-2">
@@ -179,28 +173,19 @@ function cancel() {
                         <ArrowLeft class="h-4 w-4" />
                         Kembali
                     </Button>
-                </div>
+                </Motion>
 
                 <!-- Form -->
                 <form @submit.prevent="submitForm" class="grid gap-6 lg:grid-cols-3">
                     <!-- Main Content -->
                     <div class="lg:col-span-2 flex flex-col gap-6">
                         <!-- Basic Info Card -->
-                        <Card
-                            v-motion
+                        <Motion
                             :initial="{ opacity: 0, y: 20 }"
-                            :enter="{
-                                opacity: 1,
-                                y: 0,
-                                transition: {
-                                    type: 'spring',
-                                    stiffness: 300,
-                                    damping: 25,
-                                    delay: 50,
-                                },
-                            }"
-                            class="ios-card"
+                            :animate="{ opacity: 1, y: 0 }"
+                            :transition="{ ...springPresets.ios, delay: staggerDelay(0) }"
                         >
+                            <Card class="ios-card">
                             <CardHeader>
                                 <CardTitle class="flex items-center gap-2">
                                     <Package class="h-5 w-5" />
@@ -287,24 +272,16 @@ function cancel() {
                                     <InputError :message="errors.category_id" />
                                 </div>
                             </CardContent>
-                        </Card>
+                            </Card>
+                        </Motion>
 
                         <!-- Image Upload Card -->
-                        <Card
-                            v-motion
+                        <Motion
                             :initial="{ opacity: 0, y: 20 }"
-                            :enter="{
-                                opacity: 1,
-                                y: 0,
-                                transition: {
-                                    type: 'spring',
-                                    stiffness: 300,
-                                    damping: 25,
-                                    delay: 100,
-                                },
-                            }"
-                            class="ios-card"
+                            :animate="{ opacity: 1, y: 0 }"
+                            :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
                         >
+                            <Card class="ios-card">
                             <CardHeader>
                                 <CardTitle class="flex items-center gap-2">
                                     <Upload class="h-5 w-5" />
@@ -314,19 +291,11 @@ function cancel() {
                             <CardContent>
                                 <div class="flex flex-col gap-4">
                                     <!-- Image Preview -->
-                                    <div
+                                    <Motion
                                         v-if="imagePreview"
-                                        v-motion
                                         :initial="{ opacity: 0, scale: 0.9 }"
-                                        :enter="{
-                                            opacity: 1,
-                                            scale: 1,
-                                            transition: {
-                                                type: 'spring',
-                                                stiffness: 400,
-                                                damping: 20,
-                                            },
-                                        }"
+                                        :animate="{ opacity: 1, scale: 1 }"
+                                        :transition="springPresets.bouncy"
                                         class="relative inline-block"
                                     >
                                         <img
@@ -341,7 +310,7 @@ function cancel() {
                                         >
                                             <X class="h-4 w-4" />
                                         </button>
-                                    </div>
+                                    </Motion>
 
                                     <!-- Upload Input -->
                                     <div
@@ -365,27 +334,19 @@ function cancel() {
                                     <InputError :message="errors.image" />
                                 </div>
                             </CardContent>
-                        </Card>
+                            </Card>
+                        </Motion>
                     </div>
 
                     <!-- Sidebar -->
                     <div class="flex flex-col gap-6">
                         <!-- Status Card -->
-                        <Card
-                            v-motion
+                        <Motion
                             :initial="{ opacity: 0, y: 20 }"
-                            :enter="{
-                                opacity: 1,
-                                y: 0,
-                                transition: {
-                                    type: 'spring',
-                                    stiffness: 300,
-                                    damping: 25,
-                                    delay: 150,
-                                },
-                            }"
-                            class="ios-card"
+                            :animate="{ opacity: 1, y: 0 }"
+                            :transition="{ ...springPresets.ios, delay: staggerDelay(2) }"
                         >
+                            <Card class="ios-card">
                             <CardHeader>
                                 <CardTitle>Status Produk</CardTitle>
                             </CardHeader>
@@ -424,43 +385,36 @@ function cancel() {
                                     </div>
                                 </div>
                             </CardContent>
-                        </Card>
+                            </Card>
+                        </Motion>
 
                         <!-- Actions Card -->
-                        <Card
-                            v-motion
+                        <Motion
                             :initial="{ opacity: 0, y: 20 }"
-                            :enter="{
-                                opacity: 1,
-                                y: 0,
-                                transition: {
-                                    type: 'spring',
-                                    stiffness: 300,
-                                    damping: 25,
-                                    delay: 200,
-                                },
-                            }"
-                            class="ios-card"
+                            :animate="{ opacity: 1, y: 0 }"
+                            :transition="{ ...springPresets.ios, delay: staggerDelay(3) }"
                         >
-                            <CardContent class="flex flex-col gap-3 pt-6">
-                                <Button
-                                    type="submit"
-                                    class="ios-button w-full gap-2"
-                                    :disabled="isSubmitting"
-                                >
-                                    <Save class="h-4 w-4" />
-                                    {{ isSubmitting ? 'Menyimpan...' : 'Simpan Produk' }}
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    class="ios-button w-full"
-                                    @click="cancel"
-                                >
-                                    Batal
-                                </Button>
-                            </CardContent>
-                        </Card>
+                            <Card class="ios-card">
+                                <CardContent class="flex flex-col gap-3 pt-6">
+                                    <Button
+                                        type="submit"
+                                        class="ios-button w-full gap-2"
+                                        :disabled="isSubmitting"
+                                    >
+                                        <Save class="h-4 w-4" />
+                                        {{ isSubmitting ? 'Menyimpan...' : 'Simpan Produk' }}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        class="ios-button w-full"
+                                        @click="cancel"
+                                    >
+                                        Batal
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        </Motion>
                     </div>
                 </form>
 

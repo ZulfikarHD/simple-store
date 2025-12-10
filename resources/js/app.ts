@@ -1,11 +1,18 @@
 import '../css/app.css';
 
 import { createInertiaApp } from '@inertiajs/vue3';
-import { MotionPlugin } from '@vueuse/motion';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import { initializeTheme } from './composables/useAppearance';
+
+/**
+ * App Entry Point
+ * Motion-v components (Motion, AnimatePresence) are imported directly
+ * in components that use them, tidak perlu global plugin registration
+ *
+ * @author Zulfikar Hidayatullah
+ */
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -19,7 +26,6 @@ createInertiaApp({
     setup({ el, App, props, plugin }) {
         createApp({ render: () => h(App, props) })
             .use(plugin)
-            .use(MotionPlugin)
             .mount(el);
     },
     progress: {

@@ -2,16 +2,19 @@
 /**
  * CartItem Component
  * Menampilkan item dalam keranjang belanja dengan iOS-like interactions
- * termasuk swipe-to-delete gesture, spring animations, dan haptic feedback
+ * menggunakan motion-v untuk swipe-to-delete gesture, spring animations,
+ * dan haptic feedback
  *
  * @author Zulfikar Hidayatullah
  */
 import { computed, ref } from 'vue'
 import { router } from '@inertiajs/vue3'
+import { Motion } from 'motion-v'
 import { Button } from '@/components/ui/button'
 import { Minus, Plus, Trash2, Loader2 } from 'lucide-vue-next'
 import { update, destroy } from '@/actions/App/Http/Controllers/CartController'
 import { useHapticFeedback } from '@/composables/useHapticFeedback'
+import { springPresets } from '@/composables/useMotionV'
 
 /**
  * Props definition untuk CartItem
@@ -108,6 +111,11 @@ const swipeStyle = computed(() => ({
     transform: `translateX(${swipeX.value}px)`,
     transition: isSwiping.value ? 'none' : 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
 }))
+
+/**
+ * Animation delay berdasarkan index
+ */
+const animationDelay = computed(() => props.index * 0.05)
 
 /**
  * Handle touch start untuk swipe
@@ -209,22 +217,20 @@ function handleRemove() {
         },
     })
 }
+
+/**
+ * Spring transitions untuk iOS-like animations
+ */
+const springTransition = { type: 'spring' as const, ...springPresets.ios }
+const bouncyTransition = { type: 'spring' as const, ...springPresets.bouncy }
+const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
 </script>
 
 <template>
-    <div
-        v-motion
+    <Motion
         :initial="{ opacity: 0, x: -20 }"
-        :enter="{
-            opacity: 1,
-            x: 0,
-            transition: {
-                type: 'spring',
-                stiffness: 300,
-                damping: 25,
-                delay: index * 50,
-            },
-        }"
+        :animate="{ opacity: 1, x: 0 }"
+        :transition="{ ...springTransition, delay: animationDelay }"
         class="relative overflow-hidden rounded-2xl"
     >
         <!-- Delete action background (revealed on swipe) -->
@@ -281,11 +287,15 @@ function handleRemove() {
                 </div>
 
                 <!-- Remove Button - Mobile Only -->
+                <Motion
+                    :animate="{ scale: isDeletePressed ? 0.9 : 1 }"
+                    :transition="snappyTransition"
+                    class="sm:hidden"
+                >
                 <Button
                     variant="ghost"
                     size="icon"
-                    class="h-10 w-10 shrink-0 rounded-xl text-destructive transition-transform duration-150 ease-[var(--ios-spring-snappy)] hover:bg-destructive/10 hover:text-destructive sm:hidden"
-                    :class="{ 'scale-90': isDeletePressed }"
+                        class="h-10 w-10 shrink-0 rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive"
                     :disabled="isRemoving"
                     aria-label="Hapus item"
                     @click="handleRemove"
@@ -298,17 +308,21 @@ function handleRemove() {
                     <Loader2 v-if="isRemoving" class="h-4 w-4 animate-spin" />
                     <Trash2 v-else class="h-4 w-4" />
                 </Button>
+                </Motion>
             </div>
 
             <!-- Bottom Row: Quantity & Subtotal (Mobile) -->
             <div class="flex items-center justify-between gap-3 sm:contents">
                 <!-- Quantity Controls dengan iOS press feedback -->
                 <div class="flex items-center gap-1.5 sm:gap-2">
+                    <Motion
+                        :animate="{ scale: isMinusPressed ? 0.9 : 1 }"
+                        :transition="snappyTransition"
+                    >
                     <Button
                         variant="outline"
                         size="icon"
-                        class="h-11 w-11 rounded-xl transition-transform duration-150 ease-[var(--ios-spring-snappy)] sm:h-9 sm:w-9"
-                        :class="{ 'scale-90': isMinusPressed }"
+                            class="h-11 w-11 rounded-xl sm:h-9 sm:w-9"
                         :disabled="item.quantity <= 1 || isUpdating"
                         aria-label="Kurangi jumlah"
                         @click="handleDecrement"
@@ -321,31 +335,27 @@ function handleRemove() {
                         <Loader2 v-if="isUpdating" class="h-4 w-4 animate-spin" />
                         <Minus v-else class="h-4 w-4" />
                     </Button>
+                    </Motion>
 
                     <!-- Quantity dengan number change animation -->
-                    <span
+                    <Motion
                         :key="item.quantity"
-                        v-motion
                         :initial="{ scale: 1.2, opacity: 0 }"
-                        :enter="{
-                            scale: 1,
-                            opacity: 1,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 500,
-                                damping: 20,
-                            },
-                        }"
+                        :animate="{ scale: 1, opacity: 1 }"
+                        :transition="bouncyTransition"
                         class="w-10 text-center text-lg font-semibold"
                     >
                         {{ item.quantity }}
-                    </span>
+                    </Motion>
 
+                    <Motion
+                        :animate="{ scale: isPlusPressed ? 0.9 : 1 }"
+                        :transition="snappyTransition"
+                    >
                     <Button
                         variant="outline"
                         size="icon"
-                        class="h-11 w-11 rounded-xl transition-transform duration-150 ease-[var(--ios-spring-snappy)] sm:h-9 sm:w-9"
-                        :class="{ 'scale-90': isPlusPressed }"
+                            class="h-11 w-11 rounded-xl sm:h-9 sm:w-9"
                         :disabled="isUpdating"
                         aria-label="Tambah jumlah"
                         @click="handleIncrement"
@@ -358,33 +368,30 @@ function handleRemove() {
                         <Loader2 v-if="isUpdating" class="h-4 w-4 animate-spin" />
                         <Plus v-else class="h-4 w-4" />
                     </Button>
+                    </Motion>
                 </div>
 
                 <!-- Subtotal & Remove (Desktop) -->
                 <div class="flex flex-col items-end gap-2">
                     <!-- Subtotal dengan number change animation -->
-                    <p
+                    <Motion
                         :key="item.subtotal"
-                        v-motion
                         :initial="{ scale: 1.1, opacity: 0 }"
-                        :enter="{
-                            scale: 1,
-                            opacity: 1,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 400,
-                                damping: 20,
-                            },
-                        }"
+                        :animate="{ scale: 1, opacity: 1 }"
+                        :transition="bouncyTransition"
                         class="text-base font-bold text-primary sm:text-lg"
                     >
                         {{ formattedSubtotal }}
-                    </p>
+                    </Motion>
+                    <Motion
+                        :animate="{ scale: isDeletePressed ? 0.9 : 1 }"
+                        :transition="snappyTransition"
+                        class="hidden sm:block"
+                    >
                     <Button
                         variant="ghost"
                         size="icon"
-                        class="hidden h-9 w-9 rounded-xl text-destructive transition-transform duration-150 ease-[var(--ios-spring-snappy)] hover:bg-destructive/10 hover:text-destructive sm:flex"
-                        :class="{ 'scale-90': isDeletePressed }"
+                            class="h-9 w-9 rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive"
                         :disabled="isRemoving"
                         aria-label="Hapus item"
                         @click="handleRemove"
@@ -395,8 +402,9 @@ function handleRemove() {
                         <Loader2 v-if="isRemoving" class="h-4 w-4 animate-spin" />
                         <Trash2 v-else class="h-4 w-4" />
                     </Button>
+                    </Motion>
                 </div>
             </div>
         </div>
-    </div>
+    </Motion>
 </template>

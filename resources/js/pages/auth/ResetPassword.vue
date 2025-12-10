@@ -7,6 +7,8 @@ import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { update } from '@/routes/password';
 import { Form, Head } from '@inertiajs/vue3';
+import { Motion } from 'motion-v';
+import { springPresets, staggerDelay } from '@/composables/useMotionV';
 import { ref } from 'vue';
 
 const props = defineProps<{
@@ -31,7 +33,12 @@ const inputEmail = ref(props.email);
             v-slot="{ errors, processing }"
         >
             <div class="grid gap-6">
-                <div class="grid gap-2">
+                <Motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(0) }"
+                    class="grid gap-2"
+                >
                     <Label for="email">Email</Label>
                     <Input
                         id="email"
@@ -43,9 +50,14 @@ const inputEmail = ref(props.email);
                         readonly
                     />
                     <InputError :message="errors.email" class="mt-2" />
-                </div>
+                </Motion>
 
-                <div class="grid gap-2">
+                <Motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
+                    class="grid gap-2"
+                >
                     <Label for="password">Password</Label>
                     <Input
                         id="password"
@@ -57,9 +69,14 @@ const inputEmail = ref(props.email);
                         placeholder="Password"
                     />
                     <InputError :message="errors.password" />
-                </div>
+                </Motion>
 
-                <div class="grid gap-2">
+                <Motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(2) }"
+                    class="grid gap-2"
+                >
                     <Label for="password_confirmation">
                         Confirm Password
                     </Label>
@@ -72,17 +89,23 @@ const inputEmail = ref(props.email);
                         placeholder="Confirm password"
                     />
                     <InputError :message="errors.password_confirmation" />
-                </div>
+                </Motion>
 
-                <Button
-                    type="submit"
-                    class="mt-4 w-full"
-                    :disabled="processing"
-                    data-test="reset-password-button"
+                <Motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(3) }"
                 >
-                    <Spinner v-if="processing" />
-                    Reset password
-                </Button>
+                    <Button
+                        type="submit"
+                        class="mt-4 w-full"
+                        :disabled="processing"
+                        data-test="reset-password-button"
+                    >
+                        <Spinner v-if="processing" />
+                        Reset password
+                    </Button>
+                </Motion>
             </div>
         </Form>
     </AuthLayout>

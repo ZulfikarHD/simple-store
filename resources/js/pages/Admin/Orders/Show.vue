@@ -47,6 +47,8 @@ import {
     MessageSquare,
 } from 'lucide-vue-next'
 import { ref, computed } from 'vue'
+import { Motion } from 'motion-v'
+import { springPresets, staggerDelay } from '@/composables/useMotionV'
 
 /**
  * Haptic feedback untuk iOS-like tactile response
@@ -317,18 +319,10 @@ function goBack() {
         <PullToRefresh>
             <div class="flex flex-col gap-6 p-4 md:p-6">
                 <!-- Page Header dengan spring animation -->
-                <div
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, y: 20 }"
-                    :enter="{
-                        opacity: 1,
-                        y: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                        },
-                    }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="springPresets.ios"
                     class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                     <div class="flex flex-col gap-2">
@@ -351,24 +345,19 @@ function goBack() {
                             </div>
                         </div>
                     </div>
-                    <Badge
-                        v-motion
+                    <Motion
                         :initial="{ scale: 0 }"
-                        :enter="{
-                            scale: 1,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 400,
-                                damping: 20,
-                                delay: 100,
-                            },
-                        }"
+                        :animate="{ scale: 1 }"
+                        :transition="{ ...springPresets.bouncy, delay: 0.1 }"
+                    >
+                        <Badge
                         :class="getStatusClass(order.status)"
                         class="h-8 px-4 text-sm"
                     >
                         {{ order.status_label }}
                     </Badge>
-                </div>
+                    </Motion>
+                </Motion>
 
                 <!-- Flash Messages -->
                 <Transition
@@ -406,21 +395,12 @@ function goBack() {
                     <!-- Main Content (2 columns) -->
                     <div class="flex flex-col gap-6 lg:col-span-2">
                         <!-- Customer Info Card -->
-                        <Card
-                            v-motion
+                        <Motion
                             :initial="{ opacity: 0, y: 20 }"
-                            :enter="{
-                                opacity: 1,
-                                y: 0,
-                                transition: {
-                                    type: 'spring',
-                                    stiffness: 300,
-                                    damping: 25,
-                                    delay: 50,
-                                },
-                            }"
-                            class="ios-card"
+                            :animate="{ opacity: 1, y: 0 }"
+                            :transition="{ ...springPresets.ios, delay: staggerDelay(0) }"
                         >
+                            <Card class="ios-card">
                             <CardHeader>
                                 <CardTitle class="flex items-center gap-2">
                                     <User class="h-5 w-5" />
@@ -465,23 +445,15 @@ function goBack() {
                                 </div>
                             </CardContent>
                         </Card>
+                        </Motion>
 
                         <!-- Order Items Card -->
-                        <Card
-                            v-motion
+                        <Motion
                             :initial="{ opacity: 0, y: 20 }"
-                            :enter="{
-                                opacity: 1,
-                                y: 0,
-                                transition: {
-                                    type: 'spring',
-                                    stiffness: 300,
-                                    damping: 25,
-                                    delay: 100,
-                                },
-                            }"
-                            class="ios-card"
+                            :animate="{ opacity: 1, y: 0 }"
+                            :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
                         >
+                            <Card class="ios-card">
                             <CardHeader>
                                 <CardTitle class="flex items-center gap-2">
                                     <Package class="h-5 w-5" />
@@ -511,21 +483,13 @@ function goBack() {
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y">
-                                            <tr
+                                            <Motion
                                                 v-for="(item, index) in order.items"
                                                 :key="item.id"
-                                                v-motion
+                                                tag="tr"
                                                 :initial="{ opacity: 0, x: -20 }"
-                                                :enter="{
-                                                    opacity: 1,
-                                                    x: 0,
-                                                    transition: {
-                                                        type: 'spring',
-                                                        stiffness: 300,
-                                                        damping: 25,
-                                                        delay: 150 + index * 30,
-                                                    },
-                                                }"
+                                                :animate="{ opacity: 1, x: 0 }"
+                                                :transition="{ ...springPresets.ios, delay: 0.15 + index * 0.03 }"
                                                 class="transition-colors hover:bg-muted/50"
                                             >
                                                 <td class="px-4 py-3">
@@ -547,7 +511,7 @@ function goBack() {
                                                 <td class="px-4 py-3 text-right">
                                                     <PriceDisplay :price="item.subtotal" size="sm" />
                                                 </td>
-                                            </tr>
+                                            </Motion>
                                         </tbody>
                                     </table>
                                 </div>
@@ -571,26 +535,18 @@ function goBack() {
                                 </div>
                             </CardContent>
                         </Card>
+                        </Motion>
                     </div>
 
                     <!-- Sidebar (1 column) -->
                     <div class="flex flex-col gap-6">
                         <!-- Update Status Card -->
-                        <Card
-                            v-motion
+                        <Motion
                             :initial="{ opacity: 0, y: 20 }"
-                            :enter="{
-                                opacity: 1,
-                                y: 0,
-                                transition: {
-                                    type: 'spring',
-                                    stiffness: 300,
-                                    damping: 25,
-                                    delay: 150,
-                                },
-                            }"
-                            class="ios-card"
+                            :animate="{ opacity: 1, y: 0 }"
+                            :transition="{ ...springPresets.ios, delay: staggerDelay(2) }"
                         >
+                            <Card class="ios-card">
                             <CardHeader>
                                 <CardTitle class="flex items-center gap-2">
                                     <CheckCircle2 class="h-5 w-5" />
@@ -652,23 +608,15 @@ function goBack() {
                                 </div>
                             </CardContent>
                         </Card>
+                        </Motion>
 
                         <!-- Status Timeline Card -->
-                        <Card
-                            v-motion
+                        <Motion
                             :initial="{ opacity: 0, y: 20 }"
-                            :enter="{
-                                opacity: 1,
-                                y: 0,
-                                transition: {
-                                    type: 'spring',
-                                    stiffness: 300,
-                                    damping: 25,
-                                    delay: 200,
-                                },
-                            }"
-                            class="ios-card"
+                            :animate="{ opacity: 1, y: 0 }"
+                            :transition="{ ...springPresets.ios, delay: staggerDelay(3) }"
                         >
+                            <Card class="ios-card">
                             <CardHeader>
                                 <CardTitle class="flex items-center gap-2">
                                     <Clock class="h-5 w-5" />
@@ -677,21 +625,12 @@ function goBack() {
                             </CardHeader>
                             <CardContent>
                                 <div class="relative flex flex-col gap-4">
-                                    <div
+                                    <Motion
                                         v-for="(item, index) in timelineItems"
                                         :key="item.status"
-                                        v-motion
                                         :initial="{ opacity: 0, x: -20 }"
-                                        :enter="{
-                                            opacity: 1,
-                                            x: 0,
-                                            transition: {
-                                                type: 'spring',
-                                                stiffness: 300,
-                                                damping: 25,
-                                                delay: 250 + index * 50,
-                                            },
-                                        }"
+                                        :animate="{ opacity: 1, x: 0 }"
+                                        :transition="{ ...springPresets.ios, delay: 0.25 + index * 0.05 }"
                                         class="flex gap-3"
                                     >
                                         <!-- Timeline Line -->
@@ -722,22 +661,14 @@ function goBack() {
                                                 {{ formatDate(item.timestamp) }}
                                             </span>
                                         </div>
-                                    </div>
+                                    </Motion>
 
                                     <!-- Cancellation Reason -->
-                                    <div
+                                    <Motion
                                         v-if="order.status === 'cancelled' && order.cancellation_reason"
-                                        v-motion
                                         :initial="{ opacity: 0, y: 10 }"
-                                        :enter="{
-                                            opacity: 1,
-                                            y: 0,
-                                            transition: {
-                                                type: 'spring',
-                                                stiffness: 300,
-                                                damping: 25,
-                                            },
-                                        }"
+                                        :animate="{ opacity: 1, y: 0 }"
+                                        :transition="springPresets.ios"
                                         class="rounded-xl border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950"
                                     >
                                         <div class="flex items-start gap-2">
@@ -751,10 +682,11 @@ function goBack() {
                                                 </p>
                                             </div>
                                         </div>
-                                    </div>
+                                    </Motion>
                                 </div>
                             </CardContent>
                         </Card>
+                        </Motion>
                     </div>
                 </div>
 

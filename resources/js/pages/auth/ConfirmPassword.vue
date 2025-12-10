@@ -7,6 +7,8 @@ import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { store } from '@/routes/password/confirm';
 import { Form, Head } from '@inertiajs/vue3';
+import { Motion } from 'motion-v';
+import { springPresets, staggerDelay } from '@/composables/useMotionV';
 </script>
 
 <template>
@@ -22,7 +24,12 @@ import { Form, Head } from '@inertiajs/vue3';
             v-slot="{ errors, processing }"
         >
             <div class="space-y-6">
-                <div class="grid gap-2">
+                <Motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(0) }"
+                    class="grid gap-2"
+                >
                     <Label htmlFor="password">Password</Label>
                     <Input
                         id="password"
@@ -35,9 +42,14 @@ import { Form, Head } from '@inertiajs/vue3';
                     />
 
                     <InputError :message="errors.password" />
-                </div>
+                </Motion>
 
-                <div class="flex items-center">
+                <Motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
+                    class="flex items-center"
+                >
                     <Button
                         class="w-full"
                         :disabled="processing"
@@ -46,7 +58,7 @@ import { Form, Head } from '@inertiajs/vue3';
                         <Spinner v-if="processing" />
                         Confirm Password
                     </Button>
-                </div>
+                </Motion>
             </div>
         </Form>
     </AuthLayout>

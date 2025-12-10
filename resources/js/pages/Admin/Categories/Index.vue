@@ -43,6 +43,8 @@ import {
     Save,
 } from 'lucide-vue-next'
 import { ref, computed } from 'vue'
+import { Motion } from 'motion-v'
+import { springPresets, staggerDelay } from '@/composables/useMotionV'
 
 /**
  * Haptic feedback untuk iOS-like tactile response
@@ -295,18 +297,10 @@ function handleRowRelease() {
         <PullToRefresh>
             <div class="flex flex-col gap-6 p-4 md:p-6">
                 <!-- Page Header dengan spring animation -->
-                <div
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, y: 20 }"
-                    :enter="{
-                        opacity: 1,
-                        y: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                        },
-                    }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="springPresets.ios"
                     class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                     <div class="flex flex-col gap-2">
@@ -321,7 +315,7 @@ function handleRowRelease() {
                         <Plus class="h-4 w-4" />
                         Tambah Kategori
                     </Button>
-                </div>
+                </Motion>
 
                 <!-- Flash Messages -->
                 <Transition
@@ -356,21 +350,12 @@ function handleRowRelease() {
                 </Transition>
 
                 <!-- Categories Table -->
-                <Card
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, y: 20 }"
-                    :enter="{
-                        opacity: 1,
-                        y: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 50,
-                        },
-                    }"
-                    class="ios-card"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(0) }"
                 >
+                    <Card class="ios-card">
                     <CardContent class="p-0">
                         <div class="overflow-x-auto">
                             <table class="w-full">
@@ -397,21 +382,13 @@ function handleRowRelease() {
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y">
-                                    <tr
+                                    <Motion
                                         v-for="(category, index) in categories"
                                         :key="category.id"
-                                        v-motion
+                                        tag="tr"
                                         :initial="{ opacity: 0, x: -20 }"
-                                        :enter="{
-                                            opacity: 1,
-                                            x: 0,
-                                            transition: {
-                                                type: 'spring',
-                                                stiffness: 300,
-                                                damping: 25,
-                                                delay: 100 + index * 30,
-                                            },
-                                        }"
+                                        :animate="{ opacity: 1, x: 0 }"
+                                        :transition="{ ...springPresets.ios, delay: 0.1 + index * 0.03 }"
                                         class="transition-all duration-150 hover:bg-muted/50"
                                         :class="{ 'scale-[0.99] bg-muted/30': pressedRow === category.id }"
                                         @mousedown="handleRowPress(category.id)"
@@ -497,23 +474,15 @@ function handleRowRelease() {
                                                 </Button>
                                             </div>
                                         </td>
-                                    </tr>
+                                    </Motion>
 
                                     <!-- Empty State -->
                                     <tr v-if="categories.length === 0">
                                         <td colspan="6" class="px-4 py-12">
-                                            <div
-                                                v-motion
+                                            <Motion
                                                 :initial="{ opacity: 0, scale: 0.95 }"
-                                                :enter="{
-                                                    opacity: 1,
-                                                    scale: 1,
-                                                    transition: {
-                                                        type: 'spring',
-                                                        stiffness: 300,
-                                                        damping: 25,
-                                                    },
-                                                }"
+                                                :animate="{ opacity: 1, scale: 1 }"
+                                                :transition="springPresets.ios"
                                                 class="flex flex-col items-center justify-center text-center"
                                             >
                                                 <FolderTree class="mb-4 h-12 w-12 text-muted-foreground/50" />
@@ -527,14 +496,15 @@ function handleRowRelease() {
                                                     <Plus class="mr-2 h-4 w-4" />
                                                     Tambah Kategori
                                                 </Button>
-                                            </div>
+                                            </Motion>
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                     </CardContent>
-                </Card>
+                    </Card>
+                </Motion>
 
                 <!-- Bottom padding untuk mobile nav -->
                 <div class="h-20 md:hidden" />
@@ -604,19 +574,11 @@ function handleRowRelease() {
                     <Label>Gambar</Label>
 
                     <!-- New Image Preview -->
-                    <div
+                    <Motion
                         v-if="imagePreview"
-                        v-motion
                         :initial="{ opacity: 0, scale: 0.9 }"
-                        :enter="{
-                            opacity: 1,
-                            scale: 1,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 400,
-                                damping: 20,
-                            },
-                        }"
+                        :animate="{ opacity: 1, scale: 1 }"
+                        :transition="springPresets.bouncy"
                         class="relative inline-block"
                     >
                         <img
@@ -631,7 +593,7 @@ function handleRowRelease() {
                         >
                             <X class="h-3 w-3" />
                         </button>
-                    </div>
+                    </Motion>
 
                     <!-- Existing Image (Edit mode) -->
                     <div v-else-if="isEditing && existingImageUrl" class="flex flex-col gap-2">

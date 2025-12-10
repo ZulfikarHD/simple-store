@@ -2,12 +2,13 @@
 /**
  * Home Page - Katalog Produk
  * Menampilkan daftar produk aktif dalam format grid responsive
- * dengan iOS-like animations, pull-to-refresh, staggered entrance,
- * filter kategori, pencarian, dan bottom navigation
+ * dengan iOS-like animations menggunakan motion-v, pull-to-refresh,
+ * staggered entrance, filter kategori, pencarian, dan bottom navigation
  *
  * @author Zulfikar Hidayatullah
  */
 import { Head, Link, router, usePage } from '@inertiajs/vue3'
+import { Motion, AnimatePresence } from 'motion-v'
 import { computed, ref } from 'vue'
 import { login, register } from '@/routes'
 import { dashboard } from '@/routes/admin'
@@ -22,6 +23,7 @@ import PullToRefresh from '@/components/mobile/PullToRefresh.vue'
 import { ShoppingBag, X, Menu } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { useHapticFeedback } from '@/composables/useHapticFeedback'
+import { springPresets } from '@/composables/useMotionV'
 
 /**
  * Interface untuk data produk dari ProductResource
@@ -267,6 +269,12 @@ function handleLogout() {
     haptic.medium()
     router.post('/logout')
 }
+
+/**
+ * Spring transition untuk iOS-like animations
+ */
+const springTransition = { type: 'spring' as const, ...springPresets.ios }
+const bouncyTransition = { type: 'spring' as const, ...springPresets.bouncy }
 </script>
 
 <template>
@@ -280,40 +288,24 @@ function handleLogout() {
         <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-border/30">
                 <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                     <!-- Logo & Brand dengan spring animation -->
-                    <div
-                        v-motion
+                <Motion
                         :initial="{ opacity: 0, x: -20 }"
-                        :enter="{
-                            opacity: 1,
-                            x: 0,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 25,
-                            },
-                        }"
+                    :animate="{ opacity: 1, x: 0 }"
+                    :transition="springTransition"
                         class="flex items-center gap-2 sm:gap-3"
                     >
                         <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm sm:h-10 sm:w-10">
                             <ShoppingBag class="h-4 w-4 text-primary-foreground sm:h-5 sm:w-5" />
                         </div>
                         <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
-                    </div>
+                </Motion>
 
                     <!-- Desktop Navigation dengan fade in -->
-                    <nav
-                        v-motion
+                <Motion
                         :initial="{ opacity: 0, x: 20 }"
-                        :enter="{
-                            opacity: 1,
-                            x: 0,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 25,
-                                delay: 100,
-                            },
-                        }"
+                    :animate="{ opacity: 1, x: 0 }"
+                    :transition="{ ...springTransition, delay: 0.1 }"
+                    tag="nav"
                         class="hidden items-center gap-3 sm:flex"
                     >
                         <CartCounter :count="cartTotalItems" />
@@ -354,16 +346,19 @@ function handleLogout() {
                                 Daftar
                             </Link>
                         </template>
-                    </nav>
+                </Motion>
 
                     <!-- Mobile Navigation -->
                     <div class="flex items-center gap-2 sm:hidden">
                         <CartCounter :count="cartTotalItems" />
+                    <Motion
+                        :animate="{ scale: isMenuPressed ? 0.9 : 1 }"
+                        :transition="{ type: 'spring', ...springPresets.snappy }"
+                    >
                         <Button
                             variant="ghost"
                             size="icon"
-                            class="h-11 w-11 transition-transform duration-150 ease-[var(--ios-spring-snappy)]"
-                            :class="{ 'scale-90': isMenuPressed }"
+                            class="h-11 w-11"
                             aria-label="Menu navigasi"
                             @click="toggleMobileMenu"
                             @mousedown="isMenuPressed = true"
@@ -374,23 +369,21 @@ function handleLogout() {
                         >
                             <Menu class="h-5 w-5" />
                         </Button>
+                    </Motion>
                     </div>
                 </div>
 
                 <!-- Mobile Menu Dropdown dengan slide animation -->
-                <Transition
-                    enter-active-class="transition-all duration-300 ease-[var(--ios-spring-smooth)]"
-                    enter-from-class="opacity-0 -translate-y-2"
-                    enter-to-class="opacity-100 translate-y-0"
-                    leave-active-class="transition-all duration-200 ease-[var(--ios-spring-snappy)]"
-                    leave-from-class="opacity-100 translate-y-0"
-                    leave-to-class="opacity-0 -translate-y-2"
-                >
-                    <div
-                        v-if="isMobileMenuOpen"
-                        class="border-t border-border/50 bg-background/95 px-4 py-4 backdrop-blur sm:hidden"
+            <AnimatePresence>
+                <Motion
+                    v-if="isMobileMenuOpen"
+                    :initial="{ opacity: 0, y: -10, height: 0 }"
+                    :animate="{ opacity: 1, y: 0, height: 'auto' }"
+                    :exit="{ opacity: 0, y: -10, height: 0 }"
+                    :transition="springTransition"
+                    class="overflow-hidden border-t border-border/50 bg-background/95 backdrop-blur sm:hidden"
                     >
-                        <div class="flex flex-col gap-2">
+                    <div class="flex flex-col gap-2 px-4 py-4">
                             <template v-if="$page.props.auth.user">
                                 <Link
                                     v-if="isAdmin"
@@ -426,8 +419,8 @@ function handleLogout() {
                                 </Link>
                             </template>
                         </div>
-                    </div>
-                </Transition>
+                </Motion>
+            </AnimatePresence>
             </header>
 
             <!-- Spacer untuk fixed header -->
@@ -437,19 +430,10 @@ function handleLogout() {
             <PullToRefresh>
             <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
                 <!-- Search Bar Section dengan slide up animation -->
-                <div
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, y: 20 }"
-                    :enter="{
-                        opacity: 1,
-                        y: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 50,
-                        },
-                    }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springTransition, delay: 0.05 }"
                     class="mb-5 sm:mb-6"
                 >
                     <SearchBar
@@ -459,22 +443,13 @@ function handleLogout() {
                         class="w-full sm:max-w-md"
                         @search="handleSearch"
                     />
-                </div>
+                </Motion>
 
                 <!-- Page Title dengan slide up animation -->
-                <div
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, y: 20 }"
-                    :enter="{
-                        opacity: 1,
-                        y: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 100,
-                        },
-                    }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springTransition, delay: 0.1 }"
                     class="mb-5 sm:mb-6"
                 >
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -487,19 +462,15 @@ function handleLogout() {
                             </p>
                         </div>
                         <!-- Clear Search Button dengan spring animation -->
-                        <Button
+                        <AnimatePresence>
+                            <Motion
                             v-if="props.searchQuery"
-                            v-motion
                             :initial="{ scale: 0, opacity: 0 }"
-                            :enter="{
-                                scale: 1,
-                                opacity: 1,
-                                transition: {
-                                    type: 'spring',
-                                    stiffness: 400,
-                                    damping: 20,
-                                },
-                            }"
+                                :animate="{ scale: 1, opacity: 1 }"
+                                :exit="{ scale: 0, opacity: 0 }"
+                                :transition="bouncyTransition"
+                            >
+                                <Button
                             variant="outline"
                             size="default"
                             class="ios-button flex h-11 w-full items-center justify-center gap-2 rounded-xl sm:h-10 sm:w-auto"
@@ -508,24 +479,17 @@ function handleLogout() {
                             <X class="h-4 w-4" />
                             Hapus Pencarian
                         </Button>
+                            </Motion>
+                        </AnimatePresence>
                     </div>
-                </div>
+                </Motion>
 
                 <!-- Category Filter dengan iOS horizontal scroll -->
-                <div
+                <Motion
                     v-if="categories.data.length > 0"
-                    v-motion
                     :initial="{ opacity: 0, y: 20 }"
-                    :enter="{
-                        opacity: 1,
-                        y: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 150,
-                        },
-                    }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springTransition, delay: 0.15 }"
                     class="mb-6 sm:mb-8"
                 >
                     <CategoryFilter
@@ -533,7 +497,7 @@ function handleLogout() {
                         :active-category="selectedCategory"
                         @select="handleCategorySelect"
                     />
-                </div>
+                </Motion>
 
                 <!-- Products Grid dengan staggered animations -->
                 <div
@@ -550,29 +514,22 @@ function handleLogout() {
                 </div>
 
                 <!-- Empty State dengan fade animation -->
-                <div
+                <AnimatePresence>
+                    <Motion
                     v-if="products.data.length === 0"
-                    v-motion
                     :initial="{ opacity: 0, scale: 0.95 }"
-                    :enter="{
-                        opacity: 1,
-                        scale: 1,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 200,
-                        },
-                    }"
+                        :animate="{ opacity: 1, scale: 1 }"
+                        :exit="{ opacity: 0, scale: 0.95 }"
+                        :transition="{ ...springTransition, delay: 0.2 }"
                 >
                     <EmptyState
                         :icon="props.searchQuery ? '🔍' : '🛒'"
                         :title="emptyStateTitle"
                         :description="emptyStateDescription"
                     />
-                </div>
+                    </Motion>
+                </AnimatePresence>
             </main>
-
             </PullToRefresh>
             
             <!-- Footer - Hidden on mobile karena ada bottom nav, sticky di bottom pada large screen -->

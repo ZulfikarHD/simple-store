@@ -1,18 +1,26 @@
 <script setup lang="ts">
 /**
  * AuthSimpleLayout - Layout untuk halaman autentikasi
- * Dengan iOS-like design, spring animations, dan glass effects
+ * Dengan iOS-like design menggunakan motion-v, spring animations, dan glass effects
  *
  * @author Zulfikar Hidayatullah
  */
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
-import { home } from '@/routes';
-import { Link } from '@inertiajs/vue3';
+import { Motion } from 'motion-v'
+import AppLogoIcon from '@/components/AppLogoIcon.vue'
+import { home } from '@/routes'
+import { Link } from '@inertiajs/vue3'
+import { springPresets } from '@/composables/useMotionV'
 
 defineProps<{
-    title?: string;
-    description?: string;
-}>();
+    title?: string
+    description?: string
+}>()
+
+/**
+ * Spring transitions untuk iOS-like animations
+ */
+const springTransition = { type: 'spring' as const, ...springPresets.ios }
+const bouncyTransition = { type: 'spring' as const, ...springPresets.bouncy }
 </script>
 
 <template>
@@ -30,41 +38,25 @@ defineProps<{
             />
         </div>
 
-        <!-- Main content -->
-        <div
-            v-motion
+        <!-- Main content dengan spring animation -->
+        <Motion
             :initial="{ opacity: 0, y: 30, scale: 0.95 }"
-            :enter="{
-                opacity: 1,
-                y: 0,
-                scale: 1,
-                transition: {
-                    type: 'spring',
-                    stiffness: 300,
-                    damping: 25,
-                },
-            }"
+            :animate="{ opacity: 1, y: 0, scale: 1 }"
+            :transition="springTransition"
             class="relative w-full max-w-sm"
         >
             <!-- iOS-style card container -->
             <div class="ios-card rounded-3xl border border-border/50 bg-card/80 p-8 shadow-xl backdrop-blur-xl sm:p-10">
                 <div class="flex flex-col gap-8">
-                    <!-- Logo section with animation -->
+                    <!-- Logo section with bouncy animation -->
                     <div class="flex flex-col items-center gap-4">
-                        <Link
-                            :href="home()"
-                            v-motion
+                        <Motion
                             :initial="{ scale: 0, rotate: -180 }"
-                            :enter="{
-                                scale: 1,
-                                rotate: 0,
-                                transition: {
-                                    type: 'spring',
-                                    stiffness: 400,
-                                    damping: 15,
-                                    delay: 100,
-                                },
-                            }"
+                            :animate="{ scale: 1, rotate: 0 }"
+                            :transition="{ ...bouncyTransition, delay: 0.1 }"
+                        >
+                            <Link
+                                :href="home()"
                             class="ios-button flex flex-col items-center gap-2 font-medium"
                         >
                             <div
@@ -76,81 +68,52 @@ defineProps<{
                             </div>
                             <span class="sr-only">{{ title }}</span>
                         </Link>
+                        </Motion>
 
                         <!-- Title and description with staggered animation -->
                         <div class="space-y-2 text-center">
-                            <h1
-                                v-motion
+                            <Motion
+                                tag="h1"
                                 :initial="{ opacity: 0, y: 10 }"
-                                :enter="{
-                                    opacity: 1,
-                                    y: 0,
-                                    transition: {
-                                        type: 'spring',
-                                        stiffness: 300,
-                                        damping: 25,
-                                        delay: 200,
-                                    },
-                                }"
+                                :animate="{ opacity: 1, y: 0 }"
+                                :transition="{ ...springTransition, delay: 0.2 }"
                                 class="text-2xl font-bold tracking-tight text-foreground"
                             >
                                 {{ title }}
-                            </h1>
-                            <p
-                                v-motion
+                            </Motion>
+                            <Motion
+                                tag="p"
                                 :initial="{ opacity: 0, y: 10 }"
-                                :enter="{
-                                    opacity: 1,
-                                    y: 0,
-                                    transition: {
-                                        type: 'spring',
-                                        stiffness: 300,
-                                        damping: 25,
-                                        delay: 250,
-                                    },
-                                }"
+                                :animate="{ opacity: 1, y: 0 }"
+                                :transition="{ ...springTransition, delay: 0.25 }"
                                 class="text-center text-sm text-muted-foreground"
                             >
                                 {{ description }}
-                            </p>
+                            </Motion>
                         </div>
                     </div>
 
                     <!-- Form slot with animation -->
-                    <div
-                        v-motion
+                    <Motion
                         :initial="{ opacity: 0, y: 20 }"
-                        :enter="{
-                            opacity: 1,
-                            y: 0,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 25,
-                                delay: 300,
-                            },
-                        }"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springTransition, delay: 0.3 }"
                     >
                         <slot />
-                    </div>
+                    </Motion>
                 </div>
             </div>
 
             <!-- Footer branding -->
-            <p
-                v-motion
+            <Motion
+                tag="p"
                 :initial="{ opacity: 0 }"
-                :enter="{
-                    opacity: 1,
-                    transition: {
-                        delay: 500,
-                        duration: 300,
-                    },
-                }"
+                :animate="{ opacity: 1 }"
+                :transition="{ delay: 0.5, duration: 0.3 }"
                 class="mt-6 text-center text-xs text-muted-foreground/60"
             >
                 &copy; {{ new Date().getFullYear() }} Simple Store
-            </p>
-        </div>
+            </Motion>
+        </Motion>
     </div>
 </template>

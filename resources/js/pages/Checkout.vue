@@ -1,13 +1,15 @@
 <script setup lang="ts">
 /**
  * Checkout Page - Halaman Checkout
- * Menampilkan form data customer dengan iOS-like form animations,
- * spring transitions, haptic feedback, dan success celebration state
+ * Menampilkan form data customer dengan iOS-like form animations
+ * menggunakan motion-v, spring transitions, haptic feedback,
+ * dan success celebration state
  *
  * @author Zulfikar Hidayatullah
  */
 import { Head, Link } from '@inertiajs/vue3'
 import { Form } from '@inertiajs/vue3'
+import { Motion, AnimatePresence } from 'motion-v'
 import { computed, ref } from 'vue'
 import { show as showCart } from '@/routes/cart'
 import { store as checkoutStore } from '@/actions/App/Http/Controllers/CheckoutController'
@@ -17,7 +19,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useHapticFeedback } from '@/composables/useHapticFeedback'
-import { useShakeAnimation } from '@/composables/useSpringAnimation'
+import { useShakeAnimation, springPresets } from '@/composables/useMotionV'
 import {
     ShoppingBag,
     ArrowLeft,
@@ -127,6 +129,13 @@ function handleFieldFocus(fieldName: string) {
 function handleFieldBlur() {
     focusedField.value = null
 }
+
+/**
+ * Spring transitions untuk iOS-like animations
+ */
+const springTransition = { type: 'spring' as const, ...springPresets.ios }
+const bouncyTransition = { type: 'spring' as const, ...springPresets.bouncy }
+const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
 </script>
 
 <template>
@@ -140,26 +149,19 @@ function handleFieldBlur() {
         <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-border/30">
             <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                 <!-- Logo & Brand -->
-                <Link
+                <Motion
+                    tag="a"
                     href="/"
-                    v-motion
                     :initial="{ opacity: 0, x: -20 }"
-                    :enter="{
-                        opacity: 1,
-                        x: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                        },
-                    }"
+                    :animate="{ opacity: 1, x: 0 }"
+                    :transition="springTransition"
                     class="flex items-center gap-2 sm:gap-3"
                 >
                     <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm sm:h-10 sm:w-10">
                         <ShoppingBag class="h-4 w-4 text-primary-foreground sm:h-5 sm:w-5" />
                     </div>
                     <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
-                </Link>
+                </Motion>
 
                 <!-- Cart Counter & Auth -->
                 <nav class="flex items-center gap-2 sm:gap-3">
@@ -196,21 +198,18 @@ function handleFieldBlur() {
         <!-- Main Content -->
         <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
             <!-- Back Button dengan iOS press feedback -->
-            <Link
-                :href="showCart()"
-                v-motion
+            <Motion
                 :initial="{ opacity: 0, x: -20 }"
-                :enter="{
-                    opacity: 1,
-                    x: 0,
-                    transition: {
-                        type: 'spring',
-                        stiffness: 300,
-                        damping: 25,
-                    },
-                }"
-                class="ios-button mb-4 inline-flex h-11 items-center gap-2 rounded-xl px-3 text-sm text-muted-foreground transition-all duration-150 hover:bg-accent hover:text-foreground sm:mb-6 sm:h-auto sm:px-0"
-                :class="{ 'scale-95 opacity-70': isBackPressed }"
+                :animate="{ opacity: 1, x: 0 }"
+                :transition="springTransition"
+            >
+                <Motion
+                    :animate="{ scale: isBackPressed ? 0.95 : 1, opacity: isBackPressed ? 0.7 : 1 }"
+                    :transition="snappyTransition"
+                >
+                    <Link
+                        :href="showCart()"
+                        class="ios-button mb-4 inline-flex h-11 items-center gap-2 rounded-xl px-3 text-sm text-muted-foreground hover:bg-accent hover:text-foreground sm:mb-6 sm:h-auto sm:px-0"
                 @mousedown="isBackPressed = true"
                 @mouseup="isBackPressed = false"
                 @mouseleave="isBackPressed = false"
@@ -220,21 +219,14 @@ function handleFieldBlur() {
                 <ArrowLeft class="h-4 w-4" />
                 Kembali ke Keranjang
             </Link>
+                </Motion>
+            </Motion>
 
             <!-- Page Title dengan animation -->
-            <div
-                v-motion
+            <Motion
                 :initial="{ opacity: 0, y: 20 }"
-                :enter="{
-                    opacity: 1,
-                    y: 0,
-                    transition: {
-                        type: 'spring',
-                        stiffness: 300,
-                        damping: 25,
-                        delay: 50,
-                    },
-                }"
+                :animate="{ opacity: 1, y: 0 }"
+                :transition="{ ...springTransition, delay: 0.05 }"
                 class="mb-6 sm:mb-8"
             >
                 <h1 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
@@ -243,31 +235,25 @@ function handleFieldBlur() {
                 <p class="mt-1 text-sm text-muted-foreground sm:mt-2 sm:text-base">
                     Lengkapi data pengiriman untuk melanjutkan pesanan
                 </p>
-            </div>
+            </Motion>
 
             <!-- Checkout Form dengan iOS styling -->
             <Form
                 v-bind="checkoutStore.form()"
                 #default="{ errors, processing, hasErrors }"
                 class="grid gap-6 lg:grid-cols-3 lg:gap-8"
-                @submit="hasErrors && handleFormError()"
+                @error="handleFormError"
             >
                 <!-- Form Fields -->
                 <div class="space-y-4 sm:space-y-6 lg:col-span-2">
                     <!-- Error Alert dengan shake animation -->
-                    <div
+                    <AnimatePresence>
+                        <Motion
                         v-if="hasErrors && errors.checkout"
-                        v-motion
                         :initial="{ opacity: 0, scale: 0.95 }"
-                        :enter="{
-                            opacity: 1,
-                            scale: 1,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 400,
-                                damping: 20,
-                            },
-                        }"
+                            :animate="{ opacity: 1, scale: 1 }"
+                            :exit="{ opacity: 0, scale: 0.95 }"
+                            :transition="bouncyTransition"
                         :class="shakeClass"
                         class="rounded-2xl border border-destructive/50 bg-destructive/10 p-4"
                     >
@@ -275,22 +261,14 @@ function handleFieldBlur() {
                             <AlertCircle class="h-5 w-5 shrink-0" />
                             <span class="text-sm font-medium sm:text-base">{{ errors.checkout }}</span>
                         </div>
-                    </div>
+                        </Motion>
+                    </AnimatePresence>
 
                     <!-- Data Penerima Section -->
-                    <div
-                        v-motion
+                    <Motion
                         :initial="{ opacity: 0, y: 20 }"
-                        :enter="{
-                            opacity: 1,
-                            y: 0,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 25,
-                                delay: 100,
-                            },
-                        }"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springTransition, delay: 0.1 }"
                         class="ios-card rounded-2xl border border-border/50 p-4 sm:p-6"
                     >
                         <h2 class="mb-4 flex items-center gap-2 text-base font-semibold text-foreground sm:mb-6 sm:text-lg">
@@ -302,9 +280,9 @@ function handleFieldBlur() {
                             <!-- Nama Lengkap dengan iOS-like focus animation -->
                             <div class="space-y-2">
                                 <Label for="customer_name" class="text-sm sm:text-base">Nama Lengkap *</Label>
-                                <div
-                                    class="transition-transform duration-200"
-                                    :class="{ 'scale-[1.02]': focusedField === 'customer_name' }"
+                                <Motion
+                                    :animate="{ scale: focusedField === 'customer_name' ? 1.02 : 1 }"
+                                    :transition="snappyTransition"
                                 >
                                     <Input
                                         id="customer_name"
@@ -316,7 +294,7 @@ function handleFieldBlur() {
                                         @focus="handleFieldFocus('customer_name')"
                                         @blur="handleFieldBlur"
                                     />
-                                </div>
+                                </Motion>
                                 <p v-if="errors.customer_name" class="animate-ios-shake text-sm text-destructive">
                                     {{ errors.customer_name }}
                                 </p>
@@ -327,9 +305,9 @@ function handleFieldBlur() {
                                 <Label for="customer_phone" class="text-sm sm:text-base">
                                     Nomor Telepon (WhatsApp) *
                                 </Label>
-                                <div
-                                    class="transition-transform duration-200"
-                                    :class="{ 'scale-[1.02]': focusedField === 'customer_phone' }"
+                                <Motion
+                                    :animate="{ scale: focusedField === 'customer_phone' ? 1.02 : 1 }"
+                                    :transition="snappyTransition"
                                 >
                                     <Input
                                         id="customer_phone"
@@ -342,7 +320,7 @@ function handleFieldBlur() {
                                         @focus="handleFieldFocus('customer_phone')"
                                         @blur="handleFieldBlur"
                                     />
-                                </div>
+                                </Motion>
                                 <p v-if="errors.customer_phone" class="animate-ios-shake text-sm text-destructive">
                                     {{ errors.customer_phone }}
                                 </p>
@@ -351,22 +329,13 @@ function handleFieldBlur() {
                                 </p>
                             </div>
                         </div>
-                    </div>
+                    </Motion>
 
                     <!-- Alamat Pengiriman Section -->
-                    <div
-                        v-motion
+                    <Motion
                         :initial="{ opacity: 0, y: 20 }"
-                        :enter="{
-                            opacity: 1,
-                            y: 0,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 25,
-                                delay: 150,
-                            },
-                        }"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springTransition, delay: 0.15 }"
                         class="ios-card rounded-2xl border border-border/50 p-4 sm:p-6"
                     >
                         <h2 class="mb-4 flex items-center gap-2 text-base font-semibold text-foreground sm:mb-6 sm:text-lg">
@@ -378,9 +347,9 @@ function handleFieldBlur() {
                             <!-- Alamat Lengkap -->
                             <div class="space-y-2">
                                 <Label for="customer_address" class="text-sm sm:text-base">Alamat Lengkap *</Label>
-                                <div
-                                    class="transition-transform duration-200"
-                                    :class="{ 'scale-[1.01]': focusedField === 'customer_address' }"
+                                <Motion
+                                    :animate="{ scale: focusedField === 'customer_address' ? 1.01 : 1 }"
+                                    :transition="snappyTransition"
                                 >
                                     <textarea
                                         id="customer_address"
@@ -392,7 +361,7 @@ function handleFieldBlur() {
                                         @focus="handleFieldFocus('customer_address')"
                                         @blur="handleFieldBlur"
                                     ></textarea>
-                                </div>
+                                </Motion>
                                 <p v-if="errors.customer_address" class="animate-ios-shake text-sm text-destructive">
                                     {{ errors.customer_address }}
                                 </p>
@@ -403,9 +372,9 @@ function handleFieldBlur() {
                                 <Label for="notes" class="text-sm sm:text-base">
                                     Catatan (Opsional)
                                 </Label>
-                                <div
-                                    class="transition-transform duration-200"
-                                    :class="{ 'scale-[1.01]': focusedField === 'notes' }"
+                                <Motion
+                                    :animate="{ scale: focusedField === 'notes' ? 1.01 : 1 }"
+                                    :transition="snappyTransition"
                                 >
                                     <textarea
                                         id="notes"
@@ -417,29 +386,20 @@ function handleFieldBlur() {
                                         @focus="handleFieldFocus('notes')"
                                         @blur="handleFieldBlur"
                                     ></textarea>
-                                </div>
+                                </Motion>
                                 <p v-if="errors.notes" class="animate-ios-shake text-sm text-destructive">
                                     {{ errors.notes }}
                                 </p>
                             </div>
                         </div>
-                    </div>
+                    </Motion>
                 </div>
 
                 <!-- Order Summary -->
-                <div
-                    v-motion
+                <Motion
                     :initial="{ opacity: 0, x: 20 }"
-                    :enter="{
-                        opacity: 1,
-                        x: 0,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                            delay: 200,
-                        },
-                    }"
+                    :animate="{ opacity: 1, x: 0 }"
+                    :transition="{ ...springTransition, delay: 0.2 }"
                     class="lg:col-span-1"
                 >
                     <div class="ios-card sticky top-24 rounded-2xl border border-border/50 p-6">
@@ -450,21 +410,12 @@ function handleFieldBlur() {
 
                         <!-- Items List dengan scroll -->
                         <div class="ios-scroll mb-4 max-h-64 space-y-3 overflow-y-auto">
-                            <div
+                            <Motion
                                 v-for="(item, index) in cart.items"
                                 :key="item.id"
-                                v-motion
                                 :initial="{ opacity: 0, y: 10 }"
-                                :enter="{
-                                    opacity: 1,
-                                    y: 0,
-                                    transition: {
-                                        type: 'spring',
-                                        stiffness: 300,
-                                        damping: 25,
-                                        delay: 250 + index * 50,
-                                    },
-                                }"
+                                :animate="{ opacity: 1, y: 0 }"
+                                :transition="{ ...springTransition, delay: 0.25 + index * 0.05 }"
                                 class="flex items-center gap-3 rounded-xl bg-muted/30 p-3"
                             >
                                 <!-- Product Image -->
@@ -494,7 +445,7 @@ function handleFieldBlur() {
                                 <p class="text-sm font-medium text-foreground">
                                     {{ formatPrice(item.subtotal) }}
                                 </p>
-                            </div>
+                            </Motion>
                         </div>
 
                         <hr class="my-4 border-border" />
@@ -520,11 +471,14 @@ function handleFieldBlur() {
                         </div>
 
                         <!-- Submit Button dengan iOS-like animation -->
+                        <Motion
+                            :animate="{ scale: isSubmitPressed ? 0.95 : 1 }"
+                            :transition="snappyTransition"
+                        >
                         <Button
                             type="submit"
                             size="lg"
-                            class="ios-button mt-6 h-14 w-full gap-2 rounded-2xl shadow-lg transition-transform duration-150"
-                            :class="{ 'scale-95': isSubmitPressed }"
+                                class="ios-button mt-6 h-14 w-full gap-2 rounded-2xl shadow-lg"
                             :disabled="processing"
                             @mousedown="isSubmitPressed = true"
                             @mouseup="isSubmitPressed = false"
@@ -536,13 +490,14 @@ function handleFieldBlur() {
                             <CheckCircle v-else class="h-5 w-5" />
                             <span>{{ processing ? 'Memproses...' : 'Pesan via WhatsApp' }}</span>
                         </Button>
+                        </Motion>
 
                         <!-- Info -->
                         <p class="mt-4 text-center text-xs text-muted-foreground">
                             Dengan memesan, Anda akan diarahkan ke WhatsApp untuk konfirmasi pesanan
                         </p>
                     </div>
-                </div>
+                </Motion>
             </Form>
         </main>
 

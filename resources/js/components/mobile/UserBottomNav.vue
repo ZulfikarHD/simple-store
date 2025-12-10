@@ -1,17 +1,19 @@
 <script setup lang="ts">
 /**
  * UserBottomNav Component
- * iOS-style bottom navigation dengan spring animations,
+ * iOS-style bottom navigation dengan motion-v spring animations,
  * haptic feedback, dan badge bounce animations
  *
  * @author Zulfikar Hidayatullah
  */
 import { computed, ref, watch } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
+import { Motion, AnimatePresence } from 'motion-v'
 import { Badge } from '@/components/ui/badge'
 import { home } from '@/routes'
 import { show as cartShow } from '@/routes/cart'
 import { useHapticFeedback } from '@/composables/useHapticFeedback'
+import { springPresets } from '@/composables/useMotionV'
 import {
     Home,
     ShoppingCart,
@@ -90,7 +92,8 @@ const navItems = computed(() => [
 /**
  * Handle press start dengan haptic feedback
  */
-function handlePressStart() {
+function handlePressStart(itemId: string) {
+    pressedItem.value = itemId
     haptic.light()
 }
 
@@ -107,6 +110,12 @@ function handlePressEnd() {
 function handleNavigation() {
     haptic.medium()
 }
+
+/**
+ * Spring transitions untuk iOS-like animations
+ */
+const bouncyTransition = { type: 'spring' as const, ...springPresets.bouncy }
+const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
 </script>
 
 <template>
@@ -119,12 +128,11 @@ function handleNavigation() {
                 v-for="item in navItems"
                 :key="item.id"
                 :href="item.href"
-                class="relative flex flex-1 flex-col items-center gap-1 py-3 transition-all duration-150 ease-[var(--ios-spring-snappy)]"
+                class="relative flex flex-1 flex-col items-center gap-1 py-3"
                 :class="[
                     item.isActive
                         ? 'text-primary'
                         : 'text-muted-foreground',
-                    pressedItem === item.id ? 'scale-90 opacity-70' : 'scale-100 opacity-100',
                 ]"
                 @mousedown="handlePressStart(item.id)"
                 @mouseup="handlePressEnd"
@@ -134,11 +142,15 @@ function handleNavigation() {
                 @touchcancel="handlePressEnd"
                 @click="handleNavigation()"
             >
-                <!-- Icon Container with Spring Animation -->
-                <div
-                    class="relative transition-transform duration-200 ease-[var(--ios-spring-bounce)]"
-                    :class="{ 'scale-110': item.isActive }"
+                <Motion
+                    :animate="{
+                        scale: pressedItem === item.id ? 0.9 : (item.isActive ? 1.1 : 1),
+                        opacity: pressedItem === item.id ? 0.7 : 1,
+                    }"
+                    :transition="snappyTransition"
+                    class="relative"
                 >
+                    <!-- Icon Container -->
                     <component
                         :is="item.icon"
                         class="h-6 w-6 transition-colors duration-200"
@@ -151,26 +163,25 @@ function handleNavigation() {
                     />
 
                     <!-- Badge dengan bounce animation -->
-                    <Badge
+                    <AnimatePresence>
+                        <Motion
                         v-if="item.badge && item.badge > 0"
-                        v-motion
                         :initial="{ scale: 0 }"
-                        :enter="{
-                            scale: 1,
-                            transition: {
-                                type: 'spring',
-                                stiffness: 500,
-                                damping: 15,
-                            },
-                        }"
-                        class="absolute -right-2.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground shadow-sm ring-2 ring-background transition-transform duration-300"
-                        :class="{
-                            'animate-ios-badge': badgeBounce && item.id === 'cart',
-                        }"
+                            :animate="{
+                                scale: badgeBounce && item.id === 'cart' ? [1, 1.3, 1] : 1,
+                            }"
+                            :exit="{ scale: 0 }"
+                            :transition="bouncyTransition"
+                            class="absolute -right-2.5 -top-1.5"
+                        >
+                            <Badge
+                                class="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground shadow-sm ring-2 ring-background"
                     >
                         {{ item.badge > 99 ? '99+' : item.badge }}
                     </Badge>
-                </div>
+                        </Motion>
+                    </AnimatePresence>
+                </Motion>
 
                 <!-- Label dengan fade animation -->
                 <span
@@ -185,21 +196,16 @@ function handleNavigation() {
                 </span>
 
                 <!-- Active indicator dot -->
-                <div
+                <AnimatePresence>
+                    <Motion
                     v-if="item.isActive"
-                    v-motion
                     :initial="{ scale: 0, opacity: 0 }"
-                    :enter="{
-                        scale: 1,
-                        opacity: 1,
-                        transition: {
-                            type: 'spring',
-                            stiffness: 400,
-                            damping: 20,
-                        },
-                    }"
+                        :animate="{ scale: 1, opacity: 1 }"
+                        :exit="{ scale: 0, opacity: 0 }"
+                        :transition="bouncyTransition"
                     class="absolute -bottom-0.5 h-1 w-1 rounded-full bg-primary"
                 />
+                </AnimatePresence>
             </Link>
         </div>
     </nav>

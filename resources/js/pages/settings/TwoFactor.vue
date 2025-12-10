@@ -10,6 +10,8 @@ import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { disable, enable, show } from '@/routes/two-factor';
 import { BreadcrumbItem } from '@/types';
 import { Form, Head } from '@inertiajs/vue3';
+import { Motion } from 'motion-v';
+import { springPresets, staggerDelay } from '@/composables/useMotionV';
 import { ShieldBan, ShieldCheck } from 'lucide-vue-next';
 import { onUnmounted, ref } from 'vue';
 
@@ -43,16 +45,31 @@ onUnmounted(() => {
         <Head title="Two-Factor Authentication" />
         <SettingsLayout>
             <div class="space-y-6">
-                <HeadingSmall
-                    title="Two-Factor Authentication"
-                    description="Manage your two-factor authentication settings"
-                />
+                <Motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="springPresets.ios"
+                >
+                    <HeadingSmall
+                        title="Two-Factor Authentication"
+                        description="Manage your two-factor authentication settings"
+                    />
+                </Motion>
 
-                <div
+                <Motion
                     v-if="!twoFactorEnabled"
+                    :initial="{ opacity: 0, y: 20 }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
                     class="flex flex-col items-start justify-start space-y-4"
                 >
-                    <Badge variant="destructive">Disabled</Badge>
+                    <Motion
+                        :initial="{ opacity: 0, scale: 0.9 }"
+                        :animate="{ opacity: 1, scale: 1 }"
+                        :transition="springPresets.bouncy"
+                    >
+                        <Badge variant="destructive">Disabled</Badge>
+                    </Motion>
 
                     <p class="text-muted-foreground">
                         When you enable two-factor authentication, you will be
@@ -79,13 +96,22 @@ onUnmounted(() => {
                             ></Form
                         >
                     </div>
-                </div>
+                </Motion>
 
-                <div
+                <Motion
                     v-else
+                    :initial="{ opacity: 0, y: 20 }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
                     class="flex flex-col items-start justify-start space-y-4"
                 >
-                    <Badge variant="default">Enabled</Badge>
+                    <Motion
+                        :initial="{ opacity: 0, scale: 0.9 }"
+                        :animate="{ opacity: 1, scale: 1 }"
+                        :transition="springPresets.bouncy"
+                    >
+                        <Badge variant="default">Enabled</Badge>
+                    </Motion>
 
                     <p class="text-muted-foreground">
                         With two-factor authentication enabled, you will be
@@ -108,7 +134,7 @@ onUnmounted(() => {
                             </Button>
                         </Form>
                     </div>
-                </div>
+                </Motion>
 
                 <TwoFactorSetupModal
                     v-model:isOpen="showSetupModal"

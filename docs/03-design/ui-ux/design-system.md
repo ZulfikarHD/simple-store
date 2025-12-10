@@ -490,16 +490,53 @@ Gunakan shadows secara minimal untuk menciptakan depth tanpa berlebihan.
 
 ## ✨ Animations & Transitions
 
-### Duration Guidelines
+> **📖 Dokumentasi Lengkap:** Lihat [Animation System](animation-system.md) untuk panduan lengkap implementasi animasi dengan `motion-v`.
 
-| Duration | Value | Usage |
-|----------|-------|-------|
-| Fast | 150ms | Hover effects, color changes |
-| Normal | 200ms | Most interactions |
-| Smooth | 300ms | Card transitions, modals |
-| Slow | 500ms | Page transitions, hero |
+### iOS Spring Physics (Recommended)
 
-### Easing Functions
+Aplikasi ini menggunakan `motion-v` library dengan spring physics untuk animasi yang menyerupai iOS native:
+
+```typescript
+// resources/js/composables/useMotionV.ts
+import { Motion } from 'motion-v'
+import { springPresets, staggerDelay } from '@/composables/useMotionV'
+
+// Spring Presets
+springPresets.ios      // Default iOS-like spring
+springPresets.bouncy   // Playful bounce effect
+springPresets.snappy   // Quick micro-interactions
+springPresets.smooth   // Gentle transitions
+```
+
+### Usage Example
+
+```vue
+<Motion
+    :initial="{ opacity: 0, y: 20 }"
+    :animate="{ opacity: 1, y: 0 }"
+    :transition="springPresets.ios"
+>
+    <div>Animated Content</div>
+</Motion>
+```
+
+### Staggered List Animation
+
+```vue
+<Motion
+    v-for="(item, index) in items"
+    :key="item.id"
+    :initial="{ opacity: 0, x: -20 }"
+    :animate="{ opacity: 1, x: 0 }"
+    :transition="{ ...springPresets.ios, delay: staggerDelay(index) }"
+>
+    <div>{{ item.name }}</div>
+</Motion>
+```
+
+### CSS Fallback Animations
+
+Untuk elemen yang tidak memerlukan spring physics:
 
 ```css
 @theme {
@@ -509,40 +546,21 @@ Gunakan shadows secara minimal untuk menciptakan depth tanpa berlebihan.
 }
 ```
 
-### Common Animations
+### Press Feedback (iOS Standard)
+
+```html
+<!-- Scale down to 0.97 on press -->
+<button class="
+  transition-transform duration-150
+  active:scale-[0.97]
+">
+  Press Me
+</button>
+```
+
+### Skeleton Loading
 
 ```css
-/* Fade In */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Slide Up */
-@keyframes slideUp {
-  from { 
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to { 
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Scale In */
-@keyframes scaleIn {
-  from { 
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to { 
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* Skeleton Loading */
 @keyframes shimmer {
   from { background-position: -200% 0; }
   to { background-position: 200% 0; }
@@ -553,31 +571,6 @@ Gunakan shadows secara minimal untuk menciptakan depth tanpa berlebihan.
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
-```
-
-### Micro-interactions
-
-```html
-<!-- Button Hover -->
-<button class="
-  transform hover:scale-[1.02] active:scale-[0.98]
-  transition-transform duration-150
-">
-  Click Me
-</button>
-
-<!-- Card Hover -->
-<div class="
-  transform hover:-translate-y-1
-  transition-all duration-300
-">
-  Card Content
-</div>
-
-<!-- Icon Spin on Load -->
-<svg class="animate-spin h-5 w-5 text-primary-500">
-  <!-- Spinner icon -->
-</svg>
 ```
 
 ---
@@ -1041,7 +1034,8 @@ Komponen dasar dari shadcn-vue di `resources/js/components/ui/`:
 
 ---
 
-*Document version: 1.2*  
-*Last updated: November 2024*  
-*Implementation: `resources/css/app.css`, `resources/js/components/store/`, `resources/js/pages/`*
+*Document version: 1.3*  
+*Author: Zulfikar Hidayatullah*  
+*Last updated: December 2024*  
+*Implementation: `resources/css/app.css`, `resources/js/components/store/`, `resources/js/pages/`, `resources/js/composables/useMotionV.ts`*
 

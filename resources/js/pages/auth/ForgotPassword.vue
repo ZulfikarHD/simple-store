@@ -9,6 +9,8 @@ import AuthLayout from '@/layouts/AuthLayout.vue';
 import { login } from '@/routes';
 import { email } from '@/routes/password';
 import { Form, Head } from '@inertiajs/vue3';
+import { Motion } from 'motion-v';
+import { springPresets, staggerDelay } from '@/composables/useMotionV';
 
 defineProps<{
     status?: string;
@@ -22,16 +24,24 @@ defineProps<{
     >
         <Head title="Forgot password" />
 
-        <div
+        <Motion
             v-if="status"
+            :initial="{ opacity: 0, y: -10 }"
+            :animate="{ opacity: 1, y: 0 }"
+            :transition="springPresets.bouncy"
             class="mb-4 text-center text-sm font-medium text-green-600"
         >
             {{ status }}
-        </div>
+        </Motion>
 
         <div class="space-y-6">
             <Form v-bind="email.form()" v-slot="{ errors, processing }">
-                <div class="grid gap-2">
+                <Motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(0) }"
+                    class="grid gap-2"
+                >
                     <Label for="email">Email address</Label>
                     <Input
                         id="email"
@@ -42,9 +52,14 @@ defineProps<{
                         placeholder="email@example.com"
                     />
                     <InputError :message="errors.email" />
-                </div>
+                </Motion>
 
-                <div class="my-6 flex items-center justify-start">
+                <Motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
+                    class="my-6 flex items-center justify-start"
+                >
                     <Button
                         class="w-full"
                         :disabled="processing"
@@ -53,13 +68,18 @@ defineProps<{
                         <Spinner v-if="processing" />
                         Email password reset link
                     </Button>
-                </div>
+                </Motion>
             </Form>
 
-            <div class="space-x-1 text-center text-sm text-muted-foreground">
+            <Motion
+                :initial="{ opacity: 0 }"
+                :animate="{ opacity: 1 }"
+                :transition="{ ...springPresets.smooth, delay: staggerDelay(2) }"
+                class="space-x-1 text-center text-sm text-muted-foreground"
+            >
                 <span>Or, return to</span>
                 <TextLink :href="login()">log in</TextLink>
-            </div>
+            </Motion>
         </div>
     </AuthLayout>
 </template>
