@@ -379,7 +379,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                         :initial="{ scale: 1.1, opacity: 0 }"
                         :animate="{ scale: 1, opacity: 1 }"
                         :transition="bouncyTransition"
-                        class="text-base font-bold text-primary sm:text-lg"
+                        class="price-tag text-base font-bold sm:text-lg"
                     >
                         {{ formattedSubtotal }}
                     </Motion>

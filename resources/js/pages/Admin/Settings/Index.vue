@@ -1,17 +1,15 @@
 <script setup lang="ts">
 /**
  * Admin Store Settings Page
- * Halaman pengaturan toko dengan form konfigurasi, yaitu:
- * - Informasi umum toko (nama, alamat, telepon)
- * - Konfigurasi WhatsApp bisnis
- * - Jam operasional per hari
- * - Pengaturan delivery (area, biaya, minimum order)
- * - iOS-like design dengan spring animations dan haptic feedback
+ * Halaman pengaturan toko dengan iOS-style premium design, yaitu:
+ * - Premium form sections untuk informasi toko
+ * - iOS-style WhatsApp configuration
+ * - Elegant jam operasional dengan toggles
+ * - Premium delivery settings dengan area tags
  *
  * @author Zulfikar Hidayatullah
  */
 import AppLayout from '@/layouts/AppLayout.vue'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -32,6 +30,11 @@ import {
     Save,
     Plus,
     X,
+    MapPin,
+    Phone,
+    Building2,
+    Wallet,
+    ShoppingBag,
 } from 'lucide-vue-next'
 import { ref, computed } from 'vue'
 import { Motion } from 'motion-v'
@@ -179,22 +182,20 @@ function submitForm() {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <PullToRefresh>
-            <div class="flex flex-col gap-6 p-4 md:p-6">
-                <!-- Page Header dengan spring animation -->
+            <div class="admin-page flex flex-col gap-6 p-4 md:p-6">
+                <!-- Page Header -->
                 <Motion
                     :initial="{ opacity: 0, y: 20 }"
                     :animate="{ opacity: 1, y: 0 }"
                     :transition="springPresets.ios"
-                    class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+                    class="flex flex-col gap-1"
                 >
-                    <div class="flex flex-col gap-2">
-                        <h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-                            Pengaturan Toko
-                        </h1>
-                        <p class="text-muted-foreground">
-                            Kelola informasi dan konfigurasi toko Anda
-                        </p>
-                    </div>
+                    <h1 class="text-2xl font-bold tracking-tight md:text-3xl">
+                        Pengaturan Toko
+                    </h1>
+                    <p class="text-muted-foreground">
+                        Kelola informasi dan konfigurasi toko Anda
+                    </p>
                 </Motion>
 
                 <!-- Flash Messages -->
@@ -208,7 +209,7 @@ function submitForm() {
                 >
                     <div
                         v-if="flashSuccess"
-                        class="rounded-xl border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200"
+                        class="rounded-2xl border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200"
                     >
                         {{ flashSuccess }}
                     </div>
@@ -223,7 +224,7 @@ function submitForm() {
                 >
                     <div
                         v-if="flashError"
-                        class="rounded-xl border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200"
+                        class="rounded-2xl border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200"
                     >
                         {{ flashError }}
                     </div>
@@ -231,307 +232,317 @@ function submitForm() {
 
                 <!-- Form -->
                 <form @submit.prevent="submitForm" class="grid gap-6 lg:grid-cols-3">
-                    <!-- Main Content (2 columns) -->
-                    <div class="lg:col-span-2 flex flex-col gap-6">
-                        <!-- Store Information Card -->
+                    <!-- Main Content -->
+                    <div class="flex flex-col gap-6 lg:col-span-2">
+                        <!-- Store Information -->
                         <Motion
                             :initial="{ opacity: 0, y: 20 }"
                             :animate="{ opacity: 1, y: 0 }"
                             :transition="{ ...springPresets.ios, delay: staggerDelay(0) }"
                         >
-                            <Card class="ios-card">
-                            <CardHeader>
-                                <CardTitle class="flex items-center gap-2">
-                                    <Store class="h-5 w-5" />
-                                    Informasi Toko
-                                </CardTitle>
-                                <CardDescription>
-                                    Informasi dasar toko yang akan ditampilkan ke customer
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent class="flex flex-col gap-4">
-                                <!-- Store Name -->
-                                <div class="flex flex-col gap-2">
-                                    <Label for="store_name">Nama Toko *</Label>
-                                    <Input
-                                        id="store_name"
-                                        v-model="form.store_name"
-                                        type="text"
-                                        placeholder="Masukkan nama toko"
-                                        class="ios-input"
-                                        :class="{ 'border-destructive': errors.store_name }"
-                                    />
-                                    <InputError :message="errors.store_name" />
+                            <div class="admin-form-section">
+                                <div class="admin-form-section-header">
+                                    <h3>
+                                        <Building2 />
+                                        Informasi Toko
+                                    </h3>
                                 </div>
+                                <div class="admin-form-section-content">
+                                    <div class="flex flex-col gap-5">
+                                        <!-- Store Name -->
+                                        <div class="admin-input-group">
+                                            <Label for="store_name" class="flex items-center gap-2">
+                                                <Store class="h-4 w-4 text-primary" />
+                                                Nama Toko *
+                                            </Label>
+                                            <Input
+                                                id="store_name"
+                                                v-model="form.store_name"
+                                                type="text"
+                                                placeholder="Masukkan nama toko"
+                                                class="admin-input"
+                                                :class="{ 'border-destructive': errors.store_name }"
+                                            />
+                                            <InputError :message="errors.store_name" />
+                                        </div>
 
-                                <!-- Store Address -->
-                                <div class="flex flex-col gap-2">
-                                    <Label for="store_address">Alamat Toko</Label>
-                                    <textarea
-                                        id="store_address"
-                                        v-model="form.store_address"
-                                        rows="3"
-                                        placeholder="Masukkan alamat lengkap toko"
-                                        class="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                        :class="{ 'border-destructive': errors.store_address }"
-                                    ></textarea>
-                                    <InputError :message="errors.store_address" />
-                                </div>
+                                        <!-- Store Address -->
+                                        <div class="admin-input-group">
+                                            <Label for="store_address" class="flex items-center gap-2">
+                                                <MapPin class="h-4 w-4 text-primary" />
+                                                Alamat Toko
+                                            </Label>
+                                            <textarea
+                                                id="store_address"
+                                                v-model="form.store_address"
+                                                rows="3"
+                                                placeholder="Masukkan alamat lengkap toko"
+                                                class="admin-textarea"
+                                                :class="{ 'border-destructive': errors.store_address }"
+                                            />
+                                            <InputError :message="errors.store_address" />
+                                        </div>
 
-                                <!-- Store Phone -->
-                                <div class="flex flex-col gap-2">
-                                    <Label for="store_phone">Nomor Telepon Toko</Label>
-                                    <Input
-                                        id="store_phone"
-                                        v-model="form.store_phone"
-                                        type="text"
-                                        placeholder="021-1234567"
-                                        class="ios-input"
-                                        :class="{ 'border-destructive': errors.store_phone }"
-                                    />
-                                    <InputError :message="errors.store_phone" />
+                                        <!-- Store Phone -->
+                                        <div class="admin-input-group">
+                                            <Label for="store_phone" class="flex items-center gap-2">
+                                                <Phone class="h-4 w-4 text-primary" />
+                                                Nomor Telepon Toko
+                                            </Label>
+                                            <Input
+                                                id="store_phone"
+                                                v-model="form.store_phone"
+                                                type="text"
+                                                placeholder="021-1234567"
+                                                class="admin-input"
+                                                :class="{ 'border-destructive': errors.store_phone }"
+                                            />
+                                            <InputError :message="errors.store_phone" />
+                                        </div>
+                                    </div>
                                 </div>
-                            </CardContent>
-                            </Card>
+                            </div>
                         </Motion>
 
-                        <!-- WhatsApp Settings Card -->
+                        <!-- WhatsApp Settings -->
                         <Motion
                             :initial="{ opacity: 0, y: 20 }"
                             :animate="{ opacity: 1, y: 0 }"
                             :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
                         >
-                            <Card class="ios-card">
-                            <CardHeader>
-                                <CardTitle class="flex items-center gap-2">
-                                    <MessageSquare class="h-5 w-5" />
-                                    Pengaturan WhatsApp
-                                </CardTitle>
-                                <CardDescription>
-                                    Nomor WhatsApp bisnis untuk menerima pesanan dari customer
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent class="flex flex-col gap-4">
-                                <!-- WhatsApp Number -->
-                                <div class="flex flex-col gap-2">
-                                    <Label for="whatsapp_number">Nomor WhatsApp Bisnis *</Label>
-                                    <Input
-                                        id="whatsapp_number"
-                                        v-model="form.whatsapp_number"
-                                        type="text"
-                                        placeholder="6281234567890"
-                                        class="ios-input"
-                                        :class="{ 'border-destructive': errors.whatsapp_number }"
-                                    />
-                                    <p class="text-xs text-muted-foreground">
-                                        Format: Kode negara tanpa tanda + (contoh: 6281234567890)
-                                    </p>
-                                    <InputError :message="errors.whatsapp_number" />
+                            <div class="admin-form-section">
+                                <div class="admin-form-section-header">
+                                    <h3>
+                                        <MessageSquare />
+                                        WhatsApp Bisnis
+                                    </h3>
                                 </div>
-                            </CardContent>
-                            </Card>
+                                <div class="admin-form-section-content">
+                                    <div class="admin-input-group">
+                                        <Label for="whatsapp_number">Nomor WhatsApp Bisnis *</Label>
+                                        <Input
+                                            id="whatsapp_number"
+                                            v-model="form.whatsapp_number"
+                                            type="text"
+                                            placeholder="6281234567890"
+                                            class="admin-input"
+                                            :class="{ 'border-destructive': errors.whatsapp_number }"
+                                        />
+                                        <p class="hint">
+                                            Format: Kode negara tanpa tanda + (contoh: 6281234567890)
+                                        </p>
+                                        <InputError :message="errors.whatsapp_number" />
+                                    </div>
+                                </div>
+                            </div>
                         </Motion>
 
-                        <!-- Operating Hours Card -->
+                        <!-- Operating Hours -->
                         <Motion
                             :initial="{ opacity: 0, y: 20 }"
                             :animate="{ opacity: 1, y: 0 }"
                             :transition="{ ...springPresets.ios, delay: staggerDelay(2) }"
                         >
-                            <Card class="ios-card">
-                            <CardHeader>
-                                <CardTitle class="flex items-center gap-2">
-                                    <Clock class="h-5 w-5" />
-                                    Jam Operasional
-                                </CardTitle>
-                                <CardDescription>
-                                    Atur jam buka dan tutup toko untuk setiap hari
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div class="flex flex-col gap-4">
-                                    <Motion
-                                        v-for="(hours, day, index) in form.operating_hours"
-                                        :key="day"
-                                        :initial="{ opacity: 0, x: -20 }"
-                                        :animate="{ opacity: 1, x: 0 }"
-                                        :transition="{ ...springPresets.ios, delay: 0.2 + (index as number) * 0.03 }"
-                                        class="flex flex-col gap-2 rounded-xl border p-4 transition-colors hover:bg-muted/50 sm:flex-row sm:items-center sm:justify-between"
-                                    >
-                                        <div class="flex items-center gap-3">
-                                            <Checkbox
-                                                :id="`is_open_${day}`"
-                                                :checked="hours.is_open"
-                                                @update:checked="hours.is_open = $event"
-                                            />
-                                            <Label :for="`is_open_${day}`" class="cursor-pointer font-medium min-w-[80px]">
-                                                {{ dayLabels[day] }}
-                                            </Label>
-                                            <Badge v-if="hours.is_open" variant="default" class="text-xs">
-                                                Buka
-                                            </Badge>
-                                            <Badge v-else variant="secondary" class="text-xs">
-                                                Tutup
-                                            </Badge>
-                                        </div>
-                                        <div
-                                            v-if="hours.is_open"
-                                            class="flex items-center gap-2 mt-2 sm:mt-0"
-                                        >
-                                            <Input
-                                                v-model="hours.open"
-                                                type="time"
-                                                class="ios-input w-[120px]"
-                                            />
-                                            <span class="text-muted-foreground">-</span>
-                                            <Input
-                                                v-model="hours.close"
-                                                type="time"
-                                                class="ios-input w-[120px]"
-                                            />
-                                        </div>
-                                        <div
-                                            v-else
-                                            class="text-sm text-muted-foreground mt-2 sm:mt-0"
-                                        >
-                                            Toko tutup hari ini
-                                        </div>
-                                    </Motion>
+                            <div class="admin-form-section">
+                                <div class="admin-form-section-header">
+                                    <h3>
+                                        <Clock />
+                                        Jam Operasional
+                                    </h3>
                                 </div>
-                                <InputError :message="errors.operating_hours" class="mt-2" />
-                            </CardContent>
-                            </Card>
+                                <div class="admin-form-section-content">
+                                    <div class="flex flex-col gap-3">
+                                        <Motion
+                                            v-for="(hours, day, index) in form.operating_hours"
+                                            :key="day"
+                                            :initial="{ opacity: 0, x: -20 }"
+                                            :animate="{ opacity: 1, x: 0 }"
+                                            :transition="{ ...springPresets.ios, delay: 0.2 + (index as number) * 0.03 }"
+                                            class="flex flex-col gap-3 rounded-xl border border-border/50 bg-muted/20 p-4 transition-colors hover:bg-muted/40 sm:flex-row sm:items-center sm:justify-between"
+                                        >
+                                            <div class="flex items-center gap-3">
+                                                <Checkbox
+                                                    :id="`is_open_${day}`"
+                                                    :checked="hours.is_open"
+                                                    @update:checked="hours.is_open = $event"
+                                                />
+                                                <Label :for="`is_open_${day}`" class="min-w-[80px] cursor-pointer font-medium">
+                                                    {{ dayLabels[day] }}
+                                                </Label>
+                                                <Badge
+                                                    :class="[
+                                                        hours.is_open ? 'admin-badge--success' : 'bg-muted text-muted-foreground',
+                                                    ]"
+                                                >
+                                                    {{ hours.is_open ? 'Buka' : 'Tutup' }}
+                                                </Badge>
+                                            </div>
+                                            <div
+                                                v-if="hours.is_open"
+                                                class="flex items-center gap-2"
+                                            >
+                                                <Input
+                                                    v-model="hours.open"
+                                                    type="time"
+                                                    class="admin-input h-10 w-[110px]"
+                                                />
+                                                <span class="text-muted-foreground">-</span>
+                                                <Input
+                                                    v-model="hours.close"
+                                                    type="time"
+                                                    class="admin-input h-10 w-[110px]"
+                                                />
+                                            </div>
+                                            <div
+                                                v-else
+                                                class="text-sm text-muted-foreground"
+                                            >
+                                                Toko tutup hari ini
+                                            </div>
+                                        </Motion>
+                                    </div>
+                                    <InputError :message="errors.operating_hours" class="mt-2" />
+                                </div>
+                            </div>
                         </Motion>
                     </div>
 
-                    <!-- Sidebar (1 column) -->
+                    <!-- Sidebar -->
                     <div class="flex flex-col gap-6">
-                        <!-- Delivery Settings Card -->
+                        <!-- Delivery Settings -->
                         <Motion
                             :initial="{ opacity: 0, y: 20 }"
                             :animate="{ opacity: 1, y: 0 }"
                             :transition="{ ...springPresets.ios, delay: staggerDelay(3) }"
                         >
-                            <Card class="ios-card">
-                            <CardHeader>
-                                <CardTitle class="flex items-center gap-2">
-                                    <Truck class="h-5 w-5" />
-                                    Pengaturan Delivery
-                                </CardTitle>
-                                <CardDescription>
-                                    Atur biaya dan area pengiriman
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent class="flex flex-col gap-4">
-                                <!-- Delivery Fee -->
-                                <div class="flex flex-col gap-2">
-                                    <Label for="delivery_fee">Biaya Pengiriman (Rp) *</Label>
-                                    <Input
-                                        id="delivery_fee"
-                                        v-model.number="form.delivery_fee"
-                                        type="number"
-                                        min="0"
-                                        placeholder="0"
-                                        class="ios-input"
-                                        :class="{ 'border-destructive': errors.delivery_fee }"
-                                    />
-                                    <InputError :message="errors.delivery_fee" />
+                            <div class="admin-form-section">
+                                <div class="admin-form-section-header">
+                                    <h3>
+                                        <Truck />
+                                        Pengaturan Delivery
+                                    </h3>
                                 </div>
+                                <div class="admin-form-section-content">
+                                    <div class="flex flex-col gap-5">
+                                        <!-- Delivery Fee -->
+                                        <div class="admin-input-group">
+                                            <Label for="delivery_fee" class="flex items-center gap-2">
+                                                <Wallet class="h-4 w-4 text-primary" />
+                                                Biaya Pengiriman (Rp) *
+                                            </Label>
+                                            <Input
+                                                id="delivery_fee"
+                                                v-model.number="form.delivery_fee"
+                                                type="number"
+                                                min="0"
+                                                placeholder="0"
+                                                class="admin-input"
+                                                :class="{ 'border-destructive': errors.delivery_fee }"
+                                            />
+                                            <InputError :message="errors.delivery_fee" />
+                                        </div>
 
-                                <!-- Minimum Order -->
-                                <div class="flex flex-col gap-2">
-                                    <Label for="minimum_order">Minimum Order (Rp) *</Label>
-                                    <Input
-                                        id="minimum_order"
-                                        v-model.number="form.minimum_order"
-                                        type="number"
-                                        min="0"
-                                        placeholder="0"
-                                        class="ios-input"
-                                        :class="{ 'border-destructive': errors.minimum_order }"
-                                    />
-                                    <InputError :message="errors.minimum_order" />
-                                </div>
+                                        <!-- Minimum Order -->
+                                        <div class="admin-input-group">
+                                            <Label for="minimum_order" class="flex items-center gap-2">
+                                                <ShoppingBag class="h-4 w-4 text-primary" />
+                                                Minimum Order (Rp) *
+                                            </Label>
+                                            <Input
+                                                id="minimum_order"
+                                                v-model.number="form.minimum_order"
+                                                type="number"
+                                                min="0"
+                                                placeholder="0"
+                                                class="admin-input"
+                                                :class="{ 'border-destructive': errors.minimum_order }"
+                                            />
+                                            <InputError :message="errors.minimum_order" />
+                                        </div>
 
-                                <!-- Delivery Areas -->
-                                <div class="flex flex-col gap-2">
-                                    <Label>Area Pengiriman</Label>
-                                    <div class="flex gap-2">
-                                        <Input
-                                            v-model="newArea"
-                                            type="text"
-                                            placeholder="Tambah area baru"
-                                            class="ios-input"
-                                            @keydown.enter.prevent="addDeliveryArea"
-                                        />
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="icon"
-                                            class="ios-button"
-                                            @click="addDeliveryArea"
-                                        >
-                                            <Plus class="h-4 w-4" />
-                                        </Button>
-                                    </div>
+                                        <!-- Delivery Areas -->
+                                        <div class="admin-input-group">
+                                            <Label class="flex items-center gap-2">
+                                                <MapPin class="h-4 w-4 text-primary" />
+                                                Area Pengiriman
+                                            </Label>
+                                            <div class="flex gap-2">
+                                                <Input
+                                                    v-model="newArea"
+                                                    type="text"
+                                                    placeholder="Tambah area baru"
+                                                    class="admin-input"
+                                                    @keydown.enter.prevent="addDeliveryArea"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="icon"
+                                                    class="ios-button h-12 w-12 shrink-0"
+                                                    @click="addDeliveryArea"
+                                                >
+                                                    <Plus class="h-4 w-4" />
+                                                </Button>
+                                            </div>
 
-                                    <!-- Areas List -->
-                                    <div
-                                        v-if="form.delivery_areas.length > 0"
-                                        class="flex flex-wrap gap-2 mt-2"
-                                    >
-                                        <Motion
-                                            v-for="(area, index) in form.delivery_areas"
-                                            :key="index"
-                                            :initial="{ scale: 0 }"
-                                            :animate="{ scale: 1 }"
-                                            :transition="springPresets.bouncy"
-                                        >
-                                            <Badge
-                                                variant="secondary"
-                                                class="gap-1 pr-1"
+                                            <!-- Areas List -->
+                                            <div
+                                                v-if="form.delivery_areas.length > 0"
+                                                class="mt-3 flex flex-wrap gap-2"
                                             >
-                                            {{ area }}
-                                            <button
-                                                type="button"
-                                                class="ios-button ml-1 rounded-full p-0.5 hover:bg-muted"
-                                                @click="removeDeliveryArea(index)"
+                                                <Motion
+                                                    v-for="(area, index) in form.delivery_areas"
+                                                    :key="index"
+                                                    :initial="{ scale: 0 }"
+                                                    :animate="{ scale: 1 }"
+                                                    :transition="springPresets.bouncy"
+                                                >
+                                                    <Badge
+                                                        variant="secondary"
+                                                        class="gap-1 pr-1 text-sm"
+                                                    >
+                                                        {{ area }}
+                                                        <button
+                                                            type="button"
+                                                            class="ios-button ml-1 rounded-full p-0.5 hover:bg-muted"
+                                                            @click="removeDeliveryArea(index)"
+                                                        >
+                                                            <X class="h-3 w-3" />
+                                                        </button>
+                                                    </Badge>
+                                                </Motion>
+                                            </div>
+                                            <p
+                                                v-else
+                                                class="text-sm text-muted-foreground"
                                             >
-                                                <X class="h-3 w-3" />
-                                            </button>
-                                            </Badge>
-                                        </Motion>
+                                                Belum ada area pengiriman
+                                            </p>
+                                            <InputError :message="errors.delivery_areas" />
+                                        </div>
                                     </div>
-                                    <p
-                                        v-else
-                                        class="text-sm text-muted-foreground"
-                                    >
-                                        Belum ada area pengiriman
-                                    </p>
-                                    <InputError :message="errors.delivery_areas" />
                                 </div>
-                            </CardContent>
-                            </Card>
+                            </div>
                         </Motion>
 
-                        <!-- Actions Card -->
+                        <!-- Actions -->
                         <Motion
                             :initial="{ opacity: 0, y: 20 }"
                             :animate="{ opacity: 1, y: 0 }"
                             :transition="{ ...springPresets.ios, delay: staggerDelay(4) }"
                         >
-                            <Card class="ios-card">
-                                <CardContent class="flex flex-col gap-3 pt-6">
+                            <div class="admin-form-section">
+                                <div class="admin-form-section-content">
                                     <Button
                                         type="submit"
-                                        class="ios-button w-full gap-2"
+                                        class="admin-btn-primary w-full gap-2"
                                         :disabled="isSubmitting"
                                     >
                                         <Save class="h-4 w-4" />
                                         {{ isSubmitting ? 'Menyimpan...' : 'Simpan Pengaturan' }}
                                     </Button>
-                                </CardContent>
-                            </Card>
+                                </div>
+                            </div>
                         </Motion>
                     </div>
                 </form>
@@ -540,6 +551,5 @@ function submitForm() {
                 <div class="h-20 md:hidden" />
             </div>
         </PullToRefresh>
-
     </AppLayout>
 </template>

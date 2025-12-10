@@ -310,7 +310,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
 
             <!-- Price & Action - Touch-friendly dengan iOS press feedback -->
             <div class="mt-auto flex items-center justify-between gap-2">
-                <p class="text-base font-bold text-primary sm:text-lg">
+                <p class="price-tag text-base font-bold sm:text-lg">
                     {{ formattedPrice }}
                 </p>
 
@@ -329,12 +329,12 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                     size="icon"
                     variant="secondary"
                     :disabled="!product.is_available || isAdding"
-                                class="h-11 w-11 shrink-0 rounded-full"
+                                class="h-11 w-11 shrink-0 rounded-full shadow-sm"
                     :class="[
                         showSuccess
                             ? 'bg-green-100 text-green-600 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400'
-                            : 'bg-primary/10 text-primary hover:bg-primary/20',
-                        'disabled:opacity-50',
+                            : 'bg-gradient-to-br from-brand-blue-500 to-brand-blue-600 text-white hover:from-brand-blue-600 hover:to-brand-blue-700 shadow-brand-blue-500/25',
+                        'disabled:opacity-50 disabled:from-gray-300 disabled:to-gray-400',
                     ]"
                     aria-label="Tambah ke keranjang"
                     @click.prevent="handleAddToCart"

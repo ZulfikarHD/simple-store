@@ -104,7 +104,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
 
     <div class="min-h-screen bg-background">
         <!-- Header Navigation dengan iOS Glass Effect (Fixed) -->
-        <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-border/30">
+        <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-brand-blue-200/30 dark:border-brand-blue-800/30">
             <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                 <!-- Logo & Brand -->
                 <Motion
@@ -113,10 +113,13 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                     :transition="springTransition"
                 >
                 <Link :href="home()" class="flex items-center gap-2 sm:gap-3">
-                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm sm:h-10 sm:w-10">
-                        <ShoppingBag class="h-4 w-4 text-primary-foreground sm:h-5 sm:w-5" />
+                        <div class="brand-logo h-9 w-9 sm:h-10 sm:w-10">
+                        <ShoppingBag class="h-4 w-4 text-white sm:h-5 sm:w-5" />
                     </div>
-                    <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
+                    <div class="flex flex-col">
+                        <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
+                        <span class="hidden text-[10px] font-medium text-brand-gold sm:block">Premium Quality Products</span>
+                    </div>
                 </Link>
                 </Motion>
             </div>
@@ -232,7 +235,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                         :transition="snappyTransition"
                     >
                         <Card
-                            class="ios-card cursor-pointer overflow-hidden rounded-2xl border-border/50"
+                            class="ios-card cursor-pointer overflow-hidden rounded-2xl border-brand-blue-100 hover:border-brand-blue-200 dark:border-brand-blue-800/30 dark:hover:border-brand-blue-700/50"
                             @mousedown="handleOrderPress(order.id)"
                             @mouseup="pressedOrderId = null"
                             @mouseleave="pressedOrderId = null"
@@ -243,7 +246,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                         <!-- Header Row -->
                         <div class="flex items-start justify-between gap-2">
                             <div>
-                                <p class="font-mono text-sm font-semibold text-primary">
+                                <p class="price-tag font-mono text-sm font-semibold">
                                     {{ order.order_number }}
                                 </p>
                                 <p class="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">

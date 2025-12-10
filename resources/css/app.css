@@ -1,12 +1,12 @@
 /**
  * F&B Web App - Main Stylesheet
- * Design system dengan Brand Blue (#4F7BBF) sebagai primary color
- * dan Brand Gold (#C5A35A) sebagai accent color
- * untuk memberikan kesan premium, terpercaya, dan profesional
+ * Design system dengan Sky Blue (#0EA5E9) sebagai primary color
+ * dan Amber Gold (#F59E0B) sebagai accent color
+ * untuk memberikan kesan fresh, modern, dan premium
  *
  * Brand Colors:
- * - Blue: #4F7BBF (Primary) - Trust, reliability, professionalism
- * - Gold: #C5A35A (Accent) - Premium, elegance, quality
+ * - Sky Blue: #0EA5E9 (Primary) - Fresh, modern, trustworthy
+ * - Amber Gold: #F59E0B (Accent) - Warm, premium, energetic
  *
  * Developer: Zulfikar Hidayatullah
  */
@@ -76,31 +76,31 @@
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
 
-    /* Brand Colors - Blue Spectrum untuk Tailwind utilities */
-    --color-brand-blue: #4F7BBF;
-    --color-brand-blue-50: #EFF4FB;
-    --color-brand-blue-100: #D9E4F5;
-    --color-brand-blue-200: #B4C9EA;
-    --color-brand-blue-300: #8CACDF;
-    --color-brand-blue-400: #6B93D1;
-    --color-brand-blue-500: #4F7BBF;
-    --color-brand-blue-600: #3E62A4;
-    --color-brand-blue-700: #314C82;
-    --color-brand-blue-800: #25375F;
-    --color-brand-blue-900: #1A263F;
+    /* Brand Colors - Sky Blue Spectrum untuk Tailwind utilities */
+    --color-brand-blue: #0EA5E9;
+    --color-brand-blue-50: #F0F9FF;
+    --color-brand-blue-100: #E0F2FE;
+    --color-brand-blue-200: #BAE6FD;
+    --color-brand-blue-300: #7DD3FC;
+    --color-brand-blue-400: #38BDF8;
+    --color-brand-blue-500: #0EA5E9;
+    --color-brand-blue-600: #0284C7;
+    --color-brand-blue-700: #0369A1;
+    --color-brand-blue-800: #075985;
+    --color-brand-blue-900: #0C4A6E;
 
-    /* Brand Colors - Gold Spectrum untuk accent */
-    --color-brand-gold: #C5A35A;
-    --color-brand-gold-50: #F8F3E6;
-    --color-brand-gold-100: #F0E4C9;
-    --color-brand-gold-200: #E2CA96;
-    --color-brand-gold-300: #D4B073;
-    --color-brand-gold-400: #CBA661;
-    --color-brand-gold-500: #C5A35A;
-    --color-brand-gold-600: #A98A4B;
-    --color-brand-gold-700: #876C3B;
-    --color-brand-gold-800: #65502C;
-    --color-brand-gold-900: #42351D;
+    /* Brand Colors - Amber Gold Spectrum untuk accent */
+    --color-brand-gold: #F59E0B;
+    --color-brand-gold-50: #FFFBEB;
+    --color-brand-gold-100: #FEF3C7;
+    --color-brand-gold-200: #FDE68A;
+    --color-brand-gold-300: #FCD34D;
+    --color-brand-gold-400: #FBBF24;
+    --color-brand-gold-500: #F59E0B;
+    --color-brand-gold-600: #D97706;
+    --color-brand-gold-700: #B45309;
+    --color-brand-gold-800: #92400E;
+    --color-brand-gold-900: #78350F;
 
     /* Neutral Colors */
     --color-neutral-900: #1E1E1E;
@@ -187,128 +187,128 @@
 }
 
 /* ========================================
-   LIGHT MODE - Brand Blue & Gold Theme
-   Premium aesthetic dengan blue sebagai primary dan gold sebagai accent
+   LIGHT MODE - Sky Blue & Amber Gold Theme
+   Fresh, modern aesthetic dengan clean design
    ======================================== */
 :root {
-    /* Background & Surface */
+    /* Background & Surface - Clean white */
     --background: #FFFFFF;
-    --foreground: #1E1E1E;
+    --foreground: #0F172A;
 
-    /* Card */
+    /* Card - Pure white with subtle depth */
     --card: #FFFFFF;
-    --card-foreground: #1E1E1E;
+    --card-foreground: #0F172A;
 
     /* Popover */
     --popover: #FFFFFF;
-    --popover-foreground: #1E1E1E;
+    --popover-foreground: #0F172A;
 
-    /* Primary - Brand Blue (Main Brand Color) */
-    --primary: #4F7BBF;
+    /* Primary - Sky Blue (Fresh & Modern) */
+    --primary: #0EA5E9;
     --primary-foreground: #FFFFFF;
 
-    /* Secondary - Gold Accent */
-    --secondary: #F8F3E6;
-    --secondary-foreground: #1E1E1E;
+    /* Secondary - Light sky tint */
+    --secondary: #F0F9FF;
+    --secondary-foreground: #0C4A6E;
 
-    /* Muted */
-    --muted: #F5F5F5;
-    --muted-foreground: #7A7A7A;
+    /* Muted - Soft gray */
+    --muted: #F8FAFC;
+    --muted-foreground: #64748B;
 
-    /* Accent - Brand Gold */
-    --accent: #C5A35A;
+    /* Accent - Amber Gold (Warm & Premium) */
+    --accent: #F59E0B;
     --accent-foreground: #FFFFFF;
 
     /* Destructive */
-    --destructive: hsl(0 84% 60%);
+    --destructive: #EF4444;
     --destructive-foreground: #FFFFFF;
 
-    /* Border & Input */
-    --border: #D3D3D3;
-    --input: #D3D3D3;
-    --ring: #4F7BBF;
+    /* Border & Input - Subtle borders */
+    --border: #E2E8F0;
+    --input: #E2E8F0;
+    --ring: #0EA5E9;
 
-    /* Chart Colors - Menggunakan brand colors */
-    --chart-1: #4F7BBF;
-    --chart-2: #C5A35A;
-    --chart-3: #6B93D1;
-    --chart-4: #A98A4B;
-    --chart-5: #314C82;
+    /* Chart Colors - Sky & Amber palette */
+    --chart-1: #0EA5E9;
+    --chart-2: #F59E0B;
+    --chart-3: #38BDF8;
+    --chart-4: #FBBF24;
+    --chart-5: #0284C7;
 
     /* Radius - Rounded corners */
     --radius: 0.75rem;
 
-    /* Sidebar - Clean & Professional */
-    --sidebar-background: #F5F5F5;
-    --sidebar-foreground: #1E1E1E;
-    --sidebar-primary: #4F7BBF;
+    /* Sidebar - Light sky tint */
+    --sidebar-background: #F8FAFC;
+    --sidebar-foreground: #0F172A;
+    --sidebar-primary: #0EA5E9;
     --sidebar-primary-foreground: #FFFFFF;
-    --sidebar-accent: #EFF4FB;
-    --sidebar-accent-foreground: #1E1E1E;
-    --sidebar-border: #D3D3D3;
-    --sidebar-ring: #4F7BBF;
-    --sidebar: #F5F5F5;
+    --sidebar-accent: #F0F9FF;
+    --sidebar-accent-foreground: #0F172A;
+    --sidebar-border: #E2E8F0;
+    --sidebar-ring: #0EA5E9;
+    --sidebar: #F8FAFC;
 }
 
 /* ========================================
-   DARK MODE - Brand Blue & Gold Theme
-   Premium dark aesthetic dengan blue primary dan gold accent
+   DARK MODE - Sky Blue & Amber Gold Theme
+   Modern dark aesthetic dengan clean surfaces
    ======================================== */
 .dark {
-    /* Background & Surface */
-    --background: #1E1E1E;
-    --foreground: #F5F5F5;
+    /* Background & Surface - Deep slate */
+    --background: #0F172A;
+    --foreground: #F8FAFC;
 
-    /* Card */
-    --card: #25375F;
-    --card-foreground: #F5F5F5;
+    /* Card - Elevated with subtle depth */
+    --card: #1E293B;
+    --card-foreground: #F8FAFC;
 
     /* Popover */
-    --popover: #25375F;
-    --popover-foreground: #F5F5F5;
+    --popover: #1E293B;
+    --popover-foreground: #F8FAFC;
 
-    /* Primary - Brand Blue (Lighter for dark mode) */
-    --primary: #6B93D1;
-    --primary-foreground: #1E1E1E;
+    /* Primary - Sky Blue (Bright for visibility) */
+    --primary: #38BDF8;
+    --primary-foreground: #0C4A6E;
 
-    /* Secondary - Gold tinted dark */
-    --secondary: #42351D;
-    --secondary-foreground: #F5F5F5;
+    /* Secondary - Elevated surface */
+    --secondary: #334155;
+    --secondary-foreground: #F8FAFC;
 
-    /* Muted */
-    --muted: #3C3C3C;
-    --muted-foreground: #D3D3D3;
+    /* Muted - Subtle backgrounds */
+    --muted: #1E293B;
+    --muted-foreground: #94A3B8;
 
-    /* Accent - Brand Gold */
-    --accent: #C5A35A;
-    --accent-foreground: #1E1E1E;
+    /* Accent - Amber Gold (Vibrant) */
+    --accent: #FBBF24;
+    --accent-foreground: #78350F;
 
     /* Destructive */
-    --destructive: hsl(0 62% 50%);
-    --destructive-foreground: #F5F5F5;
+    --destructive: #EF4444;
+    --destructive-foreground: #F8FAFC;
 
     /* Border & Input */
-    --border: #3C3C3C;
-    --input: #3C3C3C;
-    --ring: #6B93D1;
+    --border: #334155;
+    --input: #334155;
+    --ring: #38BDF8;
 
-    /* Chart Colors - Adjusted for dark mode */
-    --chart-1: #6B93D1;
-    --chart-2: #D4B073;
-    --chart-3: #8CACDF;
-    --chart-4: #CBA661;
-    --chart-5: #4F7BBF;
+    /* Chart Colors - Sky & Amber for dark */
+    --chart-1: #38BDF8;
+    --chart-2: #FBBF24;
+    --chart-3: #7DD3FC;
+    --chart-4: #FCD34D;
+    --chart-5: #0EA5E9;
 
-    /* Sidebar */
-    --sidebar-background: #1A263F;
-    --sidebar-foreground: #F5F5F5;
-    --sidebar-primary: #6B93D1;
-    --sidebar-primary-foreground: #1E1E1E;
-    --sidebar-accent: #25375F;
-    --sidebar-accent-foreground: #F5F5F5;
-    --sidebar-border: #3C3C3C;
-    --sidebar-ring: #6B93D1;
-    --sidebar: #1A263F;
+    /* Sidebar - Deep slate */
+    --sidebar-background: #0F172A;
+    --sidebar-foreground: #F8FAFC;
+    --sidebar-primary: #38BDF8;
+    --sidebar-primary-foreground: #0C4A6E;
+    --sidebar-accent: #1E293B;
+    --sidebar-accent-foreground: #F8FAFC;
+    --sidebar-border: #334155;
+    --sidebar-ring: #38BDF8;
+    --sidebar: #0F172A;
 }
 
 @layer base {
@@ -596,13 +596,13 @@
 
     /* iOS Glass Effect (Frosted Glass) */
     .ios-glass {
-        background: oklch(1 0 0 / 0.7);
+        background: rgba(255, 255, 255, 0.8);
         backdrop-filter: blur(var(--ios-blur-md)) saturate(180%);
         -webkit-backdrop-filter: blur(var(--ios-blur-md)) saturate(180%);
     }
 
     .dark .ios-glass {
-        background: oklch(0.15 0.02 260 / 0.7);
+        background: rgba(15, 23, 42, 0.8);
     }
 
     /* iOS Bottom Sheet Handle */
@@ -652,10 +652,11 @@
    ======================================== */
 @layer components {
     .product-card {
-        @apply bg-card rounded-2xl overflow-hidden;
+        @apply bg-card rounded-2xl overflow-hidden border border-border/30;
         box-shadow: var(--ios-shadow-md);
         transition: transform var(--ios-duration-fast) var(--ios-spring-smooth),
-                    box-shadow var(--ios-duration-fast) var(--ios-spring-smooth);
+                    box-shadow var(--ios-duration-fast) var(--ios-spring-smooth),
+                    border-color var(--ios-duration-fast) ease;
         will-change: transform;
         -webkit-tap-highlight-color: transparent;
     }
@@ -663,6 +664,11 @@
     .product-card:hover {
         box-shadow: var(--ios-shadow-xl);
         transform: translateY(-4px) scale(1.01);
+        border-color: var(--color-brand-blue-200);
+    }
+
+    .dark .product-card:hover {
+        border-color: var(--color-brand-blue-600);
     }
 
     .product-card:active {
@@ -682,11 +688,42 @@
     .status-unavailable {
         @apply bg-destructive/10 text-destructive;
     }
+
+    /* Premium Gold Accent Styles */
+    .gold-accent {
+        color: var(--color-brand-gold);
+    }
+
+    .gold-accent-bg {
+        background-color: var(--color-brand-gold-50);
+    }
+
+    .dark .gold-accent-bg {
+        background-color: var(--color-brand-gold-900);
+    }
+
+    /* Premium Gradient Backgrounds */
+    .premium-gradient {
+        background: linear-gradient(135deg, var(--color-brand-blue-50) 0%, var(--color-brand-gold-50) 100%);
+    }
+
+    .dark .premium-gradient {
+        background: linear-gradient(135deg, var(--color-brand-blue-900) 0%, var(--color-brand-gold-900) 100%);
+    }
+
+    /* Hero Section Gradient */
+    .hero-gradient {
+        background: linear-gradient(180deg, var(--color-brand-blue-50) 0%, transparent 100%);
+    }
+
+    .dark .hero-gradient {
+        background: linear-gradient(180deg, var(--color-brand-blue-900)/30 0%, transparent 100%);
+    }
 }
 
 /* ========================================
    iOS COMPONENT STYLES
-   Reusable iOS-like components
+   Reusable iOS-like components dengan Brand Colors
    ======================================== */
 @layer components {
     /* iOS Button Style */
@@ -715,13 +752,14 @@
 
     /* iOS Input Style */
     .ios-input {
-        @apply rounded-xl border-0 bg-muted/50 px-4 py-3;
+        @apply rounded-xl border border-border/50 bg-muted/30 px-4 py-3;
         transition: background-color var(--ios-duration-fast) ease,
-                    box-shadow var(--ios-duration-fast) ease;
+                    box-shadow var(--ios-duration-fast) ease,
+                    border-color var(--ios-duration-fast) ease;
     }
 
     .ios-input:focus {
-        @apply bg-background ring-2 ring-primary/20;
+        @apply bg-background border-primary/50 ring-2 ring-primary/20;
         box-shadow: var(--ios-shadow-md);
     }
 
@@ -739,29 +777,29 @@
         @apply bg-background text-foreground shadow-sm;
     }
 
-    /* iOS Navigation Bar */
+    /* iOS Navigation Bar - Clean glass effect */
     .ios-navbar {
         @apply sticky top-0 z-50;
-        background: oklch(1 0 0 / 0.85);
+        background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(var(--ios-blur-lg)) saturate(180%);
         -webkit-backdrop-filter: blur(var(--ios-blur-lg)) saturate(180%);
     }
 
     .dark .ios-navbar {
-        background: oklch(0.1 0.02 260 / 0.85);
+        background: rgba(15, 23, 42, 0.85);
     }
 
     /* iOS Tab Bar */
     .ios-tabbar {
         @apply fixed inset-x-0 bottom-0 z-50;
-        background: oklch(1 0 0 / 0.85);
+        background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(var(--ios-blur-lg)) saturate(180%);
         -webkit-backdrop-filter: blur(var(--ios-blur-lg)) saturate(180%);
         padding-bottom: env(safe-area-inset-bottom);
     }
 
     .dark .ios-tabbar {
-        background: oklch(0.1 0.02 260 / 0.85);
+        background: rgba(15, 23, 42, 0.85);
     }
 
     /* iOS Bottom Sheet */
@@ -804,5 +842,584 @@
     .ios-ptr-indicator {
         @apply absolute left-1/2 top-0 flex -translate-x-1/2 items-center justify-center;
         transition: transform var(--ios-duration-fast) var(--ios-spring-smooth);
+    }
+
+    /* Premium Card with Gold Border Accent */
+    .premium-card {
+        @apply bg-card rounded-2xl border border-border/50 overflow-hidden;
+        box-shadow: var(--ios-shadow-md);
+        position: relative;
+    }
+
+    .premium-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--color-brand-blue), var(--color-brand-gold));
+    }
+
+    /* Success Card */
+    .success-card {
+        @apply bg-card rounded-2xl border-2 border-green-200 dark:border-green-800/50 overflow-hidden;
+        box-shadow: 0 0 0 4px oklch(from #22c55e l c h / 0.1);
+    }
+
+    /* Gold Badge */
+    .gold-badge {
+        background: linear-gradient(135deg, var(--color-brand-gold-400), var(--color-brand-gold-600));
+        @apply text-white font-medium px-3 py-1 rounded-full text-sm;
+    }
+
+    /* Brand Logo Container */
+    .brand-logo {
+        background: linear-gradient(135deg, var(--color-brand-blue-500), var(--color-brand-blue-600));
+        @apply flex items-center justify-center rounded-xl shadow-lg;
+    }
+
+    /* Price Tag */
+    .price-tag {
+        @apply font-bold;
+        color: var(--color-brand-blue);
+    }
+
+    .dark .price-tag {
+        color: var(--color-brand-blue-400);
+    }
+
+    /* Accent Highlight */
+    .accent-highlight {
+        @apply relative;
+    }
+
+    .accent-highlight::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, var(--color-brand-gold-400), var(--color-brand-gold-500));
+        border-radius: 2px;
+    }
+
+    /* =============================================
+       iOS ADMIN DASHBOARD STYLES
+       Premium card styles dengan depth dan hierarchy
+       ============================================= */
+
+    /* Admin Page Container dengan subtle background pattern */
+    .admin-page {
+        @apply min-h-screen;
+        background:
+            radial-gradient(circle at 20% 20%, oklch(from var(--color-brand-blue-50) l c h / 0.5) 0%, transparent 40%),
+            radial-gradient(circle at 80% 80%, oklch(from var(--color-brand-gold-50) l c h / 0.3) 0%, transparent 40%),
+            var(--background);
+    }
+
+    .dark .admin-page {
+        background:
+            radial-gradient(circle at 20% 20%, oklch(from var(--color-brand-blue-900) l c h / 0.2) 0%, transparent 40%),
+            radial-gradient(circle at 80% 80%, oklch(from var(--color-brand-gold-900) l c h / 0.15) 0%, transparent 40%),
+            var(--background);
+    }
+
+    /* Premium Stats Card dengan gradient border */
+    .stats-card {
+        @apply relative overflow-hidden rounded-2xl border-0;
+        background: linear-gradient(135deg, var(--card) 0%, oklch(from var(--card) l c h / 0.95) 100%);
+        box-shadow:
+            0 1px 2px oklch(0 0 0 / 0.04),
+            0 4px 12px oklch(0 0 0 / 0.06),
+            inset 0 1px 0 oklch(1 0 0 / 0.1);
+    }
+
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--color-brand-blue-400), var(--color-brand-blue-500), var(--color-brand-gold-400));
+        opacity: 0;
+        transition: opacity var(--ios-duration-fast) ease;
+    }
+
+    .stats-card:hover::before {
+        opacity: 1;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-2px);
+        box-shadow:
+            0 4px 8px oklch(0 0 0 / 0.06),
+            0 12px 24px oklch(0 0 0 / 0.1),
+            inset 0 1px 0 oklch(1 0 0 / 0.15);
+    }
+
+    /* Stats Card Variants */
+    .stats-card--blue {
+        background: linear-gradient(135deg, var(--color-brand-blue-50) 0%, oklch(from var(--color-brand-blue-100) l c h / 0.5) 100%);
+    }
+
+    .dark .stats-card--blue {
+        background: linear-gradient(135deg, oklch(from var(--color-brand-blue-900) l c h / 0.4) 0%, oklch(from var(--color-brand-blue-950) l c h / 0.3) 100%);
+    }
+
+    .stats-card--gold {
+        background: linear-gradient(135deg, var(--color-brand-gold-50) 0%, oklch(from var(--color-brand-gold-100) l c h / 0.5) 100%);
+    }
+
+    .dark .stats-card--gold {
+        background: linear-gradient(135deg, oklch(from var(--color-brand-gold-900) l c h / 0.4) 0%, oklch(from var(--color-brand-gold-950) l c h / 0.3) 100%);
+    }
+
+    .stats-card--success {
+        background: linear-gradient(135deg, oklch(0.97 0.02 145) 0%, oklch(0.94 0.03 145 / 0.5) 100%);
+    }
+
+    .dark .stats-card--success {
+        background: linear-gradient(135deg, oklch(0.25 0.08 145 / 0.4) 0%, oklch(0.20 0.06 145 / 0.3) 100%);
+    }
+
+    .stats-card--purple {
+        background: linear-gradient(135deg, oklch(0.97 0.02 300) 0%, oklch(0.94 0.03 300 / 0.5) 100%);
+    }
+
+    .dark .stats-card--purple {
+        background: linear-gradient(135deg, oklch(0.25 0.08 300 / 0.4) 0%, oklch(0.20 0.06 300 / 0.3) 100%);
+    }
+
+    /* Stats Icon Container */
+    .stats-icon {
+        @apply flex items-center justify-center rounded-2xl p-3;
+        background: linear-gradient(135deg, var(--color-brand-blue-500), var(--color-brand-blue-600));
+        box-shadow: 0 4px 12px oklch(from var(--color-brand-blue-500) l c h / 0.35);
+    }
+
+    .stats-icon--gold {
+        background: linear-gradient(135deg, var(--color-brand-gold-400), var(--color-brand-gold-500));
+        box-shadow: 0 4px 12px oklch(from var(--color-brand-gold-500) l c h / 0.35);
+    }
+
+    .stats-icon--success {
+        background: linear-gradient(135deg, oklch(0.55 0.18 145), oklch(0.50 0.18 145));
+        box-shadow: 0 4px 12px oklch(0.55 0.18 145 / 0.35);
+    }
+
+    .stats-icon--purple {
+        background: linear-gradient(135deg, oklch(0.55 0.18 300), oklch(0.50 0.18 300));
+        box-shadow: 0 4px 12px oklch(0.55 0.18 300 / 0.35);
+    }
+
+    /* iOS-style Section Header */
+    .admin-section-header {
+        @apply flex items-center gap-3 mb-4;
+    }
+
+    .admin-section-header h2 {
+        @apply text-lg font-semibold tracking-tight;
+    }
+
+    .admin-section-header .section-badge {
+        @apply px-3 py-1 rounded-full text-xs font-medium;
+        background: linear-gradient(135deg, var(--color-brand-blue-100), var(--color-brand-gold-100));
+        color: var(--color-brand-blue-700);
+    }
+
+    .dark .admin-section-header .section-badge {
+        background: linear-gradient(135deg, oklch(from var(--color-brand-blue-900) l c h / 0.5), oklch(from var(--color-brand-gold-900) l c h / 0.3));
+        color: var(--color-brand-blue-300);
+    }
+
+    /* iOS-style Admin Table */
+    .admin-table {
+        @apply w-full;
+    }
+
+    .admin-table thead {
+        @apply sticky top-0 z-10;
+        background: oklch(from var(--muted) l c h / 0.8);
+        backdrop-filter: blur(8px);
+    }
+
+    .admin-table thead th {
+        @apply px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground;
+    }
+
+    .admin-table tbody tr {
+        @apply border-b border-border/50 transition-all duration-150;
+    }
+
+    .admin-table tbody tr:hover {
+        @apply bg-muted/40;
+    }
+
+    .admin-table tbody tr:active {
+        @apply scale-[0.995] bg-muted/60;
+    }
+
+    .admin-table tbody td {
+        @apply px-4 py-4;
+    }
+
+    /* iOS Grouped Table Style */
+    .ios-grouped-table {
+        @apply rounded-2xl overflow-hidden border border-border/50;
+        background: var(--card);
+        box-shadow: var(--ios-shadow-md);
+    }
+
+    .ios-grouped-table .table-section {
+        @apply border-b border-border/30 last:border-b-0;
+    }
+
+    .ios-grouped-table .table-section-header {
+        @apply px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground bg-muted/50;
+    }
+
+    /* iOS-style Form Section */
+    .admin-form-section {
+        @apply rounded-2xl overflow-hidden;
+        background: var(--card);
+        box-shadow:
+            0 1px 3px oklch(0 0 0 / 0.06),
+            0 4px 12px oklch(0 0 0 / 0.04),
+            inset 0 1px 0 oklch(1 0 0 / 0.08);
+    }
+
+    .admin-form-section-header {
+        @apply px-5 py-4 border-b border-border/50;
+        background: linear-gradient(180deg, oklch(from var(--muted) l c h / 0.5) 0%, transparent 100%);
+    }
+
+    .admin-form-section-header h3 {
+        @apply flex items-center gap-2.5 text-base font-semibold;
+    }
+
+    .admin-form-section-header h3 svg {
+        @apply h-5 w-5 text-primary;
+    }
+
+    .admin-form-section-content {
+        @apply p-5;
+    }
+
+    /* iOS-style Form Input Group */
+    .admin-input-group {
+        @apply flex flex-col gap-2;
+    }
+
+    .admin-input-group label {
+        @apply text-sm font-medium text-foreground/80;
+    }
+
+    .admin-input-group .hint {
+        @apply text-xs text-muted-foreground mt-1;
+    }
+
+    /* Premium Form Input */
+    .admin-input {
+        @apply h-12 rounded-xl border border-border/60 bg-background px-4 text-base;
+        transition: all var(--ios-duration-fast) var(--ios-spring-smooth);
+        box-shadow: inset 0 1px 2px oklch(0 0 0 / 0.04);
+    }
+
+    .admin-input:hover {
+        @apply border-border;
+    }
+
+    .admin-input:focus {
+        @apply border-primary/50 ring-2 ring-primary/20;
+        box-shadow:
+            inset 0 1px 2px oklch(0 0 0 / 0.02),
+            0 0 0 4px oklch(from var(--primary) l c h / 0.1);
+    }
+
+    /* iOS-style Select */
+    .admin-select {
+        @apply h-12 rounded-xl border border-border/60 bg-background px-4 text-base;
+        transition: all var(--ios-duration-fast) var(--ios-spring-smooth);
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 40px;
+    }
+
+    .admin-select:focus {
+        @apply border-primary/50 ring-2 ring-primary/20;
+    }
+
+    /* iOS-style Textarea */
+    .admin-textarea {
+        @apply rounded-xl border border-border/60 bg-background px-4 py-3 text-base min-h-[120px] resize-none;
+        transition: all var(--ios-duration-fast) var(--ios-spring-smooth);
+    }
+
+    .admin-textarea:focus {
+        @apply border-primary/50 ring-2 ring-primary/20;
+    }
+
+    /* Premium Action Button */
+    .admin-btn-primary {
+        @apply relative h-12 px-6 rounded-xl font-semibold text-white overflow-hidden;
+        background: linear-gradient(135deg, var(--color-brand-blue-500), var(--color-brand-blue-600));
+        box-shadow:
+            0 2px 4px oklch(from var(--color-brand-blue-600) l c h / 0.3),
+            0 8px 16px oklch(from var(--color-brand-blue-600) l c h / 0.2),
+            inset 0 1px 0 oklch(1 0 0 / 0.2);
+        transition: all var(--ios-duration-fast) var(--ios-spring-smooth);
+    }
+
+    .admin-btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow:
+            0 4px 8px oklch(from var(--color-brand-blue-600) l c h / 0.35),
+            0 12px 24px oklch(from var(--color-brand-blue-600) l c h / 0.25),
+            inset 0 1px 0 oklch(1 0 0 / 0.25);
+    }
+
+    .admin-btn-primary:active {
+        transform: scale(0.97);
+        box-shadow:
+            0 1px 2px oklch(from var(--color-brand-blue-600) l c h / 0.3),
+            0 4px 8px oklch(from var(--color-brand-blue-600) l c h / 0.2),
+            inset 0 1px 0 oklch(1 0 0 / 0.15);
+    }
+
+    /* Secondary Admin Button */
+    .admin-btn-secondary {
+        @apply h-12 px-6 rounded-xl font-semibold border-2 border-border bg-background;
+        transition: all var(--ios-duration-fast) var(--ios-spring-smooth);
+    }
+
+    .admin-btn-secondary:hover {
+        @apply bg-muted border-muted-foreground/30;
+    }
+
+    .admin-btn-secondary:active {
+        transform: scale(0.97);
+    }
+
+    /* iOS Empty State */
+    .admin-empty-state {
+        @apply flex flex-col items-center justify-center py-16 px-8 text-center;
+    }
+
+    .admin-empty-state .icon-wrapper {
+        @apply mb-6 p-6 rounded-3xl;
+        background: linear-gradient(135deg, var(--muted), oklch(from var(--muted) l c h / 0.5));
+    }
+
+    .admin-empty-state .icon-wrapper svg {
+        @apply h-12 w-12 text-muted-foreground/60;
+    }
+
+    .admin-empty-state h3 {
+        @apply text-xl font-semibold mb-2;
+    }
+
+    .admin-empty-state p {
+        @apply text-muted-foreground mb-6 max-w-sm;
+    }
+
+    /* iOS-style Quick Action Pills */
+    .quick-action-pill {
+        @apply inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium;
+        background: var(--card);
+        border: 1px solid var(--border);
+        box-shadow: var(--ios-shadow-sm);
+        transition: all var(--ios-duration-fast) var(--ios-spring-smooth);
+    }
+
+    .quick-action-pill:hover {
+        @apply border-primary/30;
+        background: oklch(from var(--primary) l c h / 0.05);
+        box-shadow: var(--ios-shadow-md);
+    }
+
+    .quick-action-pill:active {
+        transform: scale(0.96);
+    }
+
+    .quick-action-pill svg {
+        @apply h-4 w-4;
+    }
+
+    /* iOS-style Order Card (Mobile) */
+    .order-card-mobile {
+        @apply rounded-2xl overflow-hidden;
+        background: var(--card);
+        border: 1px solid var(--border);
+        box-shadow: var(--ios-shadow-sm);
+        transition: all var(--ios-duration-fast) var(--ios-spring-smooth);
+    }
+
+    .order-card-mobile:active {
+        transform: scale(0.98);
+        box-shadow: var(--ios-shadow-xs);
+    }
+
+    .order-card-mobile .order-header {
+        @apply flex items-center justify-between px-4 py-3 border-b border-border/50;
+        background: oklch(from var(--muted) l c h / 0.3);
+    }
+
+    .order-card-mobile .order-body {
+        @apply p-4;
+    }
+
+    .order-card-mobile .order-footer {
+        @apply flex items-center justify-between px-4 py-3 border-t border-border/50;
+        background: oklch(from var(--muted) l c h / 0.2);
+    }
+
+    /* iOS-style Status Timeline */
+    .status-timeline {
+        @apply relative pl-8;
+    }
+
+    .status-timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 8px;
+        bottom: 8px;
+        width: 2px;
+        background: linear-gradient(180deg, var(--color-brand-blue-200), var(--border));
+    }
+
+    .dark .status-timeline::before {
+        background: linear-gradient(180deg, var(--color-brand-blue-700), var(--border));
+    }
+
+    .timeline-item {
+        @apply relative pb-6 last:pb-0;
+    }
+
+    .timeline-item .timeline-dot {
+        @apply absolute -left-8 top-0 w-8 h-8 rounded-full flex items-center justify-center;
+        background: var(--card);
+        border: 2px solid var(--border);
+        box-shadow: var(--ios-shadow-sm);
+    }
+
+    .timeline-item.active .timeline-dot {
+        border-color: var(--color-brand-blue-500);
+        background: var(--color-brand-blue-50);
+    }
+
+    .dark .timeline-item.active .timeline-dot {
+        background: oklch(from var(--color-brand-blue-900) l c h / 0.5);
+    }
+
+    .timeline-item.completed .timeline-dot {
+        border-color: oklch(0.55 0.18 145);
+        background: oklch(0.55 0.18 145);
+    }
+
+    .timeline-item.completed .timeline-dot svg {
+        @apply text-white;
+    }
+
+    /* Premium Image Upload Area */
+    .admin-upload-area {
+        @apply relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border/60 p-10;
+        background: linear-gradient(180deg, oklch(from var(--muted) l c h / 0.3) 0%, transparent 100%);
+        transition: all var(--ios-duration-fast) var(--ios-spring-smooth);
+    }
+
+    .admin-upload-area:hover {
+        @apply border-primary/40;
+        background: linear-gradient(180deg, oklch(from var(--primary) l c h / 0.05) 0%, transparent 100%);
+    }
+
+    .admin-upload-area .upload-icon {
+        @apply mb-4 p-4 rounded-2xl;
+        background: linear-gradient(135deg, var(--color-brand-blue-50), var(--color-brand-gold-50));
+    }
+
+    .dark .admin-upload-area .upload-icon {
+        background: linear-gradient(135deg, oklch(from var(--color-brand-blue-900) l c h / 0.4), oklch(from var(--color-brand-gold-900) l c h / 0.3));
+    }
+
+    .admin-upload-area .upload-icon svg {
+        @apply h-8 w-8 text-primary;
+    }
+
+    /* Image Preview Card */
+    .admin-image-preview {
+        @apply relative inline-block rounded-2xl overflow-hidden;
+        box-shadow: var(--ios-shadow-lg);
+    }
+
+    .admin-image-preview img {
+        @apply h-48 w-48 object-cover;
+    }
+
+    .admin-image-preview .remove-btn {
+        @apply absolute -top-2 -right-2 h-7 w-7 rounded-full flex items-center justify-center;
+        background: linear-gradient(135deg, oklch(0.55 0.25 25), oklch(0.50 0.25 25));
+        box-shadow: 0 2px 8px oklch(0.55 0.25 25 / 0.4);
+    }
+
+    .admin-image-preview .remove-btn svg {
+        @apply h-4 w-4 text-white;
+    }
+
+    /* Premium Badge Styles */
+    .admin-badge {
+        @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold;
+    }
+
+    .admin-badge--pending {
+        background: linear-gradient(135deg, var(--color-brand-gold-100), var(--color-brand-gold-50));
+        color: var(--color-brand-gold-700);
+        box-shadow: inset 0 0 0 1px var(--color-brand-gold-200);
+    }
+
+    .dark .admin-badge--pending {
+        background: linear-gradient(135deg, oklch(from var(--color-brand-gold-900) l c h / 0.5), oklch(from var(--color-brand-gold-950) l c h / 0.3));
+        color: var(--color-brand-gold-300);
+    }
+
+    .admin-badge--confirmed {
+        background: linear-gradient(135deg, var(--color-brand-blue-100), var(--color-brand-blue-50));
+        color: var(--color-brand-blue-700);
+        box-shadow: inset 0 0 0 1px var(--color-brand-blue-200);
+    }
+
+    .admin-badge--success {
+        background: linear-gradient(135deg, oklch(0.92 0.04 145), oklch(0.96 0.02 145));
+        color: oklch(0.35 0.12 145);
+        box-shadow: inset 0 0 0 1px oklch(0.75 0.12 145);
+    }
+
+    .admin-badge--destructive {
+        background: linear-gradient(135deg, oklch(0.92 0.04 25), oklch(0.96 0.02 25));
+        color: oklch(0.45 0.2 25);
+        box-shadow: inset 0 0 0 1px oklch(0.75 0.15 25);
+    }
+
+    /* Floating Action Button (FAB) for Mobile */
+    .admin-fab {
+        @apply fixed bottom-24 right-4 z-40 h-14 w-14 rounded-full flex items-center justify-center;
+        background: linear-gradient(135deg, var(--color-brand-blue-500), var(--color-brand-blue-600));
+        box-shadow:
+            0 4px 12px oklch(from var(--color-brand-blue-500) l c h / 0.4),
+            0 8px 24px oklch(from var(--color-brand-blue-500) l c h / 0.25);
+        transition: all var(--ios-duration-fast) var(--ios-spring-bounce);
+    }
+
+    .admin-fab:active {
+        transform: scale(0.9);
+    }
+
+    .admin-fab svg {
+        @apply h-6 w-6 text-white;
     }
 }

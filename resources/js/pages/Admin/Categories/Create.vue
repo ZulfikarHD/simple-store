@@ -1,17 +1,14 @@
 <script setup lang="ts">
 /**
  * Admin Categories Create Page
- * Form untuk menambahkan kategori baru dengan fitur, yaitu:
- * - Input nama dan deskripsi
- * - Image upload dengan preview
- * - Toggle status aktif
- * - Input urutan (sort_order)
- * - iOS-like design dengan spring animations dan haptic feedback
+ * Form premium iOS-style untuk menambahkan kategori baru, yaitu:
+ * - Premium form sections dengan icons
+ * - iOS-style image upload dengan drag & drop
+ * - Elegant toggle switches untuk status
  *
  * @author Zulfikar Hidayatullah
  */
 import AppLayout from '@/layouts/AppLayout.vue'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -29,6 +26,9 @@ import {
     X,
     ArrowLeft,
     Save,
+    ImagePlus,
+    CheckCircle,
+    Hash,
 } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { Motion } from 'motion-v'
@@ -85,7 +85,7 @@ function removeImage() {
 }
 
 /**
- * Submit form untuk membuat kategori baru
+ * Submit form
  */
 function submitForm() {
     haptic.medium()
@@ -120,7 +120,7 @@ function submitForm() {
 }
 
 /**
- * Cancel dan kembali ke daftar kategori
+ * Cancel dan kembali
  */
 function cancel() {
     haptic.light()
@@ -133,142 +133,141 @@ function cancel() {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <PullToRefresh>
-            <div class="flex flex-col gap-6 p-4 md:p-6">
-                <!-- Page Header dengan spring animation -->
+            <div class="admin-page flex flex-col gap-6 p-4 md:p-6">
+                <!-- Page Header -->
                 <Motion
                     :initial="{ opacity: 0, y: 20 }"
                     :animate="{ opacity: 1, y: 0 }"
                     :transition="springPresets.ios"
                     class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
                 >
-                    <div class="flex flex-col gap-2">
-                        <h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-                            Tambah Kategori Baru
-                        </h1>
-                        <p class="text-muted-foreground">
-                            Isi informasi kategori yang akan ditambahkan
-                        </p>
+                    <div class="flex items-center gap-3">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            class="ios-button h-10 w-10 shrink-0"
+                            @click="cancel"
+                        >
+                            <ArrowLeft class="h-5 w-5" />
+                        </Button>
+                        <div class="flex flex-col gap-1">
+                            <h1 class="text-2xl font-bold tracking-tight md:text-3xl">
+                                Tambah Kategori
+                            </h1>
+                            <p class="text-muted-foreground">
+                                Isi informasi kategori baru
+                            </p>
+                        </div>
                     </div>
-                    <Button
-                        variant="outline"
-                        class="ios-button gap-2"
-                        @click="cancel"
-                    >
-                        <ArrowLeft class="h-4 w-4" />
-                        Kembali
-                    </Button>
                 </Motion>
 
                 <!-- Form -->
                 <form @submit.prevent="submitForm" class="grid gap-6 lg:grid-cols-3">
                     <!-- Main Content -->
-                    <div class="lg:col-span-2 flex flex-col gap-6">
-                        <!-- Basic Info Card -->
+                    <div class="flex flex-col gap-6 lg:col-span-2">
+                        <!-- Basic Info -->
                         <Motion
                             :initial="{ opacity: 0, y: 20 }"
                             :animate="{ opacity: 1, y: 0 }"
                             :transition="{ ...springPresets.ios, delay: staggerDelay(0) }"
                         >
-                            <Card class="ios-card">
-                            <CardHeader>
-                                <CardTitle class="flex items-center gap-2">
-                                    <FolderTree class="h-5 w-5" />
-                                    Informasi Kategori
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent class="flex flex-col gap-4">
-                                <!-- Name -->
-                                <div class="flex flex-col gap-2">
-                                    <Label for="name">Nama Kategori *</Label>
-                                    <Input
-                                        id="name"
-                                        v-model="form.name"
-                                        type="text"
-                                        placeholder="Masukkan nama kategori"
-                                        class="ios-input"
-                                        :class="{ 'border-destructive': errors.name }"
-                                    />
-                                    <InputError :message="errors.name" />
+                            <div class="admin-form-section">
+                                <div class="admin-form-section-header">
+                                    <h3>
+                                        <FolderTree />
+                                        Informasi Kategori
+                                    </h3>
                                 </div>
+                                <div class="admin-form-section-content">
+                                    <div class="flex flex-col gap-5">
+                                        <!-- Name -->
+                                        <div class="admin-input-group">
+                                            <Label for="name">Nama Kategori *</Label>
+                                            <Input
+                                                id="name"
+                                                v-model="form.name"
+                                                type="text"
+                                                placeholder="Masukkan nama kategori"
+                                                class="admin-input"
+                                                :class="{ 'border-destructive': errors.name }"
+                                            />
+                                            <InputError :message="errors.name" />
+                                        </div>
 
-                                <!-- Description -->
-                                <div class="flex flex-col gap-2">
-                                    <Label for="description">Deskripsi</Label>
-                                    <textarea
-                                        id="description"
-                                        v-model="form.description"
-                                        rows="4"
-                                        placeholder="Masukkan deskripsi kategori"
-                                        class="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                        :class="{ 'border-destructive': errors.description }"
-                                    ></textarea>
-                                    <InputError :message="errors.description" />
-                                </div>
+                                        <!-- Description -->
+                                        <div class="admin-input-group">
+                                            <Label for="description">Deskripsi</Label>
+                                            <textarea
+                                                id="description"
+                                                v-model="form.description"
+                                                rows="4"
+                                                placeholder="Masukkan deskripsi kategori"
+                                                class="admin-textarea"
+                                                :class="{ 'border-destructive': errors.description }"
+                                            />
+                                            <InputError :message="errors.description" />
+                                        </div>
 
-                                <!-- Sort Order -->
-                                <div class="flex flex-col gap-2">
-                                    <Label for="sort_order">Urutan</Label>
-                                    <Input
-                                        id="sort_order"
-                                        v-model="form.sort_order"
-                                        type="number"
-                                        min="0"
-                                        placeholder="0"
-                                        class="ios-input"
-                                        :class="{ 'border-destructive': errors.sort_order }"
-                                    />
-                                    <p class="text-xs text-muted-foreground">
-                                        Angka lebih kecil akan ditampilkan lebih dulu
-                                    </p>
-                                    <InputError :message="errors.sort_order" />
+                                        <!-- Sort Order -->
+                                        <div class="admin-input-group">
+                                            <Label for="sort_order" class="flex items-center gap-2">
+                                                <Hash class="h-4 w-4 text-primary" />
+                                                Urutan
+                                            </Label>
+                                            <Input
+                                                id="sort_order"
+                                                v-model="form.sort_order"
+                                                type="number"
+                                                min="0"
+                                                placeholder="0"
+                                                class="admin-input"
+                                                :class="{ 'border-destructive': errors.sort_order }"
+                                            />
+                                            <p class="hint">Angka lebih kecil akan ditampilkan lebih dulu</p>
+                                            <InputError :message="errors.sort_order" />
+                                        </div>
+                                    </div>
                                 </div>
-                            </CardContent>
-                            </Card>
+                            </div>
                         </Motion>
 
-                        <!-- Image Upload Card -->
+                        <!-- Image Upload -->
                         <Motion
                             :initial="{ opacity: 0, y: 20 }"
                             :animate="{ opacity: 1, y: 0 }"
                             :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
                         >
-                            <Card class="ios-card">
-                            <CardHeader>
-                                <CardTitle class="flex items-center gap-2">
-                                    <Upload class="h-5 w-5" />
-                                    Gambar Kategori
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div class="flex flex-col gap-4">
+                            <div class="admin-form-section">
+                                <div class="admin-form-section-header">
+                                    <h3>
+                                        <ImagePlus />
+                                        Gambar Kategori
+                                    </h3>
+                                </div>
+                                <div class="admin-form-section-content">
                                     <!-- Image Preview -->
                                     <Motion
                                         v-if="imagePreview"
                                         :initial="{ opacity: 0, scale: 0.9 }"
                                         :animate="{ opacity: 1, scale: 1 }"
                                         :transition="springPresets.bouncy"
-                                        class="relative inline-block"
+                                        class="admin-image-preview"
                                     >
-                                        <img
-                                            :src="imagePreview"
-                                            alt="Preview"
-                                            class="h-48 w-48 rounded-xl object-cover"
-                                        />
+                                        <img :src="imagePreview" alt="Preview" />
                                         <button
                                             type="button"
-                                            class="ios-button absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-white shadow"
+                                            class="remove-btn ios-button"
                                             @click="removeImage"
                                         >
-                                            <X class="h-4 w-4" />
+                                            <X />
                                         </button>
                                     </Motion>
 
-                                    <!-- Upload Input -->
-                                    <div
-                                        v-else
-                                        class="relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/25 p-8 transition-colors hover:border-muted-foreground/50"
-                                    >
-                                        <Upload class="mb-4 h-10 w-10 text-muted-foreground" />
+                                    <!-- Upload Area -->
+                                    <div v-else class="admin-upload-area">
+                                        <div class="upload-icon">
+                                            <Upload />
+                                        </div>
                                         <p class="mb-2 text-sm font-medium">
                                             Klik atau drag file untuk upload
                                         </p>
@@ -282,57 +281,58 @@ function cancel() {
                                             @change="handleImageChange"
                                         />
                                     </div>
-                                    <InputError :message="errors.image" />
+                                    <InputError :message="errors.image" class="mt-2" />
                                 </div>
-                            </CardContent>
-                            </Card>
+                            </div>
                         </Motion>
                     </div>
 
                     <!-- Sidebar -->
                     <div class="flex flex-col gap-6">
-                        <!-- Status Card -->
+                        <!-- Status -->
                         <Motion
                             :initial="{ opacity: 0, y: 20 }"
                             :animate="{ opacity: 1, y: 0 }"
                             :transition="{ ...springPresets.ios, delay: staggerDelay(2) }"
                         >
-                            <Card class="ios-card">
-                            <CardHeader>
-                                <CardTitle>Status Kategori</CardTitle>
-                            </CardHeader>
-                            <CardContent class="flex flex-col gap-4">
-                                <!-- Is Active -->
-                                <div class="flex items-center gap-3">
-                                    <Checkbox
-                                        id="is_active"
-                                        :checked="form.is_active"
-                                        @update:checked="form.is_active = $event"
-                                    />
-                                    <div class="flex flex-col">
-                                        <Label for="is_active" class="cursor-pointer">
-                                            Kategori Aktif
-                                        </Label>
-                                        <p class="text-xs text-muted-foreground">
-                                            Kategori akan ditampilkan di toko
-                                        </p>
+                            <div class="admin-form-section">
+                                <div class="admin-form-section-header">
+                                    <h3>
+                                        <CheckCircle />
+                                        Status
+                                    </h3>
+                                </div>
+                                <div class="admin-form-section-content">
+                                    <div class="flex items-start gap-3 rounded-xl border border-border/50 bg-muted/20 p-4">
+                                        <Checkbox
+                                            id="is_active"
+                                            :checked="form.is_active"
+                                            @update:checked="form.is_active = $event"
+                                        />
+                                        <div class="flex flex-col">
+                                            <Label for="is_active" class="cursor-pointer font-medium">
+                                                Kategori Aktif
+                                            </Label>
+                                            <p class="text-xs text-muted-foreground">
+                                                Kategori akan ditampilkan di toko
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
-                            </CardContent>
-                            </Card>
+                            </div>
                         </Motion>
 
-                        <!-- Actions Card -->
+                        <!-- Actions -->
                         <Motion
                             :initial="{ opacity: 0, y: 20 }"
                             :animate="{ opacity: 1, y: 0 }"
                             :transition="{ ...springPresets.ios, delay: staggerDelay(3) }"
                         >
-                            <Card class="ios-card">
-                                <CardContent class="flex flex-col gap-3 pt-6">
+                            <div class="admin-form-section">
+                                <div class="admin-form-section-content flex flex-col gap-3">
                                     <Button
                                         type="submit"
-                                        class="ios-button w-full gap-2"
+                                        class="admin-btn-primary gap-2"
                                         :disabled="isSubmitting"
                                     >
                                         <Save class="h-4 w-4" />
@@ -341,13 +341,13 @@ function cancel() {
                                     <Button
                                         type="button"
                                         variant="outline"
-                                        class="ios-button w-full"
+                                        class="admin-btn-secondary"
                                         @click="cancel"
                                     >
                                         Batal
                                     </Button>
-                                </CardContent>
-                            </Card>
+                                </div>
+                            </div>
                         </Motion>
                     </div>
                 </form>
@@ -356,6 +356,5 @@ function cancel() {
                 <div class="h-20 md:hidden" />
             </div>
         </PullToRefresh>
-
     </AppLayout>
 </template>

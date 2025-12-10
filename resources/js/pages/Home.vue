@@ -285,7 +285,7 @@ const bouncyTransition = { type: 'spring' as const, ...springPresets.bouncy }
 
     <div class="flex min-h-screen flex-col bg-background">
         <!-- Header Navigation dengan iOS Glass Effect (Fixed) -->
-        <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-border/30">
+        <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-brand-blue-200/30 dark:border-brand-blue-800/30">
                 <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                     <!-- Logo & Brand dengan spring animation -->
                 <Motion
@@ -294,10 +294,13 @@ const bouncyTransition = { type: 'spring' as const, ...springPresets.bouncy }
                     :transition="springTransition"
                         class="flex items-center gap-2 sm:gap-3"
                     >
-                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm sm:h-10 sm:w-10">
-                            <ShoppingBag class="h-4 w-4 text-primary-foreground sm:h-5 sm:w-5" />
+                        <div class="brand-logo h-9 w-9 sm:h-10 sm:w-10">
+                            <ShoppingBag class="h-4 w-4 text-white sm:h-5 sm:w-5" />
                         </div>
-                        <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
+                        <div class="flex flex-col">
+                            <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
+                            <span class="hidden text-[10px] font-medium text-brand-gold sm:block">Premium Quality Products</span>
+                        </div>
                 </Motion>
 
                     <!-- Desktop Navigation dengan fade in -->
@@ -429,31 +432,15 @@ const bouncyTransition = { type: 'spring' as const, ...springPresets.bouncy }
             <!-- Main Content dengan animations -->
             <PullToRefresh>
             <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-                <!-- Search Bar Section dengan slide up animation -->
+                <!-- Hero Section dengan gradient background -->
                 <Motion
                     :initial="{ opacity: 0, y: 20 }"
                     :animate="{ opacity: 1, y: 0 }"
-                    :transition="{ ...springTransition, delay: 0.05 }"
-                    class="mb-5 sm:mb-6"
+                    :transition="springTransition"
+                    class="mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-brand-blue-50 via-white to-brand-gold-50 p-5 sm:mb-8 sm:p-6 dark:from-brand-blue-900/30 dark:via-background dark:to-brand-gold-900/20"
                 >
-                    <SearchBar
-                        v-model="localSearchQuery"
-                        placeholder="Cari produk..."
-                        :debounce="400"
-                        class="w-full sm:max-w-md"
-                        @search="handleSearch"
-                    />
-                </Motion>
-
-                <!-- Page Title dengan slide up animation -->
-                <Motion
-                    :initial="{ opacity: 0, y: 20 }"
-                    :animate="{ opacity: 1, y: 0 }"
-                    :transition="{ ...springTransition, delay: 0.1 }"
-                    class="mb-5 sm:mb-6"
-                >
-                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="flex-1">
                             <h1 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                                 {{ pageHeading }}
                             </h1>
@@ -461,26 +448,35 @@ const bouncyTransition = { type: 'spring' as const, ...springPresets.bouncy }
                                 {{ pageDescription }}
                             </p>
                         </div>
-                        <!-- Clear Search Button dengan spring animation -->
-                        <AnimatePresence>
-                            <Motion
-                            v-if="props.searchQuery"
-                            :initial="{ scale: 0, opacity: 0 }"
-                                :animate="{ scale: 1, opacity: 1 }"
-                                :exit="{ scale: 0, opacity: 0 }"
-                                :transition="bouncyTransition"
-                            >
-                                <Button
+                        <!-- Search Bar Section -->
+                        <SearchBar
+                            v-model="localSearchQuery"
+                            placeholder="Cari produk..."
+                            :debounce="400"
+                            class="w-full sm:max-w-xs"
+                            @search="handleSearch"
+                        />
+                    </div>
+                </Motion>
+
+                <!-- Page Actions dengan slide up animation -->
+                <Motion
+                    v-if="props.searchQuery"
+                    :initial="{ opacity: 0, y: 20 }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springTransition, delay: 0.1 }"
+                    class="mb-5 sm:mb-6"
+                >
+                    <div class="flex items-center justify-end">
+                        <Button
                             variant="outline"
                             size="default"
-                            class="ios-button flex h-11 w-full items-center justify-center gap-2 rounded-xl sm:h-10 sm:w-auto"
+                            class="ios-button flex h-11 items-center justify-center gap-2 rounded-xl border-brand-blue-200 text-brand-blue hover:bg-brand-blue-50 dark:border-brand-blue-700 dark:hover:bg-brand-blue-900/30 sm:h-10"
                             @click="handleClearSearch"
                         >
                             <X class="h-4 w-4" />
                             Hapus Pencarian
                         </Button>
-                            </Motion>
-                        </AnimatePresence>
                     </div>
                 </Motion>
 
@@ -492,11 +488,14 @@ const bouncyTransition = { type: 'spring' as const, ...springPresets.bouncy }
                     :transition="{ ...springTransition, delay: 0.15 }"
                     class="mb-6 sm:mb-8"
                 >
-                    <CategoryFilter
-                        :categories="categories.data"
-                        :active-category="selectedCategory"
-                        @select="handleCategorySelect"
-                    />
+                    <div class="flex items-center gap-3">
+                        <span class="hidden text-sm font-medium text-muted-foreground sm:block">Kategori:</span>
+                        <CategoryFilter
+                            :categories="categories.data"
+                            :active-category="selectedCategory"
+                            @select="handleCategorySelect"
+                        />
+                    </div>
                 </Motion>
 
                 <!-- Products Grid dengan staggered animations -->
@@ -531,12 +530,21 @@ const bouncyTransition = { type: 'spring' as const, ...springPresets.bouncy }
                 </AnimatePresence>
             </main>
             </PullToRefresh>
-            
-            <!-- Footer - Hidden on mobile karena ada bottom nav, sticky di bottom pada large screen -->
-            <footer class="hidden border-t border-border bg-muted/30 md:block">
+
+            <!-- Footer - Hidden on mobile karena ada bottom nav, premium styling -->
+            <footer class="hidden border-t border-brand-blue-100 bg-gradient-to-b from-brand-blue-50/50 to-white dark:border-brand-blue-900/30 dark:from-brand-blue-900/20 dark:to-background md:block">
                 <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                    <div class="text-center text-sm text-muted-foreground">
-                        <p>&copy; {{ new Date().getFullYear() }} Simple Store. Dibuat oleh Zulfikar Hidayatullah.</p>
+                    <div class="flex flex-col items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <div class="brand-logo h-8 w-8">
+                                <ShoppingBag class="h-4 w-4 text-white" />
+                            </div>
+                            <span class="font-bold text-foreground">Simple Store</span>
+                        </div>
+                        <p class="text-center text-sm text-muted-foreground">
+                            &copy; {{ new Date().getFullYear() }} Simple Store. Dibuat dengan ❤️ oleh Zulfikar Hidayatullah.
+                        </p>
+                        <p class="text-xs text-brand-gold">Premium Quality Products</p>
                     </div>
                 </div>
             </footer>

@@ -1,17 +1,15 @@
 <script setup lang="ts">
 /**
  * Admin Categories Index Page
- * Menampilkan daftar kategori dengan fitur CRUD, yaitu:
- * - Tabel data kategori dengan kolom nama, deskripsi, jumlah produk, status
- * - Modal form untuk tambah dan edit kategori
- * - Delete dengan confirmation dialog
- * - Tampilan product count per kategori
- * - iOS-like design dengan spring animations dan haptic feedback
+ * Menampilkan daftar kategori dengan iOS-style premium design, yaitu:
+ * - iOS grouped table dengan category thumbnails
+ * - Premium modal form untuk CRUD
+ * - Animated rows dengan press feedback
+ * - Mobile FAB untuk quick add
  *
  * @author Zulfikar Hidayatullah
  */
 import AppLayout from '@/layouts/AppLayout.vue'
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -41,6 +39,7 @@ import {
     Upload,
     X,
     Save,
+    Image,
 } from 'lucide-vue-next'
 import { ref, computed } from 'vue'
 import { Motion } from 'motion-v'
@@ -102,11 +101,11 @@ const isDeleting = ref(false)
 // Image preview
 const imagePreview = ref<string | null>(null)
 
-// Press state untuk iOS-like feedback
+// Press state
 const pressedRow = ref<number | null>(null)
 
 /**
- * Reset form ke default values
+ * Reset form
  */
 function resetForm() {
     form.value = {
@@ -123,7 +122,7 @@ function resetForm() {
 }
 
 /**
- * Buka modal untuk tambah kategori baru
+ * Buka modal untuk tambah kategori
  */
 function openCreateModal() {
     haptic.medium()
@@ -173,7 +172,7 @@ function removeImage() {
 }
 
 /**
- * Submit form (create atau update)
+ * Submit form
  */
 function submitForm() {
     haptic.medium()
@@ -193,7 +192,6 @@ function submitForm() {
     }
 
     if (isEditing.value && categoryToEdit.value) {
-        // Update
         formData.append('_method', 'PUT')
         router.post(update(categoryToEdit.value.id).url, formData, {
             forceFormData: true,
@@ -211,7 +209,6 @@ function submitForm() {
             },
         })
     } else {
-        // Create
         router.post(store().url, formData, {
             forceFormData: true,
             onSuccess: () => {
@@ -275,7 +272,7 @@ const existingImageUrl = computed(() => {
 })
 
 /**
- * Handle row press untuk iOS-like feedback
+ * Handle row press
  */
 function handleRowPress(categoryId: number) {
     pressedRow.value = categoryId
@@ -295,23 +292,28 @@ function handleRowRelease() {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <PullToRefresh>
-            <div class="flex flex-col gap-6 p-4 md:p-6">
-                <!-- Page Header dengan spring animation -->
+            <div class="admin-page flex flex-col gap-6 p-4 md:p-6">
+                <!-- Page Header -->
                 <Motion
                     :initial="{ opacity: 0, y: 20 }"
                     :animate="{ opacity: 1, y: 0 }"
                     :transition="springPresets.ios"
                     class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
                 >
-                    <div class="flex flex-col gap-2">
-                        <h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-                            Manajemen Kategori
-                        </h1>
+                    <div class="flex flex-col gap-1">
+                        <div class="flex items-center gap-3">
+                            <h1 class="text-2xl font-bold tracking-tight md:text-3xl">
+                                Kategori
+                            </h1>
+                            <Badge variant="secondary" class="tabular-nums">
+                                {{ categories.length }} total
+                            </Badge>
+                        </div>
                         <p class="text-muted-foreground">
                             Kelola kategori produk F&B toko Anda
                         </p>
                     </div>
-                    <Button class="ios-button gap-2" @click="openCreateModal">
+                    <Button class="admin-btn-primary hidden gap-2 md:flex" @click="openCreateModal">
                         <Plus class="h-4 w-4" />
                         Tambah Kategori
                     </Button>
@@ -328,7 +330,7 @@ function handleRowRelease() {
                 >
                     <div
                         v-if="flashSuccess"
-                        class="rounded-xl border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200"
+                        class="rounded-2xl border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200"
                     >
                         {{ flashSuccess }}
                     </div>
@@ -343,7 +345,7 @@ function handleRowRelease() {
                 >
                     <div
                         v-if="flashError"
-                        class="rounded-xl border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200"
+                        class="rounded-2xl border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200"
                     >
                         {{ flashError }}
                     </div>
@@ -355,33 +357,20 @@ function handleRowRelease() {
                     :animate="{ opacity: 1, y: 0 }"
                     :transition="{ ...springPresets.ios, delay: staggerDelay(0) }"
                 >
-                    <Card class="ios-card">
-                    <CardContent class="p-0">
+                    <div class="ios-grouped-table">
                         <div class="overflow-x-auto">
-                            <table class="w-full">
-                                <thead class="border-b bg-muted/50">
+                            <table class="admin-table">
+                                <thead>
                                     <tr>
-                                        <th class="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                                            Kategori
-                                        </th>
-                                        <th class="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                                            Deskripsi
-                                        </th>
-                                        <th class="px-4 py-3 text-center text-sm font-medium text-muted-foreground">
-                                            Jumlah Produk
-                                        </th>
-                                        <th class="px-4 py-3 text-center text-sm font-medium text-muted-foreground">
-                                            Urutan
-                                        </th>
-                                        <th class="px-4 py-3 text-center text-sm font-medium text-muted-foreground">
-                                            Status
-                                        </th>
-                                        <th class="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
-                                            Aksi
-                                        </th>
+                                        <th>Kategori</th>
+                                        <th>Deskripsi</th>
+                                        <th class="text-center">Produk</th>
+                                        <th class="text-center">Urutan</th>
+                                        <th class="text-center">Status</th>
+                                        <th class="text-right">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y">
+                                <tbody>
                                     <Motion
                                         v-for="(category, index) in categories"
                                         :key="category.id"
@@ -389,8 +378,7 @@ function handleRowRelease() {
                                         :initial="{ opacity: 0, x: -20 }"
                                         :animate="{ opacity: 1, x: 0 }"
                                         :transition="{ ...springPresets.ios, delay: 0.1 + index * 0.03 }"
-                                        class="transition-all duration-150 hover:bg-muted/50"
-                                        :class="{ 'scale-[0.99] bg-muted/30': pressedRow === category.id }"
+                                        :class="{ 'scale-[0.995] bg-muted/60': pressedRow === category.id }"
                                         @mousedown="handleRowPress(category.id)"
                                         @mouseup="handleRowRelease"
                                         @mouseleave="handleRowRelease"
@@ -398,9 +386,9 @@ function handleRowRelease() {
                                         @touchend="handleRowRelease"
                                     >
                                         <!-- Category Info -->
-                                        <td class="px-4 py-3">
-                                            <div class="flex items-center gap-3">
-                                                <div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-xl bg-muted">
+                                        <td>
+                                            <div class="flex items-center gap-4">
+                                                <div class="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-muted">
                                                     <img
                                                         v-if="category.image"
                                                         :src="getImageUrl(category.image)"
@@ -411,15 +399,15 @@ function handleRowRelease() {
                                                         v-else
                                                         class="flex h-full w-full items-center justify-center"
                                                     >
-                                                        <FolderTree class="h-4 w-4 text-muted-foreground" />
+                                                        <FolderTree class="h-5 w-5 text-muted-foreground" />
                                                     </div>
                                                 </div>
-                                                <span class="font-medium">{{ category.name }}</span>
+                                                <span class="font-semibold">{{ category.name }}</span>
                                             </div>
                                         </td>
 
                                         <!-- Description -->
-                                        <td class="px-4 py-3">
+                                        <td>
                                             <span
                                                 v-if="category.description"
                                                 class="line-clamp-2 text-sm text-muted-foreground"
@@ -430,35 +418,37 @@ function handleRowRelease() {
                                         </td>
 
                                         <!-- Products Count -->
-                                        <td class="px-4 py-3 text-center">
-                                            <Badge variant="secondary" class="gap-1">
+                                        <td class="text-center">
+                                            <Badge variant="outline" class="gap-1 tabular-nums">
                                                 <Package class="h-3 w-3" />
                                                 {{ category.products_count }}
                                             </Badge>
                                         </td>
 
                                         <!-- Sort Order -->
-                                        <td class="px-4 py-3 text-center">
-                                            <span class="text-sm">{{ category.sort_order }}</span>
+                                        <td class="text-center">
+                                            <span class="text-sm tabular-nums">{{ category.sort_order }}</span>
                                         </td>
 
                                         <!-- Status -->
-                                        <td class="px-4 py-3 text-center">
-                                            <Badge
-                                                :variant="category.is_active ? 'default' : 'outline'"
-                                                :class="category.is_active ? 'bg-green-600' : ''"
+                                        <td class="text-center">
+                                            <span
+                                                :class="[
+                                                    'admin-badge',
+                                                    category.is_active ? 'admin-badge--success' : 'bg-muted text-muted-foreground',
+                                                ]"
                                             >
                                                 {{ category.is_active ? 'Aktif' : 'Tidak Aktif' }}
-                                            </Badge>
+                                            </span>
                                         </td>
 
                                         <!-- Actions -->
-                                        <td class="px-4 py-3">
-                                            <div class="flex items-center justify-end gap-2">
+                                        <td class="text-right">
+                                            <div class="flex items-center justify-end gap-1">
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    class="ios-button h-8 w-8 p-0"
+                                                    class="ios-button h-9 w-9 p-0"
                                                     @click="openEditModal(category)"
                                                 >
                                                     <Pencil class="h-4 w-4" />
@@ -466,7 +456,7 @@ function handleRowRelease() {
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    class="ios-button h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                                    class="ios-button h-9 w-9 p-0 text-destructive hover:text-destructive"
                                                     :disabled="category.products_count > 0"
                                                     @click="confirmDelete(category)"
                                                 >
@@ -478,44 +468,40 @@ function handleRowRelease() {
 
                                     <!-- Empty State -->
                                     <tr v-if="categories.length === 0">
-                                        <td colspan="6" class="px-4 py-12">
-                                            <Motion
-                                                :initial="{ opacity: 0, scale: 0.95 }"
-                                                :animate="{ opacity: 1, scale: 1 }"
-                                                :transition="springPresets.ios"
-                                                class="flex flex-col items-center justify-center text-center"
-                                            >
-                                                <FolderTree class="mb-4 h-12 w-12 text-muted-foreground/50" />
-                                                <p class="text-lg font-medium text-muted-foreground">
-                                                    Belum ada kategori
-                                                </p>
-                                                <p class="mt-1 text-sm text-muted-foreground">
-                                                    Mulai tambahkan kategori pertama Anda
-                                                </p>
-                                                <Button class="ios-button mt-4" @click="openCreateModal">
-                                                    <Plus class="mr-2 h-4 w-4" />
+                                        <td colspan="6">
+                                            <div class="admin-empty-state">
+                                                <div class="icon-wrapper">
+                                                    <FolderTree />
+                                                </div>
+                                                <h3>Belum Ada Kategori</h3>
+                                                <p>Mulai tambahkan kategori pertama Anda</p>
+                                                <Button class="admin-btn-primary gap-2" @click="openCreateModal">
+                                                    <Plus class="h-4 w-4" />
                                                     Tambah Kategori
                                                 </Button>
-                                            </Motion>
+                                            </div>
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-                    </CardContent>
-                    </Card>
+                    </div>
                 </Motion>
 
                 <!-- Bottom padding untuk mobile nav -->
-                <div class="h-20 md:hidden" />
+                <div class="h-24 md:hidden" />
             </div>
         </PullToRefresh>
 
+        <!-- Mobile FAB -->
+        <button class="admin-fab md:hidden" @click="openCreateModal">
+            <Plus />
+        </button>
     </AppLayout>
 
     <!-- Create/Edit Form Modal -->
     <Dialog v-model:open="showFormModal">
-        <DialogContent class="rounded-2xl sm:max-w-lg">
+        <DialogContent class="max-h-[90vh] overflow-y-auto rounded-2xl sm:max-w-lg">
             <DialogHeader>
                 <DialogTitle>
                     {{ isEditing ? 'Edit Kategori' : 'Tambah Kategori Baru' }}
@@ -525,37 +511,37 @@ function handleRowRelease() {
                 </DialogDescription>
             </DialogHeader>
 
-            <form @submit.prevent="submitForm" class="flex flex-col gap-4">
+            <form @submit.prevent="submitForm" class="flex flex-col gap-5">
                 <!-- Name -->
-                <div class="flex flex-col gap-2">
+                <div class="admin-input-group">
                     <Label for="name">Nama Kategori *</Label>
                     <Input
                         id="name"
                         v-model="form.name"
                         type="text"
                         placeholder="Masukkan nama kategori"
-                        class="ios-input"
+                        class="admin-input"
                         :class="{ 'border-destructive': errors.name }"
                     />
                     <InputError :message="errors.name" />
                 </div>
 
                 <!-- Description -->
-                <div class="flex flex-col gap-2">
+                <div class="admin-input-group">
                     <Label for="description">Deskripsi</Label>
                     <textarea
                         id="description"
                         v-model="form.description"
                         rows="3"
                         placeholder="Masukkan deskripsi kategori"
-                        class="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        class="admin-textarea"
                         :class="{ 'border-destructive': errors.description }"
-                    ></textarea>
+                    />
                     <InputError :message="errors.description" />
                 </div>
 
                 <!-- Sort Order -->
-                <div class="flex flex-col gap-2">
+                <div class="admin-input-group">
                     <Label for="sort_order">Urutan</Label>
                     <Input
                         id="sort_order"
@@ -563,14 +549,15 @@ function handleRowRelease() {
                         type="number"
                         min="0"
                         placeholder="0"
-                        class="ios-input"
+                        class="admin-input"
                         :class="{ 'border-destructive': errors.sort_order }"
                     />
+                    <p class="hint">Angka lebih kecil akan ditampilkan lebih dulu</p>
                     <InputError :message="errors.sort_order" />
                 </div>
 
                 <!-- Image Upload -->
-                <div class="flex flex-col gap-2">
+                <div class="admin-input-group">
                     <Label>Gambar</Label>
 
                     <!-- New Image Preview -->
@@ -579,34 +566,33 @@ function handleRowRelease() {
                         :initial="{ opacity: 0, scale: 0.9 }"
                         :animate="{ opacity: 1, scale: 1 }"
                         :transition="springPresets.bouncy"
-                        class="relative inline-block"
+                        class="admin-image-preview"
                     >
-                        <img
-                            :src="imagePreview"
-                            alt="Preview"
-                            class="h-24 w-24 rounded-xl object-cover"
-                        />
+                        <img :src="imagePreview" alt="Preview" class="!h-28 !w-28" />
                         <button
                             type="button"
-                            class="ios-button absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-white shadow"
+                            class="remove-btn ios-button"
                             @click="removeImage"
                         >
-                            <X class="h-3 w-3" />
+                            <X />
                         </button>
                     </Motion>
 
                     <!-- Existing Image (Edit mode) -->
                     <div v-else-if="isEditing && existingImageUrl" class="flex flex-col gap-2">
+                        <div class="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Image class="h-4 w-4" />
+                            Gambar saat ini
+                        </div>
                         <img
                             :src="existingImageUrl"
                             :alt="categoryToEdit?.name"
-                            class="h-24 w-24 rounded-xl object-cover"
+                            class="h-28 w-28 rounded-xl object-cover"
                         />
-                        <p class="text-xs text-muted-foreground">Gambar saat ini</p>
                     </div>
 
                     <!-- Upload Input -->
-                    <div class="relative flex items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/25 p-4 transition-colors hover:border-muted-foreground/50">
+                    <div class="admin-upload-area !p-6">
                         <div class="flex items-center gap-2 text-sm text-muted-foreground">
                             <Upload class="h-4 w-4" />
                             <span>Pilih gambar</span>
@@ -622,13 +608,13 @@ function handleRowRelease() {
                 </div>
 
                 <!-- Is Active -->
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 rounded-xl border border-border/50 bg-muted/20 p-4">
                     <Checkbox
                         id="is_active_modal"
                         :checked="form.is_active"
                         @update:checked="form.is_active = $event"
                     />
-                    <Label for="is_active_modal" class="cursor-pointer">
+                    <Label for="is_active_modal" class="cursor-pointer font-medium">
                         Kategori Aktif
                     </Label>
                 </div>
@@ -645,7 +631,7 @@ function handleRowRelease() {
                     <Button
                         type="submit"
                         :disabled="isSubmitting"
-                        class="ios-button gap-2"
+                        class="admin-btn-primary gap-2"
                     >
                         <Save class="h-4 w-4" />
                         {{ isSubmitting ? 'Menyimpan...' : 'Simpan' }}

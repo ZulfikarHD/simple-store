@@ -146,7 +146,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
 
     <div class="min-h-screen bg-background">
         <!-- Header Navigation dengan iOS Glass Effect (Fixed) -->
-        <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-border/30">
+        <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-brand-blue-200/30 dark:border-brand-blue-800/30">
             <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                 <!-- Logo & Brand -->
                 <Motion
@@ -157,10 +157,13 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                     :transition="springTransition"
                     class="flex items-center gap-2 sm:gap-3"
                 >
-                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm sm:h-10 sm:w-10">
-                        <ShoppingBag class="h-4 w-4 text-primary-foreground sm:h-5 sm:w-5" />
+                    <div class="brand-logo h-9 w-9 sm:h-10 sm:w-10">
+                        <ShoppingBag class="h-4 w-4 text-white sm:h-5 sm:w-5" />
                     </div>
-                    <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
+                    <div class="flex flex-col">
+                        <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
+                        <span class="hidden text-[10px] font-medium text-brand-gold sm:block">Premium Quality Products</span>
+                    </div>
                 </Motion>
 
                 <!-- Cart Counter & Auth -->
@@ -269,10 +272,10 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                         :initial="{ opacity: 0, y: 20 }"
                         :animate="{ opacity: 1, y: 0 }"
                         :transition="{ ...springTransition, delay: 0.1 }"
-                        class="ios-card rounded-2xl border border-border/50 p-4 sm:p-6"
+                        class="ios-card rounded-2xl border border-brand-blue-100 bg-card p-4 dark:border-brand-blue-800/30 sm:p-6"
                     >
                         <h2 class="mb-4 flex items-center gap-2 text-base font-semibold text-foreground sm:mb-6 sm:text-lg">
-                            <User class="h-5 w-5 text-primary" />
+                            <User class="h-5 w-5 text-brand-blue" />
                             Data Penerima
                         </h2>
 
@@ -336,10 +339,10 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                         :initial="{ opacity: 0, y: 20 }"
                         :animate="{ opacity: 1, y: 0 }"
                         :transition="{ ...springTransition, delay: 0.15 }"
-                        class="ios-card rounded-2xl border border-border/50 p-4 sm:p-6"
+                        class="ios-card rounded-2xl border border-brand-blue-100 bg-card p-4 dark:border-brand-blue-800/30 sm:p-6"
                     >
                         <h2 class="mb-4 flex items-center gap-2 text-base font-semibold text-foreground sm:mb-6 sm:text-lg">
-                            <MapPin class="h-5 w-5 text-primary" />
+                            <MapPin class="h-5 w-5 text-brand-blue" />
                             Alamat Pengiriman
                         </h2>
 
@@ -402,9 +405,9 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                     :transition="{ ...springTransition, delay: 0.2 }"
                     class="lg:col-span-1"
                 >
-                    <div class="ios-card sticky top-24 rounded-2xl border border-border/50 p-6">
+                    <div class="premium-card sticky top-24 rounded-2xl p-6">
                         <h2 class="mb-4 flex items-center gap-2 text-lg font-semibold text-foreground">
-                            <Package class="h-5 w-5 text-primary" />
+                            <Package class="h-5 w-5 text-brand-blue" />
                             Ringkasan Pesanan
                         </h2>
 
@@ -459,14 +462,14 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
 
                             <div class="flex items-center justify-between text-sm">
                                 <span class="text-muted-foreground">Ongkos Kirim</span>
-                                <span class="font-medium text-green-600">Gratis</span>
+                                <span class="font-medium text-brand-gold">Gratis</span>
                             </div>
 
                             <hr class="border-border" />
 
-                            <div class="flex items-center justify-between">
+                            <div class="flex items-center justify-between rounded-xl bg-gradient-to-r from-brand-blue-50 to-brand-gold-50 p-3 dark:from-brand-blue-900/30 dark:to-brand-gold-900/20">
                                 <span class="font-semibold text-foreground">Total</span>
-                                <span class="text-xl font-bold text-primary">{{ formattedSubtotal }}</span>
+                                <span class="price-tag text-xl font-bold">{{ formattedSubtotal }}</span>
                             </div>
                         </div>
 
@@ -478,7 +481,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                         <Button
                             type="submit"
                             size="lg"
-                                class="ios-button mt-6 h-14 w-full gap-2 rounded-2xl shadow-lg"
+                                class="ios-button mt-6 h-14 w-full gap-2 rounded-2xl bg-gradient-to-r from-brand-blue-500 to-brand-blue-600 shadow-lg shadow-brand-blue-500/25 hover:from-brand-blue-600 hover:to-brand-blue-700"
                             :disabled="processing"
                             @mousedown="isSubmitPressed = true"
                             @mouseup="isSubmitPressed = false"
@@ -502,10 +505,13 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
         </main>
 
         <!-- Footer -->
-        <footer class="mt-16 hidden border-t border-border bg-muted/30 md:block">
+        <footer class="mt-16 hidden border-t border-brand-blue-100 bg-gradient-to-b from-brand-blue-50/50 to-white dark:border-brand-blue-900/30 dark:from-brand-blue-900/20 dark:to-background md:block">
             <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                <div class="text-center text-sm text-muted-foreground">
-                    <p>&copy; {{ new Date().getFullYear() }} Simple Store. Dibuat oleh Zulfikar Hidayatullah.</p>
+                <div class="flex flex-col items-center gap-2">
+                    <p class="text-center text-sm text-muted-foreground">
+                        &copy; {{ new Date().getFullYear() }} Simple Store. Dibuat dengan ❤️ oleh Zulfikar Hidayatullah.
+                    </p>
+                    <p class="text-xs text-brand-gold">Premium Quality Products</p>
                 </div>
             </div>
         </footer>

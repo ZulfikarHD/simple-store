@@ -228,7 +228,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
 
     <div class="min-h-screen bg-background">
         <!-- Header Navigation dengan iOS Glass Effect (Fixed) -->
-        <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-border/30">
+        <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-brand-blue-200/30 dark:border-brand-blue-800/30">
             <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                 <!-- Logo & Brand -->
                 <Motion
@@ -240,10 +240,13 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                     class="flex items-center gap-2 sm:gap-3"
                     @click.prevent="() => router.visit(home())"
                 >
-                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm sm:h-10 sm:w-10">
-                        <ShoppingBag class="h-4 w-4 text-primary-foreground sm:h-5 sm:w-5" />
+                    <div class="brand-logo h-9 w-9 sm:h-10 sm:w-10">
+                        <ShoppingBag class="h-4 w-4 text-white sm:h-5 sm:w-5" />
                     </div>
-                    <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
+                    <div class="flex flex-col">
+                        <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
+                        <span class="hidden text-[10px] font-medium text-brand-gold sm:block">Premium Quality Products</span>
+                    </div>
                 </Motion>
 
                 <!-- Cart Counter & Auth Navigation -->
@@ -441,9 +444,14 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                         :transition="{ ...springTransition, delay: 0.25 }"
                         class="mb-4 sm:mb-6"
                     >
-                        <p class="text-2xl font-bold text-primary sm:text-3xl">
-                            {{ formattedPrice }}
-                        </p>
+                        <div class="inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-brand-blue-50 to-brand-gold-50 px-4 py-2 dark:from-brand-blue-900/30 dark:to-brand-gold-900/20">
+                            <p class="price-tag text-2xl font-bold sm:text-3xl">
+                                {{ formattedPrice }}
+                            </p>
+                            <span v-if="product.is_available" class="text-xs font-medium text-brand-gold">
+                                Harga Terbaik
+                            </span>
+                        </div>
                     </Motion>
 
                     <!-- Stock Status -->
@@ -578,9 +586,11 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                             size="lg"
                             :disabled="!product.is_available || isAdding"
                                 class="ios-button h-14 w-full gap-2 rounded-2xl text-base shadow-lg"
-                            :class="{
-                                'bg-green-600 hover:bg-green-600': showSuccess,
-                            }"
+                            :class="[
+                                showSuccess
+                                    ? 'bg-green-600 hover:bg-green-600'
+                                    : 'bg-gradient-to-r from-brand-blue-500 to-brand-blue-600 hover:from-brand-blue-600 hover:to-brand-blue-700 shadow-brand-blue-500/25',
+                            ]"
                             @click="handleAddToCart"
                             @mousedown="isAddCartPressed = true"
                             @mouseup="isAddCartPressed = false"
@@ -638,22 +648,25 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
         </main>
 
         <!-- Footer -->
-        <footer class="mt-12 hidden border-t border-border bg-muted/30 sm:mt-16 md:block">
+        <footer class="mt-12 hidden border-t border-brand-blue-100 bg-gradient-to-b from-brand-blue-50/50 to-white dark:border-brand-blue-900/30 dark:from-brand-blue-900/20 dark:to-background sm:mt-16 md:block">
             <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-                <div class="text-center text-sm text-muted-foreground">
-                    <p>&copy; {{ new Date().getFullYear() }} Simple Store. Dibuat oleh Zulfikar Hidayatullah.</p>
+                <div class="flex flex-col items-center gap-2">
+                    <p class="text-center text-sm text-muted-foreground">
+                        &copy; {{ new Date().getFullYear() }} Simple Store. Dibuat dengan ❤️ oleh Zulfikar Hidayatullah.
+                    </p>
+                    <p class="text-xs text-brand-gold">Premium Quality Products</p>
                 </div>
             </div>
         </footer>
 
         <!-- Mobile Sticky Add to Cart Footer dengan iOS Glass Effect -->
         <div
-            class="ios-glass fixed inset-x-0 bottom-16 z-40 border-t border-border/30 p-4 md:hidden"
+            class="ios-glass fixed inset-x-0 bottom-16 z-40 border-t border-brand-blue-200/30 p-4 dark:border-brand-blue-800/30 md:hidden"
         >
             <div class="mx-auto max-w-7xl">
                 <!-- Price & Quantity Row -->
                 <div class="mb-3 flex items-center justify-between">
-                    <p class="text-lg font-bold text-primary">
+                    <p class="price-tag text-lg font-bold">
                         {{ formattedPrice }}
                     </p>
                     <!-- Quantity Selector dengan iOS press feedback -->
@@ -721,9 +734,11 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                     size="lg"
                     :disabled="!product.is_available || isAdding"
                         class="ios-button h-13 w-full gap-2 rounded-2xl text-base shadow-lg"
-                    :class="{
-                        'bg-green-600 hover:bg-green-600': showSuccess,
-                    }"
+                    :class="[
+                        showSuccess
+                            ? 'bg-green-600 hover:bg-green-600'
+                            : 'bg-gradient-to-r from-brand-blue-500 to-brand-blue-600 hover:from-brand-blue-600 hover:to-brand-blue-700 shadow-brand-blue-500/25',
+                    ]"
                     @click="handleAddToCart"
                     @mousedown="isAddCartPressed = true"
                     @mouseup="isAddCartPressed = false"

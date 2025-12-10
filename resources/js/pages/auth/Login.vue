@@ -91,10 +91,10 @@ function handleFormError() {
         <Form
             v-bind="store.form()"
             :reset-on-success="['password']"
-            v-slot="{ errors, processing, hasErrors }"
+            v-slot="{ errors, processing }"
             class="flex flex-col gap-6"
             :class="shakeClass"
-            @submit="hasErrors && handleFormError()"
+            @error="handleFormError"
         >
             <div class="grid gap-5">
                 <!-- Email Field -->

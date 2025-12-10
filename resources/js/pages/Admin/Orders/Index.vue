@@ -7,12 +7,10 @@
  * - Search bar untuk pencarian berdasarkan order number, nama customer, atau nomor telepon
  * - Filter dropdown untuk status pesanan dan date range
  * - Pagination untuk navigasi halaman
- * - iOS-like design dengan spring animations dan haptic feedback
  *
  * @author Zulfikar Hidayatullah
  */
 import AppLayout from '@/layouts/AppLayout.vue'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -36,6 +34,7 @@ import {
     Package,
     SlidersHorizontal,
     X,
+    Sparkles,
 } from 'lucide-vue-next'
 import { ref, watch, computed } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
@@ -54,6 +53,12 @@ interface OrderItem {
     subtotal: number
 }
 
+/**
+ * OrderStatus type untuk type-safety dengan OrderCard component
+ * Status pesanan yang valid dalam sistem
+ */
+type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled'
+
 interface Order {
     id: number
     order_number: string
@@ -61,7 +66,7 @@ interface Order {
     customer_phone: string
     customer_address?: string
     total: number
-    status: string
+    status: OrderStatus
     items: OrderItem[]
     created_at: string
     waiting_minutes?: number
@@ -106,8 +111,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 ]
 
 // Flash messages dari session
-const flashSuccess = computed(() => page.props.flash?.success as string | undefined)
-const flashError = computed(() => page.props.flash?.error as string | undefined)
+const flashSuccess = computed(() => (page.props as unknown as { flash?: { success?: string } }).flash?.success)
+const flashError = computed(() => (page.props as unknown as { flash?: { error?: string } }).flash?.error)
 
 // Local state untuk filter
 const search = ref(props.filters.search || '')
@@ -134,6 +139,18 @@ function toggleMobileFilter() {
  */
 const hasActiveFilters = computed(() => {
     return search.value || status.value || startDate.value || endDate.value
+})
+
+/**
+ * Count active filters
+ */
+const activeFilterCount = computed(() => {
+    let count = 0
+    if (search.value) count++
+    if (status.value) count++
+    if (startDate.value) count++
+    if (endDate.value) count++
+    return count
 })
 
 /**
@@ -190,44 +207,22 @@ function goToPage(url: string | null) {
 }
 
 /**
- * Get status badge variant berdasarkan status order
- */
-function getStatusVariant(orderStatus: string): 'default' | 'secondary' | 'destructive' | 'outline' {
-    switch (orderStatus) {
-        case 'pending':
-            return 'secondary'
-        case 'confirmed':
-            return 'default'
-        case 'preparing':
-            return 'default'
-        case 'ready':
-            return 'default'
-        case 'delivered':
-            return 'default'
-        case 'cancelled':
-            return 'destructive'
-        default:
-            return 'outline'
-    }
-}
-
-/**
- * Get status badge class untuk styling tambahan
+ * Get status badge class untuk styling
  */
 function getStatusClass(orderStatus: string): string {
     switch (orderStatus) {
         case 'pending':
-            return 'bg-yellow-500 text-white hover:bg-yellow-600'
+            return 'admin-badge--pending'
         case 'confirmed':
-            return 'bg-blue-500 text-white hover:bg-blue-600'
+            return 'admin-badge--confirmed'
         case 'preparing':
-            return 'bg-purple-500 text-white hover:bg-purple-600'
+            return 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
         case 'ready':
-            return 'bg-cyan-500 text-white hover:bg-cyan-600'
+            return 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300'
         case 'delivered':
-            return 'bg-green-500 text-white hover:bg-green-600'
+            return 'admin-badge--success'
         case 'cancelled':
-            return 'bg-red-500 text-white hover:bg-red-600'
+            return 'admin-badge--destructive'
         default:
             return ''
     }
@@ -285,19 +280,24 @@ function navigateToDetail(orderId: number) {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <PullToRefresh>
-            <div class="flex flex-col gap-6 p-4 md:p-6">
-                <!-- Page Header dengan spring animation -->
+            <div class="admin-page flex flex-col gap-6 p-4 md:p-6">
+                <!-- Page Header -->
                 <Motion
                     :initial="{ opacity: 0, y: 20 }"
                     :animate="{ opacity: 1, y: 0 }"
                     :transition="springPresets.ios"
-                    class="flex flex-col gap-2"
+                    class="flex flex-col gap-1"
                 >
-                    <h1 class="text-2xl font-bold tracking-tight md:text-3xl">
-                        Manajemen Pesanan
-                    </h1>
+                    <div class="flex items-center gap-3">
+                        <h1 class="text-2xl font-bold tracking-tight md:text-3xl">
+                            Pesanan
+                        </h1>
+                        <Badge variant="secondary" class="tabular-nums">
+                            {{ orders.total }} total
+                        </Badge>
+                    </div>
                     <p class="text-muted-foreground">
-                        Kelola dan pantau pesanan customer
+                        Kelola dan pantau semua pesanan customer
                     </p>
                 </Motion>
 
@@ -312,7 +312,7 @@ function navigateToDetail(orderId: number) {
                 >
                     <div
                         v-if="flashSuccess"
-                        class="rounded-xl border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200"
+                        class="rounded-2xl border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200"
                     >
                         {{ flashSuccess }}
                     </div>
@@ -327,13 +327,13 @@ function navigateToDetail(orderId: number) {
                 >
                     <div
                         v-if="flashError"
-                        class="rounded-xl border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200"
+                        class="rounded-2xl border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200"
                     >
                         {{ flashError }}
                     </div>
                 </Transition>
 
-                <!-- Mobile Search Bar + Filter Toggle -->
+                <!-- Mobile Search + Filter Toggle -->
                 <Motion
                     :initial="{ opacity: 0, y: 20 }"
                     :animate="{ opacity: 1, y: 0 }"
@@ -341,43 +341,49 @@ function navigateToDetail(orderId: number) {
                     class="flex gap-2 md:hidden"
                 >
                     <div class="relative flex-1">
-                        <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Search class="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                             v-model="search"
                             type="text"
                             placeholder="Cari pesanan..."
-                            class="ios-input h-11 pl-10"
+                            class="admin-input h-12 pl-10"
                         />
                     </div>
                     <Button
                         variant="outline"
                         size="icon"
-                        class="ios-button h-11 w-11 shrink-0"
-                        :class="{ 'bg-primary text-primary-foreground': hasActiveFilters }"
+                        class="ios-button relative h-12 w-12 shrink-0"
+                        :class="{ 'border-primary bg-primary/5': hasActiveFilters }"
                         @click="toggleMobileFilter"
                     >
                         <SlidersHorizontal class="h-4 w-4" />
+                        <span
+                            v-if="activeFilterCount > 0"
+                            class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white"
+                        >
+                            {{ activeFilterCount }}
+                        </span>
                     </Button>
                 </Motion>
 
-                <!-- Mobile Filter Panel (Collapsible) -->
+                <!-- Mobile Filter Panel -->
                 <Transition
                     enter-active-class="transition-all duration-300 ease-[var(--ios-spring-smooth)]"
-                    enter-from-class="opacity-0 -translate-y-2"
-                    enter-to-class="opacity-100 translate-y-0"
+                    enter-from-class="opacity-0 -translate-y-2 scale-95"
+                    enter-to-class="opacity-100 translate-y-0 scale-100"
                     leave-active-class="transition-all duration-200 ease-[var(--ios-spring-snappy)]"
-                    leave-from-class="opacity-100 translate-y-0"
-                    leave-to-class="opacity-0 -translate-y-2"
+                    leave-from-class="opacity-100 translate-y-0 scale-100"
+                    leave-to-class="opacity-0 -translate-y-2 scale-95"
                 >
-                    <Card v-if="showMobileFilter" class="ios-card md:hidden">
-                        <CardContent class="p-4">
-                            <div class="flex flex-col gap-3">
+                    <div v-if="showMobileFilter" class="admin-form-section md:hidden">
+                        <div class="admin-form-section-content">
+                            <div class="flex flex-col gap-4">
                                 <!-- Status Filter -->
-                                <div class="flex flex-col gap-1.5">
-                                    <label class="text-sm font-medium">Status</label>
+                                <div class="admin-input-group">
+                                    <label>Status Pesanan</label>
                                     <select
                                         v-model="status"
-                                        class="h-11 rounded-xl border border-input bg-background px-3 text-base"
+                                        class="admin-select"
                                         @change="applyFilters"
                                     >
                                         <option value="">Semua Status</option>
@@ -393,21 +399,21 @@ function navigateToDetail(orderId: number) {
 
                                 <!-- Date Range -->
                                 <div class="grid grid-cols-2 gap-3">
-                                    <div class="flex flex-col gap-1.5">
-                                        <label class="text-sm font-medium">Dari Tanggal</label>
+                                    <div class="admin-input-group">
+                                        <label>Dari Tanggal</label>
                                         <Input
                                             v-model="startDate"
                                             type="date"
-                                            class="ios-input h-11"
+                                            class="admin-input"
                                             @change="applyFilters"
                                         />
                                     </div>
-                                    <div class="flex flex-col gap-1.5">
-                                        <label class="text-sm font-medium">Sampai Tanggal</label>
+                                    <div class="admin-input-group">
+                                        <label>Sampai</label>
                                         <Input
                                             v-model="endDate"
                                             type="date"
-                                            class="ios-input h-11"
+                                            class="admin-input"
                                             @change="applyFilters"
                                         />
                                     </div>
@@ -415,106 +421,98 @@ function navigateToDetail(orderId: number) {
 
                                 <!-- Reset Button -->
                                 <Button
+                                    v-if="hasActiveFilters"
                                     variant="outline"
-                                    class="ios-button h-11"
+                                    class="admin-btn-secondary"
                                     @click="resetFilters"
                                 >
                                     <X class="mr-2 h-4 w-4" />
                                     Reset Filter
                                 </Button>
                             </div>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </div>
                 </Transition>
 
-                <!-- Desktop Filters Card -->
+                <!-- Desktop Filters -->
                 <Motion
                     :initial="{ opacity: 0, y: 20 }"
                     :animate="{ opacity: 1, y: 0 }"
                     :transition="{ ...springPresets.ios, delay: staggerDelay(0) }"
                     class="hidden md:block"
                 >
-                    <Card class="ios-card">
-                    <CardHeader>
-                        <CardTitle class="flex items-center gap-2 text-base">
-                            <Filter class="h-4 w-4" />
-                            Filter & Pencarian
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div class="flex flex-col gap-4">
-                            <!-- Row 1: Search and Status -->
-                            <div class="flex flex-col gap-4 sm:flex-row">
-                                <!-- Search Input -->
-                                <div class="relative flex-1">
-                                    <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                    <Input
-                                        v-model="search"
-                                        type="text"
-                                        placeholder="Cari order number, nama, atau telepon..."
-                                        class="ios-input pl-10"
-                                    />
-                                </div>
-
-                                <!-- Status Filter -->
-                                <select
-                                    v-model="status"
-                                    class="h-10 rounded-xl border border-input bg-background px-3 text-sm ring-offset-background transition-all focus:outline-none focus:ring-2 focus:ring-ring"
-                                    @change="applyFilters"
-                                >
-                                    <option value="">Semua Status</option>
-                                    <option
-                                        v-for="(label, value) in statuses"
-                                        :key="value"
-                                        :value="value"
+                    <div class="admin-form-section">
+                        <div class="admin-form-section-header">
+                            <h3>
+                                <Filter />
+                                Filter & Pencarian
+                            </h3>
+                        </div>
+                        <div class="admin-form-section-content">
+                            <div class="flex flex-col gap-4">
+                                <!-- Row 1: Search and Status -->
+                                <div class="flex flex-col gap-4 sm:flex-row">
+                                    <div class="relative flex-1">
+                                        <Search class="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            v-model="search"
+                                            type="text"
+                                            placeholder="Cari order number, nama, atau telepon..."
+                                            class="admin-input pl-10"
+                                        />
+                                    </div>
+                                    <select
+                                        v-model="status"
+                                        class="admin-select w-full sm:w-48"
+                                        @change="applyFilters"
                                     >
-                                        {{ label }}
-                                    </option>
-                                </select>
-                            </div>
-
-                            <!-- Row 2: Date Range -->
-                            <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-                                <div class="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <Calendar class="h-4 w-4" />
-                                    <span>Tanggal:</span>
+                                        <option value="">Semua Status</option>
+                                        <option
+                                            v-for="(label, value) in statuses"
+                                            :key="value"
+                                            :value="value"
+                                        >
+                                            {{ label }}
+                                        </option>
+                                    </select>
                                 </div>
-                                <Input
-                                    v-model="startDate"
-                                    type="date"
-                                    class="ios-input w-full sm:w-auto"
-                                    @change="applyFilters"
-                                />
-                                <span class="text-muted-foreground">sampai</span>
-                                <Input
-                                    v-model="endDate"
-                                    type="date"
-                                    class="ios-input w-full sm:w-auto"
-                                    @change="applyFilters"
-                                />
 
-                                <!-- Reset Button -->
-                                <Button
-                                    variant="outline"
-                                    class="ios-button"
-                                    @click="resetFilters"
-                                >
-                                    Reset
-                                </Button>
+                                <!-- Row 2: Date Range -->
+                                <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+                                    <div class="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <Calendar class="h-4 w-4" />
+                                        <span>Rentang Tanggal:</span>
+                                    </div>
+                                    <Input
+                                        v-model="startDate"
+                                        type="date"
+                                        class="admin-input w-full sm:w-auto"
+                                        @change="applyFilters"
+                                    />
+                                    <span class="text-muted-foreground">sampai</span>
+                                    <Input
+                                        v-model="endDate"
+                                        type="date"
+                                        class="admin-input w-full sm:w-auto"
+                                        @change="applyFilters"
+                                    />
+                                    <Button
+                                        v-if="hasActiveFilters"
+                                        variant="outline"
+                                        class="ios-button"
+                                        @click="resetFilters"
+                                    >
+                                        <X class="mr-2 h-4 w-4" />
+                                        Reset
+                                    </Button>
+                                </div>
                             </div>
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
                 </Motion>
 
-                <!-- Mobile Order Cards View - Visible Only on Mobile (<768px) -->
+                <!-- Mobile Order Cards -->
                 <div class="flex flex-col gap-3 md:hidden">
-                    <!-- Debug Banner - Remove after testing -->
-                    <div class="rounded-lg bg-yellow-100 p-3 text-sm text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                        📱 Mobile View - {{ orders.data?.length ?? 0 }} pesanan
-                    </div>
-
-                    <!-- Order Cards -->
                     <OrderCard
                         v-for="order in orders.data"
                         :key="order.id"
@@ -522,25 +520,21 @@ function navigateToDetail(orderId: number) {
                         :statuses="statuses"
                     />
 
-                    <!-- Mobile Empty State (when no orders) -->
-                    <Card v-if="!orders.data || orders.data.length === 0" class="ios-card">
-                        <CardContent class="py-12">
-                            <div class="flex flex-col items-center justify-center text-center">
-                                <ShoppingBag class="mb-4 h-12 w-12 text-muted-foreground/50" />
-                                <p class="text-lg font-medium text-muted-foreground">
-                                    Belum ada pesanan
-                                </p>
-                                <p class="mt-1 text-sm text-muted-foreground">
-                                    Pesanan customer akan muncul di sini
-                                </p>
+                    <!-- Mobile Empty State -->
+                    <div v-if="!orders.data || orders.data.length === 0" class="admin-form-section">
+                        <div class="admin-empty-state">
+                            <div class="icon-wrapper">
+                                <ShoppingBag />
                             </div>
-                        </CardContent>
-                    </Card>
+                            <h3>Belum Ada Pesanan</h3>
+                            <p>Pesanan customer akan muncul di sini</p>
+                        </div>
+                    </div>
 
                     <!-- Mobile Pagination -->
                     <div
                         v-if="orders.data?.length > 0 && orders.last_page > 1"
-                        class="flex items-center justify-between rounded-xl border bg-card p-3"
+                        class="flex items-center justify-between rounded-2xl border bg-card p-3"
                     >
                         <Button
                             variant="outline"
@@ -566,43 +560,28 @@ function navigateToDetail(orderId: number) {
                     </div>
                 </div>
 
-                <!-- Desktop Orders Table -->
+                <!-- Desktop Table -->
                 <Motion
                     :initial="{ opacity: 0, y: 20 }"
                     :animate="{ opacity: 1, y: 0 }"
                     :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
                     class="hidden md:block"
                 >
-                    <Card class="ios-card">
-                    <CardContent class="p-0">
+                    <div class="ios-grouped-table">
                         <div class="overflow-x-auto">
-                            <table class="w-full">
-                                <thead class="border-b bg-muted/50">
+                            <table class="admin-table">
+                                <thead>
                                     <tr>
-                                        <th class="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                                            No. Pesanan
-                                        </th>
-                                        <th class="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                                            Customer
-                                        </th>
-                                        <th class="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
-                                            Total
-                                        </th>
-                                        <th class="px-4 py-3 text-center text-sm font-medium text-muted-foreground">
-                                            Items
-                                        </th>
-                                        <th class="px-4 py-3 text-center text-sm font-medium text-muted-foreground">
-                                            Status
-                                        </th>
-                                        <th class="px-4 py-3 text-center text-sm font-medium text-muted-foreground">
-                                            Tanggal
-                                        </th>
-                                        <th class="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
-                                            Aksi
-                                        </th>
+                                        <th>No. Pesanan</th>
+                                        <th>Customer</th>
+                                        <th class="text-right">Total</th>
+                                        <th class="text-center">Items</th>
+                                        <th class="text-center">Status</th>
+                                        <th class="text-center">Tanggal</th>
+                                        <th class="text-right">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y">
+                                <tbody>
                                     <Motion
                                         v-for="(order, index) in orders.data"
                                         :key="order.id"
@@ -610,8 +589,8 @@ function navigateToDetail(orderId: number) {
                                         :initial="{ opacity: 0, x: -20 }"
                                         :animate="{ opacity: 1, x: 0 }"
                                         :transition="{ ...springPresets.ios, delay: 0.15 + index * 0.03 }"
-                                        class="cursor-pointer transition-all duration-150 hover:bg-muted/50"
-                                        :class="{ 'scale-[0.99] bg-muted/30': pressedRow === order.id }"
+                                        class="cursor-pointer"
+                                        :class="{ 'scale-[0.995] bg-muted/60': pressedRow === order.id }"
                                         @mousedown="handleRowPress(order.id)"
                                         @mouseup="handleRowRelease"
                                         @mouseleave="handleRowRelease"
@@ -619,16 +598,13 @@ function navigateToDetail(orderId: number) {
                                         @touchend="handleRowRelease"
                                         @click="navigateToDetail(order.id)"
                                     >
-                                        <!-- Order Number -->
-                                        <td class="px-4 py-3">
-                                            <span class="font-mono text-sm font-medium text-primary">
+                                        <td>
+                                            <span class="font-mono text-sm font-semibold text-primary">
                                                 {{ order.order_number }}
                                             </span>
                                         </td>
-
-                                        <!-- Customer Info -->
-                                        <td class="px-4 py-3">
-                                            <div class="flex flex-col gap-1">
+                                        <td>
+                                            <div class="flex flex-col gap-0.5">
                                                 <span class="font-medium">{{ order.customer_name }}</span>
                                                 <button
                                                     class="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
@@ -639,71 +615,49 @@ function navigateToDetail(orderId: number) {
                                                 </button>
                                             </div>
                                         </td>
-
-                                        <!-- Total -->
-                                        <td class="px-4 py-3 text-right">
+                                        <td class="text-right">
                                             <PriceDisplay :price="order.total" size="sm" />
                                         </td>
-
-                                        <!-- Items Count -->
-                                        <td class="px-4 py-3 text-center">
-                                            <Badge variant="outline" class="gap-1">
+                                        <td class="text-center">
+                                            <Badge variant="outline" class="gap-1 tabular-nums">
                                                 <Package class="h-3 w-3" />
                                                 {{ order.items.length }}
                                             </Badge>
                                         </td>
-
-                                        <!-- Status -->
-                                        <td class="px-4 py-3 text-center">
-                                            <Badge
-                                                :variant="getStatusVariant(order.status)"
-                                                :class="getStatusClass(order.status)"
-                                            >
+                                        <td class="text-center">
+                                            <span :class="['admin-badge', getStatusClass(order.status)]">
                                                 {{ statuses[order.status] || order.status }}
-                                            </Badge>
+                                            </span>
                                         </td>
-
-                                        <!-- Created At -->
-                                        <td class="px-4 py-3 text-center">
+                                        <td class="text-center">
                                             <span class="text-sm text-muted-foreground">
                                                 {{ formatDate(order.created_at) }}
                                             </span>
                                         </td>
-
-                                        <!-- Actions -->
-                                        <td class="px-4 py-3">
-                                            <div class="flex items-center justify-end gap-2">
-                                                <Link :href="show(order.id).url" @click.stop>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        class="ios-button h-8 gap-1"
-                                                    >
-                                                        <Eye class="h-4 w-4" />
-                                                        Detail
-                                                    </Button>
-                                                </Link>
-                                            </div>
+                                        <td class="text-right">
+                                            <Link :href="show(order.id).url" @click.stop>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    class="ios-button h-8 gap-1.5"
+                                                >
+                                                    <Eye class="h-4 w-4" />
+                                                    Detail
+                                                </Button>
+                                            </Link>
                                         </td>
                                     </Motion>
 
                                     <!-- Empty State -->
                                     <tr v-if="orders.data.length === 0">
-                                        <td colspan="7" class="px-4 py-12">
-                                            <Motion
-                                                :initial="{ opacity: 0, scale: 0.95 }"
-                                                :animate="{ opacity: 1, scale: 1 }"
-                                                :transition="springPresets.ios"
-                                                class="flex flex-col items-center justify-center text-center"
-                                            >
-                                                <ShoppingBag class="mb-4 h-12 w-12 text-muted-foreground/50" />
-                                                <p class="text-lg font-medium text-muted-foreground">
-                                                    Belum ada pesanan
-                                                </p>
-                                                <p class="mt-1 text-sm text-muted-foreground">
-                                                    Pesanan customer akan muncul di sini
-                                                </p>
-                                            </Motion>
+                                        <td colspan="7">
+                                            <div class="admin-empty-state">
+                                                <div class="icon-wrapper">
+                                                    <ShoppingBag />
+                                                </div>
+                                                <h3>Belum Ada Pesanan</h3>
+                                                <p>Pesanan customer akan muncul di sini</p>
+                                            </div>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -728,8 +682,8 @@ function navigateToDetail(orderId: number) {
                                 >
                                     <ChevronLeft class="h-4 w-4" />
                                 </Button>
-                                <span class="text-sm text-muted-foreground">
-                                    Halaman {{ orders.current_page }} dari {{ orders.last_page }}
+                                <span class="text-sm tabular-nums text-muted-foreground">
+                                    {{ orders.current_page }} / {{ orders.last_page }}
                                 </span>
                                 <Button
                                     variant="outline"
@@ -742,14 +696,12 @@ function navigateToDetail(orderId: number) {
                                 </Button>
                             </div>
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
                 </Motion>
 
                 <!-- Bottom padding untuk mobile nav -->
                 <div class="h-20 md:hidden" />
             </div>
         </PullToRefresh>
-
     </AppLayout>
 </template>

@@ -116,7 +116,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
 
     <div class="min-h-screen bg-background">
         <!-- Header Navigation dengan iOS Glass Effect (Fixed) -->
-        <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-border/30">
+        <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-brand-blue-200/30 dark:border-brand-blue-800/30">
             <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
                 <!-- Logo & Brand -->
                 <Motion
@@ -125,10 +125,13 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                     :transition="springTransition"
                 >
                 <Link :href="home()" class="flex items-center gap-2 sm:gap-3">
-                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm sm:h-10 sm:w-10">
-                        <ShoppingBag class="h-4 w-4 text-primary-foreground sm:h-5 sm:w-5" />
+                        <div class="brand-logo h-9 w-9 sm:h-10 sm:w-10">
+                        <ShoppingBag class="h-4 w-4 text-white sm:h-5 sm:w-5" />
                     </div>
-                    <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
+                    <div class="flex flex-col">
+                        <span class="text-lg font-bold text-foreground sm:text-xl">Simple Store</span>
+                        <span class="hidden text-[10px] font-medium text-brand-gold sm:block">Premium Quality Products</span>
+                    </div>
                 </Link>
                 </Motion>
 
@@ -218,16 +221,16 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                     :animate="{ opacity: 1, y: 0 }"
                     :transition="springTransition"
                 >
-                    <Card class="ios-card overflow-hidden rounded-2xl border-border/50">
+                    <Card class="premium-card overflow-hidden rounded-2xl">
                     <CardContent class="pt-6">
                         <div class="flex items-start gap-4">
                                 <Motion
                                     :initial="{ scale: 0 }"
                                     :animate="{ scale: 1 }"
                                     :transition="{ ...bouncyTransition, delay: 0.1 }"
-                                    class="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
+                                    class="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-brand-blue-100 to-brand-gold-100 dark:from-brand-blue-900/50 dark:to-brand-gold-900/50"
                                 >
-                                <User class="h-8 w-8 text-primary" />
+                                <User class="h-8 w-8 text-brand-blue" />
                                 </Motion>
                                 <div class="min-w-0 flex-1">
                                     <h1 class="truncate text-xl font-bold text-foreground">
@@ -269,7 +272,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                     :animate="{ opacity: 1, y: 0 }"
                     :transition="{ ...springTransition, delay: 0.1 }"
                 >
-                    <Card class="ios-card overflow-hidden rounded-2xl border-border/50">
+                    <Card class="ios-card overflow-hidden rounded-2xl border-brand-blue-100 dark:border-brand-blue-800/30">
                     <CardHeader>
                         <CardTitle class="text-lg">Menu</CardTitle>
                     </CardHeader>
@@ -291,15 +294,15 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                                     >
                             <Link
                                 :href="item.href"
-                                class="flex items-center gap-4 p-4 transition-colors hover:bg-muted/50"
+                                class="flex items-center gap-4 p-4 transition-colors hover:bg-brand-blue-50 dark:hover:bg-brand-blue-900/20"
                                             @mousedown="handleMenuPress(item.title)"
                                             @mouseup="pressedMenuItem = null"
                                             @mouseleave="pressedMenuItem = null"
                                             @touchstart.passive="handleMenuPress(item.title)"
                                             @touchend="pressedMenuItem = null"
                             >
-                                            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                                    <component :is="item.icon" class="h-5 w-5 text-primary" />
+                                            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-blue-100 to-brand-blue-50 dark:from-brand-blue-900/50 dark:to-brand-blue-800/30">
+                                    <component :is="item.icon" class="h-5 w-5 text-brand-blue" />
                                 </div>
                                             <div class="min-w-0 flex-1">
                                     <p class="font-medium text-foreground">{{ item.title }}</p>

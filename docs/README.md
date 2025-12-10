@@ -13,7 +13,8 @@ Selamat datang di dokumentasi aplikasi F&B Web App. Aplikasi ini merupakan platf
 
 ### Untuk Designer
 - [Design System](03-design/ui-ux/design-system.md) ⭐ **Updated dengan Vue Components**
-- [Animation System](03-design/ui-ux/animation-system.md) 🆕 **iOS Spring Physics**
+- [Animation System](03-design/ui-ux/animation-system.md) **iOS Spring Physics**
+- [iOS Design Refactor](03-design/ui-ux/ios-design-refactor.md) 🆕 **Sprint 8 - Glass Effects & Premium Styling**
 - [Wireframes](03-design/ui-ux/wireframes/)
 - [Mockups](03-design/ui-ux/mockups/)
 - [User Flows](03-design/ui-ux/user-flows.md)
@@ -68,10 +69,10 @@ import { ProductCard, CartItem, SearchBar } from '@/components/store'
 
 ## Project Status
 
-- **Current Version**: 0.6.0 (Development)
+- **Current Version**: 0.7.0 (Development)
 - **Last Updated**: 2025-12-10
-- **Project Status**: In Development - Sprint 7 In Progress
-- **Latest Feature**: ✅ Sprint 7 - Animation System Overhaul (ANI-001)
+- **Project Status**: In Development - Sprint 8 Completed
+- **Latest Feature**: ✅ Sprint 8 - iOS Design System Refactoring (IOS-001)
 
 ### Sprint 1 Progress
 
@@ -129,6 +130,16 @@ import { ProductCard, CartItem, SearchBar } from '@/components/store'
 | ANI-002 | iOS Spring Physics Implementation | ✅ Completed |
 | ANI-003 | Staggered Animations for Lists | ✅ Completed |
 | ANI-004 | Press Feedback Implementation | ✅ Completed |
+
+### Sprint 8 Progress (iOS Design System)
+
+| Story | Description | Status |
+|-------|-------------|--------|
+| IOS-001 | iOS Glass Effects & Premium Styling | ✅ Completed |
+| IOS-002 | Layout Refactoring (Sidebar, Customer, Auth) | ✅ Completed |
+| IOS-003 | Auth Pages iOS Redesign | ✅ Completed |
+| IOS-004 | Admin Pages iOS Redesign | ✅ Completed |
+| IOS-005 | Store Components Enhancement | ✅ Completed |
 
 ---
 
