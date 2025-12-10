@@ -15,16 +15,21 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [ProductController::class, 'index'])->name('home');
 Route::get('/products/{product:slug}', [ProductController::class, 'show'])->name('products.show');
 
-// Cart routes untuk operasi keranjang belanja
+// Cart routes untuk operasi keranjang belanja dengan rate limiting
 Route::get('/cart', [CartController::class, 'show'])->name('cart.show');
-Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
-Route::patch('/cart/{cartItem}', [CartController::class, 'update'])->name('cart.update');
-Route::delete('/cart/{cartItem}', [CartController::class, 'destroy'])->name('cart.destroy');
+Route::middleware(['throttle:cart'])->group(function () {
+    Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
+    Route::patch('/cart/{cartItem}', [CartController::class, 'update'])->name('cart.update');
+    Route::delete('/cart/{cartItem}', [CartController::class, 'destroy'])->name('cart.destroy');
+});
 
 // Checkout routes untuk proses pemesanan
-Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout.show');
-Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
-Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
+// Memerlukan authentication dan rate limiting untuk keamanan
+Route::middleware(['auth', 'throttle:checkout'])->group(function () {
+    Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout.show');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
+});
 
 // Account routes untuk profil dan riwayat pesanan user
 // Halaman index bisa diakses guest (akan tampilkan prompt login)

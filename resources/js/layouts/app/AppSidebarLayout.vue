@@ -60,7 +60,9 @@ withDefaults(defineProps<Props>(), {
  */
 .ios-sidebar {
     /* Glass effect untuk sidebar */
-    @apply backdrop-blur-xl bg-card/95;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    background-color: oklch(from var(--card) l c h / 0.95);
 }
 
 .ios-content {
@@ -71,7 +73,12 @@ withDefaults(defineProps<Props>(), {
 
 .ios-header {
     /* Sticky header dengan glass effect */
-    @apply sticky top-0 z-40 backdrop-blur-xl bg-background/80;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    background-color: oklch(from var(--background) l c h / 0.8);
 }
 
 .ios-page-transition {

@@ -70,6 +70,10 @@ class UpdateStoreSettingsRequest extends FormRequest
             'delivery_areas.*' => ['string', 'max:255'],
             'delivery_fee' => ['required', 'integer', 'min:0'],
             'minimum_order' => ['required', 'integer', 'min:0'],
+
+            // Order Settings - Auto Cancel
+            'auto_cancel_enabled' => ['required', 'boolean'],
+            'auto_cancel_minutes' => ['required', 'integer', 'min:5', 'max:1440'],
         ];
     }
 
@@ -94,6 +98,12 @@ class UpdateStoreSettingsRequest extends FormRequest
             'minimum_order.required' => 'Minimum order wajib diisi.',
             'minimum_order.integer' => 'Minimum order harus berupa angka.',
             'minimum_order.min' => 'Minimum order tidak boleh negatif.',
+            'auto_cancel_enabled.required' => 'Status auto-cancel wajib diisi.',
+            'auto_cancel_enabled.boolean' => 'Status auto-cancel harus berupa boolean.',
+            'auto_cancel_minutes.required' => 'Durasi auto-cancel wajib diisi.',
+            'auto_cancel_minutes.integer' => 'Durasi auto-cancel harus berupa angka.',
+            'auto_cancel_minutes.min' => 'Durasi auto-cancel minimal 5 menit.',
+            'auto_cancel_minutes.max' => 'Durasi auto-cancel maksimal 1440 menit (24 jam).',
         ];
     }
 
@@ -113,6 +123,8 @@ class UpdateStoreSettingsRequest extends FormRequest
             'delivery_areas' => 'area pengiriman',
             'delivery_fee' => 'biaya pengiriman',
             'minimum_order' => 'minimum order',
+            'auto_cancel_enabled' => 'status auto-cancel',
+            'auto_cancel_minutes' => 'durasi auto-cancel',
         ];
     }
 }

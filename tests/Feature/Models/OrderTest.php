@@ -194,10 +194,11 @@ class OrderTest extends TestCase
 
         $message = $order->fresh()->generateWhatsAppMessage();
 
-        $this->assertStringContainsString('PESANAN BARU', $message);
+        // New message format: customer to owner
+        $this->assertStringContainsString('Saya ingin memesan', $message);
         $this->assertStringContainsString($order->order_number, $message);
-        $this->assertStringContainsString('John Doe', $message);
         $this->assertStringContainsString('Nasi Goreng', $message);
+        $this->assertStringContainsString('admin/orders', $message); // Link to admin
     }
 
     /**

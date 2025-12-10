@@ -5,13 +5,24 @@ namespace App\Services;
 use App\Models\Order;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 /**
- * OrderService untuk mengelola operasi order management di admin panel
- * dengan fitur filtering, search, dan status update management
+ * OrderService untuk mengelola operasi order management
+ * termasuk checkout flow dengan WhatsApp integration
+ * serta admin panel dengan fitur filtering, search, dan status update
  */
 class OrderService
 {
+    /**
+     * Constructor dengan dependency injection untuk CartService dan StoreSettingService
+     * yang digunakan untuk checkout flow dan WhatsApp integration
+     */
+    public function __construct(
+        public CartService $cartService,
+        public StoreSettingService $storeSettingService
+    ) {}
+
     /**
      * Daftar status order yang tersedia dalam sistem, yaitu:
      * pending, confirmed, preparing, ready, delivered, cancelled
@@ -24,6 +35,118 @@ class OrderService
         'delivered' => 'Dikirim',
         'cancelled' => 'Dibatalkan',
     ];
+
+    // =========================================================================
+    // CHECKOUT FLOW METHODS
+    // =========================================================================
+
+    /**
+     * Membuat order baru dari cart items dengan customer data
+     * menggunakan database transaction untuk atomic operation
+     *
+     * @param  array<string, mixed>  $customerData  Data customer dari checkout form
+     * @return Order Order yang baru dibuat dengan items relationship
+     *
+     * @throws \Exception Ketika keranjang belanja kosong
+     */
+    public function createOrder(array $customerData): Order
+    {
+        $cart = $this->cartService->getCart();
+
+        if ($cart->items->isEmpty()) {
+            throw new \Exception('Keranjang belanja kosong.');
+        }
+
+        return DB::transaction(function () use ($cart, $customerData) {
+            $subtotal = $cart->subtotal;
+            $deliveryFee = $this->storeSettingService->getDeliveryFee();
+            $total = $subtotal + $deliveryFee;
+
+            // Buat order record dengan customer data
+            $order = Order::create([
+                'customer_name' => $customerData['customer_name'],
+                'customer_phone' => $customerData['customer_phone'],
+                'customer_address' => $customerData['customer_address'],
+                'notes' => $customerData['notes'] ?? null,
+                'subtotal' => $subtotal,
+                'delivery_fee' => $deliveryFee,
+                'total' => $total,
+                'status' => 'pending',
+            ]);
+
+            // Copy cart items ke order items (snapshot harga saat pembelian)
+            foreach ($cart->items as $cartItem) {
+                $order->items()->create([
+                    'product_id' => $cartItem->product_id,
+                    'product_name' => $cartItem->product->name,
+                    'product_price' => $cartItem->product->price,
+                    'quantity' => $cartItem->quantity,
+                    'subtotal' => $cartItem->subtotal,
+                ]);
+            }
+
+            // Clear cart setelah order berhasil dibuat
+            $this->cartService->clearCart();
+
+            // Load items untuk return
+            $order->load('items');
+
+            return $order;
+        });
+    }
+
+    /**
+     * Generate WhatsApp URL dengan pre-filled message untuk konfirmasi pesanan
+     * menggunakan nomor WhatsApp owner dari StoreSettingService
+     *
+     * @return string URL WhatsApp dengan format https://wa.me/{phone}?text={message}
+     */
+    public function generateWhatsAppUrl(Order $order): string
+    {
+        $phoneNumber = $this->storeSettingService->getWhatsAppNumber();
+        $message = $order->generateWhatsAppMessage();
+        $encodedMessage = urlencode($message);
+
+        return "https://wa.me/{$phoneNumber}?text={$encodedMessage}";
+    }
+
+    /**
+     * Mendapatkan data order yang diformat untuk frontend OrderSuccess page
+     * termasuk formatted prices dan items dengan subtotal
+     *
+     * @return array<string, mixed> Data order yang siap digunakan di frontend
+     */
+    public function getOrderData(Order $order): array
+    {
+        $order->load('items');
+
+        return [
+            'id' => $order->id,
+            'order_number' => $order->order_number,
+            'customer_name' => $order->customer_name,
+            'customer_phone' => $order->customer_phone,
+            'customer_address' => $order->customer_address,
+            'notes' => $order->notes,
+            'items' => $order->items->map(fn ($item) => [
+                'id' => $item->id,
+                'product_name' => $item->product_name,
+                'product_price' => $item->product_price,
+                'quantity' => $item->quantity,
+                'subtotal' => $item->subtotal,
+                'formatted_subtotal' => 'Rp '.number_format($item->subtotal, 0, ',', '.'),
+            ])->all(),
+            'subtotal' => $order->subtotal,
+            'delivery_fee' => $order->delivery_fee,
+            'total' => $order->total,
+            'formatted_total' => 'Rp '.number_format($order->total, 0, ',', '.'),
+            'status' => $order->status,
+            'created_at' => $order->created_at->format('d M Y, H:i'),
+        ];
+    }
+
+    // =========================================================================
+    // ADMIN PANEL METHODS
+    // =========================================================================
 
     /**
      * Mendapatkan daftar order dengan pagination dan filter, yaitu:

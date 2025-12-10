@@ -83,18 +83,35 @@ class FortifyServiceProvider extends ServiceProvider
     }
 
     /**
-     * Configure rate limiting.
+     * Configure rate limiting untuk auth dan store operations
      */
     private function configureRateLimiting(): void
     {
+        // Rate limiter untuk two-factor authentication
         RateLimiter::for('two-factor', function (Request $request) {
             return Limit::perMinute(5)->by($request->session()->get('login.id'));
         });
 
+        // Rate limiter untuk login attempts
         RateLimiter::for('login', function (Request $request) {
             $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
 
             return Limit::perMinute(5)->by($throttleKey);
+        });
+
+        // Rate limiter untuk checkout - 10 requests per menit per user
+        RateLimiter::for('checkout', function (Request $request) {
+            return Limit::perMinute(10)->by($request->user()?->id ?: $request->ip());
+        });
+
+        // Rate limiter untuk cart operations - 30 requests per menit per session
+        RateLimiter::for('cart', function (Request $request) {
+            return Limit::perMinute(30)->by($request->session()->getId());
+        });
+
+        // Rate limiter untuk password reset - 3 requests per menit per email
+        RateLimiter::for('password-reset', function (Request $request) {
+            return Limit::perMinute(3)->by($request->input('email').'|'.$request->ip());
         });
     }
 }

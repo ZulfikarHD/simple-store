@@ -38,6 +38,8 @@ class StoreSettingService
         'delivery_areas' => ['value' => [], 'type' => 'json', 'group' => 'delivery'],
         'delivery_fee' => ['value' => 0, 'type' => 'integer', 'group' => 'delivery'],
         'minimum_order' => ['value' => 0, 'type' => 'integer', 'group' => 'delivery'],
+        'auto_cancel_minutes' => ['value' => 30, 'type' => 'integer', 'group' => 'orders'],
+        'auto_cancel_enabled' => ['value' => true, 'type' => 'boolean', 'group' => 'orders'],
     ];
 
     /**
@@ -176,5 +178,21 @@ class StoreSettingService
     public function getDeliveryAreas(): array
     {
         return $this->getSetting('delivery_areas', []);
+    }
+
+    /**
+     * Mendapatkan durasi auto-cancel pending orders dalam menit
+     */
+    public function getAutoCancelMinutes(): int
+    {
+        return (int) $this->getSetting('auto_cancel_minutes', 30);
+    }
+
+    /**
+     * Cek apakah auto-cancel pending orders diaktifkan
+     */
+    public function isAutoCancelEnabled(): bool
+    {
+        return (bool) $this->getSetting('auto_cancel_enabled', true);
     }
 }

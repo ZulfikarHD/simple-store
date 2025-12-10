@@ -35,6 +35,8 @@ import {
     Building2,
     Wallet,
     ShoppingBag,
+    Timer,
+    Ban,
 } from 'lucide-vue-next'
 import { ref, computed } from 'vue'
 import { Motion } from 'motion-v'
@@ -79,6 +81,8 @@ interface Settings {
     delivery_areas: string[]
     delivery_fee: number
     minimum_order: number
+    auto_cancel_enabled: boolean
+    auto_cancel_minutes: number
 }
 
 interface Props {
@@ -126,6 +130,8 @@ const form = ref<Settings>({
     delivery_areas: props.settings.delivery_areas || [],
     delivery_fee: props.settings.delivery_fee || 0,
     minimum_order: props.settings.minimum_order || 0,
+    auto_cancel_enabled: props.settings.auto_cancel_enabled ?? true,
+    auto_cancel_minutes: props.settings.auto_cancel_minutes || 30,
 })
 
 // New delivery area input
@@ -409,11 +415,70 @@ function submitForm() {
 
                     <!-- Sidebar -->
                     <div class="flex flex-col gap-6">
-                        <!-- Delivery Settings -->
+                        <!-- Order Settings - Auto Cancel -->
                         <Motion
                             :initial="{ opacity: 0, y: 20 }"
                             :animate="{ opacity: 1, y: 0 }"
                             :transition="{ ...springPresets.ios, delay: staggerDelay(3) }"
+                        >
+                            <div class="admin-form-section">
+                                <div class="admin-form-section-header">
+                                    <h3>
+                                        <Timer />
+                                        Auto-Cancel Pesanan
+                                    </h3>
+                                </div>
+                                <div class="admin-form-section-content">
+                                    <div class="flex flex-col gap-5">
+                                        <!-- Auto Cancel Toggle -->
+                                        <div class="flex items-center justify-between rounded-xl border border-border/50 bg-muted/20 p-4">
+                                            <div class="flex items-center gap-3">
+                                                <Ban class="h-5 w-5 text-orange-500" />
+                                                <div>
+                                                    <p class="font-medium">Auto-Cancel Pending</p>
+                                                    <p class="text-sm text-muted-foreground">
+                                                        Batalkan pesanan pending yang tidak dikonfirmasi
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <Checkbox
+                                                id="auto_cancel_enabled"
+                                                :checked="form.auto_cancel_enabled"
+                                                @update:checked="form.auto_cancel_enabled = $event"
+                                            />
+                                        </div>
+
+                                        <!-- Auto Cancel Minutes -->
+                                        <div v-if="form.auto_cancel_enabled" class="admin-input-group">
+                                            <Label for="auto_cancel_minutes" class="flex items-center gap-2">
+                                                <Clock class="h-4 w-4 text-primary" />
+                                                Durasi Sebelum Auto-Cancel (menit) *
+                                            </Label>
+                                            <Input
+                                                id="auto_cancel_minutes"
+                                                v-model.number="form.auto_cancel_minutes"
+                                                type="number"
+                                                min="5"
+                                                max="1440"
+                                                placeholder="30"
+                                                class="admin-input"
+                                                :class="{ 'border-destructive': errors.auto_cancel_minutes }"
+                                            />
+                                            <p class="hint">
+                                                Pesanan pending akan otomatis dibatalkan setelah {{ form.auto_cancel_minutes }} menit
+                                            </p>
+                                            <InputError :message="errors.auto_cancel_minutes" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </Motion>
+
+                        <!-- Delivery Settings -->
+                        <Motion
+                            :initial="{ opacity: 0, y: 20 }"
+                            :animate="{ opacity: 1, y: 0 }"
+                            :transition="{ ...springPresets.ios, delay: staggerDelay(4) }"
                         >
                             <div class="admin-form-section">
                                 <div class="admin-form-section-header">
@@ -529,7 +594,7 @@ function submitForm() {
                         <Motion
                             :initial="{ opacity: 0, y: 20 }"
                             :animate="{ opacity: 1, y: 0 }"
-                            :transition="{ ...springPresets.ios, delay: staggerDelay(4) }"
+                            :transition="{ ...springPresets.ios, delay: staggerDelay(5) }"
                         >
                             <div class="admin-form-section">
                                 <div class="admin-form-section-content">

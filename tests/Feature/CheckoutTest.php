@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\User;
 use App\Services\CartService;
 use App\Services\OrderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -33,11 +34,23 @@ class CheckoutTest extends TestCase
     }
 
     /**
-     * Test redirect ke cart ketika checkout dengan cart kosong
+     * Test guest redirect ke login ketika checkout
      */
-    public function test_redirects_to_cart_when_checkout_with_empty_cart(): void
+    public function test_guest_redirects_to_login_when_checkout(): void
     {
         $response = $this->get('/checkout');
+
+        $response->assertRedirect('/login');
+    }
+
+    /**
+     * Test authenticated user redirect ke cart ketika checkout dengan cart kosong
+     */
+    public function test_authenticated_user_redirects_to_cart_when_checkout_with_empty_cart(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get('/checkout');
 
         $response->assertRedirect('/cart');
         $response->assertSessionHas('error');
@@ -113,11 +126,13 @@ class CheckoutTest extends TestCase
     }
 
     /**
-     * Test validasi form checkout dengan customer_name kosong
+     * Test validasi form checkout dengan customer_name kosong (authenticated user)
      */
     public function test_validation_fails_when_customer_name_is_empty(): void
     {
-        $response = $this->from('/checkout')->post('/checkout', [
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->from('/checkout')->post('/checkout', [
             'customer_name' => '',
             'customer_phone' => '081234567890',
             'customer_address' => 'Jl. Test No. 123, Jakarta Selatan',
@@ -127,11 +142,13 @@ class CheckoutTest extends TestCase
     }
 
     /**
-     * Test validasi form checkout dengan phone tidak valid
+     * Test validasi form checkout dengan phone tidak valid (authenticated user)
      */
     public function test_validation_fails_when_phone_format_invalid(): void
     {
-        $response = $this->from('/checkout')->post('/checkout', [
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->from('/checkout')->post('/checkout', [
             'customer_name' => 'John Doe',
             'customer_phone' => '123', // Too short
             'customer_address' => 'Jl. Test No. 123, Jakarta Selatan',
@@ -141,11 +158,13 @@ class CheckoutTest extends TestCase
     }
 
     /**
-     * Test validasi form checkout dengan address terlalu pendek
+     * Test validasi form checkout dengan address terlalu pendek (authenticated user)
      */
     public function test_validation_fails_when_address_too_short(): void
     {
-        $response = $this->from('/checkout')->post('/checkout', [
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->from('/checkout')->post('/checkout', [
             'customer_name' => 'John Doe',
             'customer_phone' => '081234567890',
             'customer_address' => 'Short', // Too short
@@ -155,10 +174,12 @@ class CheckoutTest extends TestCase
     }
 
     /**
-     * Test dapat melihat halaman success untuk recent order
+     * Test authenticated user dapat melihat halaman success untuk recent order
      */
-    public function test_can_view_order_success_page_for_recent_order(): void
+    public function test_authenticated_user_can_view_order_success_page_for_recent_order(): void
     {
+        $user = User::factory()->create();
+
         // Create a recent order (within 1 hour)
         $order = Order::factory()->create([
             'customer_name' => 'John Doe',
@@ -166,7 +187,7 @@ class CheckoutTest extends TestCase
             'created_at' => now(),
         ]);
 
-        $response = $this->get("/checkout/success/{$order->id}");
+        $response = $this->actingAs($user)->get("/checkout/success/{$order->id}");
 
         $response->assertInertia(fn (Assert $page) => $page
             ->component('OrderSuccess')
@@ -179,6 +200,7 @@ class CheckoutTest extends TestCase
 
     /**
      * Test WhatsApp URL generation dengan format yang benar
+     * Message dari customer ke owner dengan tone yang sesuai
      */
     public function test_whatsapp_url_is_generated_correctly(): void
     {
@@ -204,11 +226,14 @@ class CheckoutTest extends TestCase
 
         $this->assertStringStartsWith('https://wa.me/', $whatsappUrl);
         $this->assertStringContainsString('text=', $whatsappUrl);
-        $this->assertStringContainsString(urlencode('PESANAN BARU'), $whatsappUrl);
+        // New message format: customer to owner
+        $this->assertStringContainsString(urlencode('Saya ingin memesan'), $whatsappUrl);
+        $this->assertStringContainsString(urlencode('Invoice'), $whatsappUrl);
     }
 
     /**
      * Test WhatsApp message berisi informasi order yang lengkap
+     * Message dari customer ke owner dengan link admin
      */
     public function test_whatsapp_message_contains_order_details(): void
     {
@@ -234,10 +259,46 @@ class CheckoutTest extends TestCase
         $message = $order->generateWhatsAppMessage();
 
         $this->assertStringContainsString($order->order_number, $message);
-        $this->assertStringContainsString('John Doe', $message);
-        $this->assertStringContainsString('081234567890', $message);
         $this->assertStringContainsString('Test Product', $message);
         $this->assertStringContainsString('Catatan khusus', $message);
+        $this->assertStringContainsString('admin/orders', $message); // Link to admin
+        $this->assertStringContainsString('Mohon konfirmasi', $message);
+    }
+
+    /**
+     * Test owner to customer WhatsApp message generation
+     */
+    public function test_owner_to_customer_message_generation(): void
+    {
+        $order = Order::factory()->create([
+            'customer_name' => 'John Doe',
+            'order_number' => 'ORD-TEST-12345',
+            'total' => 50000,
+        ]);
+
+        // Test confirmed message
+        $confirmedMessage = $order->generateOwnerToCustomerMessage('confirmed');
+        $this->assertStringContainsString('John Doe', $confirmedMessage);
+        $this->assertStringContainsString('ORD-TEST-12345', $confirmedMessage);
+        $this->assertStringContainsString('DIKONFIRMASI', $confirmedMessage);
+
+        // Test preparing message
+        $preparingMessage = $order->generateOwnerToCustomerMessage('preparing');
+        $this->assertStringContainsString('DIPROSES', $preparingMessage);
+
+        // Test ready message
+        $readyMessage = $order->generateOwnerToCustomerMessage('ready');
+        $this->assertStringContainsString('SIAP', $readyMessage);
+
+        // Test delivered message
+        $deliveredMessage = $order->generateOwnerToCustomerMessage('delivered');
+        $this->assertStringContainsString('DIKIRIM', $deliveredMessage);
+
+        // Test cancelled message
+        $order->cancellation_reason = 'Stok habis';
+        $cancelledMessage = $order->generateOwnerToCustomerMessage('cancelled');
+        $this->assertStringContainsString('DIBATALKAN', $cancelledMessage);
+        $this->assertStringContainsString('Stok habis', $cancelledMessage);
     }
 
     /**
@@ -311,26 +372,44 @@ class CheckoutTest extends TestCase
     }
 
     /**
-     * Test redirect ke home ketika akses order success tanpa session dan order lama
+     * Test guest redirect ke login ketika akses order success
      */
-    public function test_old_orders_redirect_to_home_without_session(): void
+    public function test_guest_redirects_to_login_for_order_success(): void
     {
-        // Create an old order (more than 1 hour ago)
         $order = Order::factory()->create([
             'created_at' => now()->subHours(2),
         ]);
 
         $response = $this->get("/checkout/success/{$order->id}");
 
+        $response->assertRedirect('/login');
+    }
+
+    /**
+     * Test authenticated user redirect ke home untuk old orders
+     */
+    public function test_authenticated_user_old_orders_redirect_to_home(): void
+    {
+        $user = User::factory()->create();
+
+        // Create an old order (more than 1 hour ago)
+        $order = Order::factory()->create([
+            'created_at' => now()->subHours(2),
+        ]);
+
+        $response = $this->actingAs($user)->get("/checkout/success/{$order->id}");
+
         $response->assertRedirect('/');
     }
 
     /**
-     * Test checkout error ketika cart kosong via HTTP
+     * Test checkout error ketika cart kosong via HTTP (authenticated user)
      */
     public function test_checkout_post_with_empty_cart_returns_error(): void
     {
-        $response = $this->post('/checkout', [
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post('/checkout', [
             'customer_name' => 'John Doe',
             'customer_phone' => '081234567890',
             'customer_address' => 'Jl. Test No. 123, Jakarta Selatan, 12345',
@@ -376,5 +455,32 @@ class CheckoutTest extends TestCase
 
         $this->assertEquals('John Doe', $orderData['customer_name']);
         $this->assertCount(1, $orderData['items']);
+    }
+
+    /**
+     * Test auto-cancel check for pending orders
+     */
+    public function test_order_should_auto_cancel_check(): void
+    {
+        // Order yang baru dibuat - tidak boleh auto-cancel
+        $recentOrder = Order::factory()->create([
+            'status' => 'pending',
+            'created_at' => now()->subMinutes(10),
+        ]);
+        $this->assertFalse($recentOrder->shouldAutoCancel(30));
+
+        // Order yang sudah lewat batas waktu - harus auto-cancel
+        $oldOrder = Order::factory()->create([
+            'status' => 'pending',
+            'created_at' => now()->subMinutes(45),
+        ]);
+        $this->assertTrue($oldOrder->shouldAutoCancel(30));
+
+        // Order yang sudah confirmed - tidak boleh auto-cancel
+        $confirmedOrder = Order::factory()->create([
+            'status' => 'confirmed',
+            'created_at' => now()->subMinutes(45),
+        ]);
+        $this->assertFalse($confirmedOrder->shouldAutoCancel(30));
     }
 }

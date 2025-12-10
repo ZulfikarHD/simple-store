@@ -134,6 +134,8 @@ const currentPath = typeof window !== undefined ? window.location.pathname : ''
 </template>
 
 <style scoped>
+@reference "tailwindcss";
+
 /**
  * iOS-style settings navigation enhancements
  */

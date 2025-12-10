@@ -193,24 +193,92 @@ class Order extends Model
     }
 
     /**
-     * Generate WhatsApp message untuk order ini
+     * Generate WhatsApp message dari customer ke owner
+     * dengan tone yang sesuai dan link ke admin order detail
      */
     public function generateWhatsAppMessage(): string
     {
         $items = $this->items->map(function ($item) {
-            return "• {$item->product_name} x{$item->quantity} = Rp ".number_format($item->subtotal, 0, ',', '.');
+            return "- {$item->product_name} × {$item->quantity}";
         })->implode("\n");
 
-        return "🛒 *PESANAN BARU*\n\n"
-            ."📋 No. Pesanan: {$this->order_number}\n"
-            ."👤 Nama: {$this->customer_name}\n"
-            ."📱 Telepon: {$this->customer_phone}\n"
-            ."📍 Alamat: {$this->customer_address}\n\n"
-            ."*Detail Pesanan:*\n{$items}\n\n"
-            .'💰 Subtotal: Rp '.number_format($this->subtotal, 0, ',', '.')."\n"
-            .'🚚 Ongkir: Rp '.number_format($this->delivery_fee, 0, ',', '.')."\n"
-            .'*Total: Rp '.number_format($this->total, 0, ',', '.')."*\n\n"
-            .($this->notes ? "📝 Catatan: {$this->notes}\n\n" : '')
-            .'Terima kasih telah memesan! 🙏';
+        $adminUrl = url("/admin/orders/{$this->id}");
+
+        return "Halo! Saya ingin memesan.\n\n"
+            ."*Invoice:* #{$this->order_number}\n\n"
+            ."*Ringkasan Pesanan:*\n{$items}\n\n"
+            .'*Total:* Rp '.number_format($this->total, 0, ',', '.')."\n\n"
+            .($this->notes ? "*Catatan:* {$this->notes}\n\n" : '')
+            ."*Link Detail Pesanan:*\n{$adminUrl}\n\n"
+            .'Mohon konfirmasi pesanan saya. Terima kasih!';
+    }
+
+    /**
+     * Generate WhatsApp message dari owner ke customer
+     * untuk konfirmasi atau update status pesanan
+     */
+    public function generateOwnerToCustomerMessage(string $type = 'confirmed'): string
+    {
+        $storeName = \App\Models\StoreSetting::get('store_name', 'Toko Kami');
+
+        return match ($type) {
+            'confirmed' => "Halo *{$this->customer_name}*! 👋\n\n"
+                ."Pesanan Anda dengan nomor *#{$this->order_number}* telah *DIKONFIRMASI*. ✅\n\n"
+                .'Total: *Rp '.number_format($this->total, 0, ',', '.')."*\n\n"
+                ."Pesanan sedang kami proses. Terima kasih telah berbelanja di {$storeName}! 🙏",
+
+            'preparing' => "Halo *{$this->customer_name}*! 👋\n\n"
+                ."Pesanan *#{$this->order_number}* sedang *DIPROSES*. 🔄\n\n"
+                .'Mohon tunggu sebentar ya. Terima kasih! 🙏',
+
+            'ready' => "Halo *{$this->customer_name}*! 👋\n\n"
+                ."Pesanan *#{$this->order_number}* sudah *SIAP*! 🎉\n\n"
+                .'Silakan ambil pesanan Anda atau tunggu pengiriman. Terima kasih! 🙏',
+
+            'delivered' => "Halo *{$this->customer_name}*! 👋\n\n"
+                ."Pesanan *#{$this->order_number}* telah *DIKIRIM/SELESAI*. ✅\n\n"
+                ."Terima kasih telah berbelanja di {$storeName}! "
+                .'Semoga puas dengan pesanan Anda. 🙏',
+
+            'cancelled' => "Halo *{$this->customer_name}*,\n\n"
+                ."Mohon maaf, pesanan *#{$this->order_number}* telah *DIBATALKAN*. ❌\n\n"
+                .($this->cancellation_reason ? "Alasan: {$this->cancellation_reason}\n\n" : '')
+                .'Silakan hubungi kami jika ada pertanyaan. Terima kasih. 🙏',
+
+            default => "Halo *{$this->customer_name}*! 👋\n\n"
+                ."Update pesanan *#{$this->order_number}*.\n\n"
+                ."Terima kasih telah berbelanja di {$storeName}! 🙏",
+        };
+    }
+
+    /**
+     * Generate WhatsApp URL untuk owner mengirim pesan ke customer
+     */
+    public function getWhatsAppToCustomerUrl(string $type = 'confirmed'): string
+    {
+        $phone = preg_replace('/\D/', '', $this->customer_phone);
+
+        // Jika nomor dimulai dengan 0, ganti dengan 62 (Indonesia)
+        if (str_starts_with($phone, '0')) {
+            $phone = '62'.substr($phone, 1);
+        }
+
+        $message = $this->generateOwnerToCustomerMessage($type);
+        $encodedMessage = urlencode($message);
+
+        return "https://wa.me/{$phone}?text={$encodedMessage}";
+    }
+
+    /**
+     * Cek apakah order sudah melewati batas waktu pending
+     * dan harus di-auto-cancel
+     */
+    public function shouldAutoCancel(int $minutes): bool
+    {
+        if ($this->status !== 'pending') {
+            return false;
+        }
+
+        return $this->created_at->addMinutes($minutes)->isPast();
     }
 }

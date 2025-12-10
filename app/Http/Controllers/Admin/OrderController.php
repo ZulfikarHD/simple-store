@@ -45,15 +45,26 @@ class OrderController extends Controller
 
     /**
      * Menampilkan detail order dengan customer info, items, dan status timeline
+     * serta WhatsApp URLs untuk mengirim template message ke customer
      */
     public function show(Order $order): Response
     {
         $orderDetail = $this->orderService->getOrderDetail($order);
         $statuses = $this->orderService->getAvailableStatuses();
 
+        // Generate WhatsApp URLs untuk setiap status template
+        $whatsappUrls = [
+            'confirmed' => $order->getWhatsAppToCustomerUrl('confirmed'),
+            'preparing' => $order->getWhatsAppToCustomerUrl('preparing'),
+            'ready' => $order->getWhatsAppToCustomerUrl('ready'),
+            'delivered' => $order->getWhatsAppToCustomerUrl('delivered'),
+            'cancelled' => $order->getWhatsAppToCustomerUrl('cancelled'),
+        ];
+
         return Inertia::render('Admin/Orders/Show', [
             'order' => $orderDetail,
             'statuses' => $statuses,
+            'whatsappUrls' => $whatsappUrls,
         ]);
     }
 
