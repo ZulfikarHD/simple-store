@@ -1,4 +1,11 @@
 <script setup lang="ts">
+/**
+ * UserMenuContent Component
+ * Dropdown menu content untuk user menu di desktop
+ * dengan akses ke profil, riwayat pesanan, dan logout
+ *
+ * @author Zulfikar Hidayatullah
+ */
 import UserInfo from '@/components/UserInfo.vue';
 import {
     DropdownMenuGroup,
@@ -6,11 +13,11 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { logout } from '@/routes';
+import { logout, home } from '@/routes';
 import { edit } from '@/routes/profile';
 import type { User } from '@/types';
 import { Link, router } from '@inertiajs/vue3';
-import { LogOut, Settings } from 'lucide-vue-next';
+import { LogOut, Settings, Package, Home } from 'lucide-vue-next';
 
 interface Props {
     user: User;
@@ -32,9 +39,21 @@ defineProps<Props>();
     <DropdownMenuSeparator />
     <DropdownMenuGroup>
         <DropdownMenuItem :as-child="true">
+            <Link class="block w-full" :href="home()" prefetch as="button">
+                <Home class="mr-2 h-4 w-4" />
+                Beranda
+            </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem :as-child="true">
+            <Link class="block w-full" href="/account/orders" prefetch as="button">
+                <Package class="mr-2 h-4 w-4" />
+                Riwayat Pesanan
+            </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem :as-child="true">
             <Link class="block w-full" :href="edit()" prefetch as="button">
                 <Settings class="mr-2 h-4 w-4" />
-                Settings
+                Pengaturan
             </Link>
         </DropdownMenuItem>
     </DropdownMenuGroup>
@@ -48,7 +67,7 @@ defineProps<Props>();
             data-test="logout-button"
         >
             <LogOut class="mr-2 h-4 w-4" />
-            Log out
+            Keluar
         </Link>
     </DropdownMenuItem>
 </template>
