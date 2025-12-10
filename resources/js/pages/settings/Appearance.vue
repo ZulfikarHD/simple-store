@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
 import { Motion } from 'motion-v';
 import { springPresets, staggerDelay } from '@/composables/useMotionV';
+import { computed } from 'vue';
 
 import AppearanceTabs from '@/components/AppearanceTabs.vue';
 import HeadingSmall from '@/components/HeadingSmall.vue';
@@ -11,9 +12,28 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { edit } from '@/routes/appearance';
 
+const page = usePage()
+
+/**
+ * Interface dan computed untuk store branding
+ */
+interface StoreBranding {
+    name: string
+    tagline: string
+    logo: string | null
+}
+
+const store = computed<StoreBranding>(() => {
+    return (page.props as { store?: StoreBranding }).store ?? {
+        name: 'Simple Store',
+        tagline: 'Premium Quality Products',
+        logo: null,
+    }
+})
+
 const breadcrumbItems: BreadcrumbItem[] = [
     {
-        title: 'Appearance settings',
+        title: 'Pengaturan Tampilan',
         href: edit().url,
     },
 ];
@@ -21,7 +41,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbItems">
-        <Head title="Appearance settings" />
+        <Head :title="`Pengaturan Tampilan - ${store.name}`" />
 
         <SettingsLayout>
             <div class="space-y-6">
@@ -31,8 +51,8 @@ const breadcrumbItems: BreadcrumbItem[] = [
                     :transition="springPresets.ios"
                 >
                     <HeadingSmall
-                        title="Appearance settings"
-                        description="Update your account's appearance settings"
+                        title="Pengaturan Tampilan"
+                        description="Sesuaikan tampilan aplikasi sesuai preferensi Anda"
                     />
                 </Motion>
                 <Motion

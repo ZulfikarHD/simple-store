@@ -11,7 +11,7 @@ use Inertia\Middleware;
 
 /**
  * Middleware untuk handling Inertia.js requests
- * dengan shared data untuk cart, auth, dan order notifications
+ * dengan shared data untuk cart, auth, order tracking, dan notifications
  *
  * @author Zulfikar Hidayatullah
  */
@@ -38,7 +38,7 @@ class HandleInertiaRequests extends Middleware
 
     /**
      * Define the props that are shared by default.
-     * Termasuk pending_orders_count untuk notifikasi admin
+     * Termasuk pending_orders_count untuk notifikasi admin dan active_orders untuk user tracking
      *
      * @see https://inertiajs.com/shared-data
      *
@@ -69,6 +69,50 @@ class HandleInertiaRequests extends Middleware
             'pending_orders_count' => fn () => $request->user()
                 ? Order::where('status', 'pending')->count()
                 : 0,
+            // Active orders untuk user tracking (pending, confirmed, preparing, ready)
+            'active_orders' => fn () => $this->getActiveOrders($request),
+        ];
+    }
+
+    /**
+     * Mendapatkan daftar pesanan aktif untuk user yang sedang login
+     * untuk ditampilkan di bottom nav dan order tracking section
+     *
+     * @return array<string, mixed>
+     */
+    private function getActiveOrders(Request $request): array
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return [
+                'count' => 0,
+                'orders' => [],
+            ];
+        }
+
+        $activeStatuses = ['pending', 'confirmed', 'preparing', 'ready'];
+
+        $orders = Order::where('user_id', $user->id)
+            ->whereIn('status', $activeStatuses)
+            ->with(['items' => fn ($query) => $query->limit(3)])
+            ->latest()
+            ->limit(5)
+            ->get()
+            ->map(fn (Order $order) => [
+                'id' => $order->id,
+                'order_number' => $order->order_number,
+                'status' => $order->status,
+                'total' => $order->total,
+                'items_count' => $order->items->count(),
+                'items_preview' => $order->items->take(3)->pluck('product_name')->implode(', '),
+                'created_at' => $order->created_at->toISOString(),
+                'created_at_human' => $order->created_at->diffForHumans(),
+            ]);
+
+        return [
+            'count' => $orders->count(),
+            'orders' => $orders->toArray(),
         ];
     }
 }

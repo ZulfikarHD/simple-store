@@ -325,6 +325,15 @@
    Smooth transitions untuk micro-interactions
    ======================================== */
 @layer utilities {
+    /* Scrollbar Hide - untuk horizontal scroll yang clean */
+    .scrollbar-hide {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
+    }
+
     /* Skeleton Loading Animation */
     @keyframes shimmer {
         from { background-position: -200% 0; }

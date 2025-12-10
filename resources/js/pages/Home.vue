@@ -21,7 +21,8 @@ import CartCounter from '@/components/store/CartCounter.vue'
 import StoreHeader from '@/components/store/StoreHeader.vue'
 import UserBottomNav from '@/components/mobile/UserBottomNav.vue'
 import PullToRefresh from '@/components/mobile/PullToRefresh.vue'
-import { ShoppingBag, X, Menu } from 'lucide-vue-next'
+import ActiveOrdersSection from '@/components/mobile/ActiveOrdersSection.vue'
+import { ShoppingBag, X, Menu, Search } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { useHapticFeedback } from '@/composables/useHapticFeedback'
 import { springPresets } from '@/composables/useMotionV'
@@ -131,6 +132,19 @@ const isMobileMenuOpen = ref(false)
  * Menu button press state untuk iOS-like feedback
  */
 const isMenuPressed = ref(false)
+
+/**
+ * Mobile search expanded state - memungkinkan search bar expand di mobile
+ */
+const isSearchExpanded = ref(false)
+
+/**
+ * Toggle mobile search dengan haptic feedback
+ */
+function toggleMobileSearch() {
+    haptic.selection()
+    isSearchExpanded.value = !isSearchExpanded.value
+}
 
 /**
  * Toggle mobile menu visibility
@@ -436,64 +450,124 @@ const bouncyTransition = { type: 'spring' as const, ...springPresets.bouncy }
 
             <!-- Main Content dengan animations -->
             <PullToRefresh>
-            <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-                <!-- Hero Section dengan gradient background -->
+            <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-4 sm:px-6 sm:py-8 lg:px-8">
+                <!-- Active Orders Section - Quick access untuk mobile users -->
+                <ActiveOrdersSection />
+
+                <!-- Hero Section - Compact untuk mobile, full untuk desktop -->
                 <Motion
                     :initial="{ opacity: 0, y: 20 }"
                     :animate="{ opacity: 1, y: 0 }"
                     :transition="springTransition"
-                    class="mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-brand-blue-50 via-white to-brand-gold-50 p-5 sm:mb-8 sm:p-6 dark:from-brand-blue-900/30 dark:via-background dark:to-brand-gold-900/20"
+                    class="mb-4 overflow-hidden rounded-2xl bg-gradient-to-br from-brand-blue-50 via-white to-brand-gold-50 p-4 sm:mb-6 sm:p-6 dark:from-brand-blue-900/30 dark:via-background dark:to-brand-gold-900/20"
                 >
-                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div class="flex-1">
-                            <h1 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                                {{ pageHeading }}
-                            </h1>
-                            <p class="mt-1 text-sm text-muted-foreground sm:mt-2 sm:text-base">
-                                {{ pageDescription }}
-                            </p>
+                    <!-- Mobile: Compact layout -->
+                    <div class="sm:hidden">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="min-w-0 flex-1">
+                                <h1 class="truncate text-lg font-bold tracking-tight text-foreground">
+                                    {{ pageHeading }}
+                                </h1>
+                                <p class="truncate text-xs text-muted-foreground">
+                                    {{ products.data.length }} produk tersedia
+                                </p>
+                            </div>
+                            <!-- Mobile Search Toggle -->
+                            <Motion
+                                :animate="{ scale: isSearchExpanded ? 0.95 : 1, rotate: isSearchExpanded ? 45 : 0 }"
+                                :transition="{ type: 'spring', ...springPresets.snappy }"
+                            >
+                                <Button
+                                    variant="secondary"
+                                    size="icon"
+                                    class="h-10 w-10 shrink-0 rounded-full shadow-sm"
+                                    @click="toggleMobileSearch"
+                                >
+                                    <X v-if="isSearchExpanded" class="h-4 w-4" />
+                                    <Search v-else class="h-4 w-4" />
+                                </Button>
+                            </Motion>
                         </div>
-                        <!-- Search Bar Section -->
-                        <SearchBar
-                            v-model="localSearchQuery"
-                            placeholder="Cari produk..."
-                            :debounce="400"
-                            class="w-full sm:max-w-xs"
-                            @search="handleSearch"
-                        />
+                        <!-- Expandable Search Bar untuk Mobile -->
+                        <AnimatePresence>
+                            <Motion
+                                v-if="isSearchExpanded"
+                                :initial="{ opacity: 0, height: 0, marginTop: 0 }"
+                                :animate="{ opacity: 1, height: 'auto', marginTop: 12 }"
+                                :exit="{ opacity: 0, height: 0, marginTop: 0 }"
+                                :transition="springTransition"
+                                class="overflow-hidden"
+                            >
+                                <SearchBar
+                                    v-model="localSearchQuery"
+                                    placeholder="Cari produk..."
+                                    :debounce="400"
+                                    class="w-full"
+                                    @search="handleSearch"
+                                />
+                            </Motion>
+                        </AnimatePresence>
+                    </div>
+
+                    <!-- Desktop: Full layout -->
+                    <div class="hidden sm:block">
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex-1">
+                                <h1 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                                    {{ pageHeading }}
+                                </h1>
+                                <p class="mt-1 text-sm text-muted-foreground sm:mt-2 sm:text-base">
+                                    {{ pageDescription }}
+                                </p>
+                            </div>
+                            <!-- Search Bar Section -->
+                            <SearchBar
+                                v-model="localSearchQuery"
+                                placeholder="Cari produk..."
+                                :debounce="400"
+                                class="w-full sm:max-w-xs"
+                                @search="handleSearch"
+                            />
+                        </div>
                     </div>
                 </Motion>
 
-                <!-- Page Actions dengan slide up animation -->
-                <Motion
-                    v-if="props.searchQuery"
-                    :initial="{ opacity: 0, y: 20 }"
-                    :animate="{ opacity: 1, y: 0 }"
-                    :transition="{ ...springTransition, delay: 0.1 }"
-                    class="mb-5 sm:mb-6"
-                >
-                    <div class="flex items-center justify-end">
-                        <Button
-                            variant="outline"
-                            size="default"
-                            class="ios-button flex h-11 items-center justify-center gap-2 rounded-xl border-brand-blue-200 text-brand-blue hover:bg-brand-blue-50 dark:border-brand-blue-700 dark:hover:bg-brand-blue-900/30 sm:h-10"
-                            @click="handleClearSearch"
-                        >
-                            <X class="h-4 w-4" />
-                            Hapus Pencarian
-                        </Button>
-                    </div>
-                </Motion>
+                <!-- Page Actions - Clear search button -->
+                <AnimatePresence>
+                    <Motion
+                        v-if="props.searchQuery"
+                        :initial="{ opacity: 0, y: 10, height: 0 }"
+                        :animate="{ opacity: 1, y: 0, height: 'auto' }"
+                        :exit="{ opacity: 0, y: -10, height: 0 }"
+                        :transition="springTransition"
+                        class="mb-4 overflow-hidden sm:mb-6"
+                    >
+                        <div class="flex items-center justify-between rounded-xl bg-brand-blue-50/50 px-3 py-2 dark:bg-brand-blue-900/20">
+                            <p class="text-xs text-muted-foreground sm:text-sm">
+                                Mencari: <span class="font-medium text-foreground">"{{ props.searchQuery }}"</span>
+                            </p>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                class="h-8 gap-1.5 rounded-lg text-brand-blue hover:bg-brand-blue-100 hover:text-brand-blue-700 dark:hover:bg-brand-blue-900/30"
+                                @click="handleClearSearch"
+                            >
+                                <X class="h-3.5 w-3.5" />
+                                <span class="hidden sm:inline">Hapus</span>
+                            </Button>
+                        </div>
+                    </Motion>
+                </AnimatePresence>
 
-                <!-- Category Filter dengan iOS horizontal scroll -->
+                <!-- Category Filter dengan iOS horizontal scroll - lebih compact di mobile -->
                 <Motion
                     v-if="categories.data.length > 0"
-                    :initial="{ opacity: 0, y: 20 }"
+                    :initial="{ opacity: 0, y: 15 }"
                     :animate="{ opacity: 1, y: 0 }"
-                    :transition="{ ...springTransition, delay: 0.15 }"
-                    class="mb-6 sm:mb-8"
+                    :transition="{ ...springTransition, delay: 0.1 }"
+                    class="mb-4 sm:mb-6"
                 >
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2 sm:gap-3">
                         <span class="hidden text-sm font-medium text-muted-foreground sm:block">Kategori:</span>
                         <CategoryFilter
                             :categories="categories.data"

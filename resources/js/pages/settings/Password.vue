@@ -4,9 +4,10 @@ import InputError from '@/components/InputError.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { edit } from '@/routes/user-password';
-import { Form, Head } from '@inertiajs/vue3';
+import { Form, Head, usePage } from '@inertiajs/vue3';
 import { Motion, AnimatePresence } from 'motion-v';
 import { springPresets, staggerDelay } from '@/composables/useMotionV';
+import { computed } from 'vue';
 
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import { Button } from '@/components/ui/button';
@@ -14,9 +15,28 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { type BreadcrumbItem } from '@/types';
 
+const page = usePage()
+
+/**
+ * Interface dan computed untuk store branding
+ */
+interface StoreBranding {
+    name: string
+    tagline: string
+    logo: string | null
+}
+
+const store = computed<StoreBranding>(() => {
+    return (page.props as { store?: StoreBranding }).store ?? {
+        name: 'Simple Store',
+        tagline: 'Premium Quality Products',
+        logo: null,
+    }
+})
+
 const breadcrumbItems: BreadcrumbItem[] = [
     {
-        title: 'Password settings',
+        title: 'Pengaturan Password',
         href: edit().url,
     },
 ];
@@ -24,7 +44,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbItems">
-        <Head title="Password settings" />
+        <Head :title="`Pengaturan Password - ${store.name}`" />
 
         <SettingsLayout>
             <div class="space-y-6">
@@ -34,8 +54,8 @@ const breadcrumbItems: BreadcrumbItem[] = [
                     :transition="springPresets.ios"
                 >
                     <HeadingSmall
-                        title="Update password"
-                        description="Ensure your account is using a long, random password to stay secure"
+                        title="Ubah Password"
+                        description="Pastikan akun Anda menggunakan password yang panjang dan acak untuk keamanan"
                     />
                 </Motion>
 
@@ -59,34 +79,34 @@ const breadcrumbItems: BreadcrumbItem[] = [
                         v-slot="{ errors, processing, recentlySuccessful }"
                     >
                     <div class="grid gap-2">
-                        <Label for="current_password">Current password</Label>
+                        <Label for="current_password">Password Saat Ini</Label>
                         <Input
                             id="current_password"
                             name="current_password"
                             type="password"
                             class="mt-1 block w-full"
                             autocomplete="current-password"
-                            placeholder="Current password"
+                            placeholder="Password saat ini"
                         />
                         <InputError :message="errors.current_password" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="password">New password</Label>
+                        <Label for="password">Password Baru</Label>
                         <Input
                             id="password"
                             name="password"
                             type="password"
                             class="mt-1 block w-full"
                             autocomplete="new-password"
-                            placeholder="New password"
+                            placeholder="Password baru"
                         />
                         <InputError :message="errors.password" />
                     </div>
 
                     <div class="grid gap-2">
                         <Label for="password_confirmation"
-                            >Confirm password</Label
+                            >Konfirmasi Password</Label
                         >
                         <Input
                             id="password_confirmation"
@@ -94,7 +114,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
                             type="password"
                             class="mt-1 block w-full"
                             autocomplete="new-password"
-                            placeholder="Confirm password"
+                            placeholder="Konfirmasi password baru"
                         />
                         <InputError :message="errors.password_confirmation" />
                     </div>
@@ -103,7 +123,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
                         <Button
                             :disabled="processing"
                             data-test="update-password-button"
-                            >Save password</Button
+                            >Simpan Password</Button
                         >
 
                         <AnimatePresence>
@@ -115,7 +135,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
                                 :transition="springPresets.bouncy"
                             >
                                 <p class="text-sm text-neutral-600">
-                                    Saved.
+                                    Tersimpan.
                                 </p>
                             </Motion>
                         </AnimatePresence>

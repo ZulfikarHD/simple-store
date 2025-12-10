@@ -6,6 +6,7 @@
  * - Spring animations untuk smooth transitions
  * - Haptic-like press feedback
  * - Glass effect untuk active states
+ * - Dynamic store branding dari shared props
  *
  * @author Zulfikar Hidayatullah
  */
@@ -18,17 +19,37 @@ import { edit as editProfile } from '@/routes/profile'
 import { show } from '@/routes/two-factor'
 import { edit as editPassword } from '@/routes/user-password'
 import { type NavItem } from '@/types'
-import { Link } from '@inertiajs/vue3'
+import { Link, usePage } from '@inertiajs/vue3'
 import { Motion } from 'motion-v'
 import { springPresets, staggerDelay } from '@/composables/useMotionV'
 import { User, Lock, ShieldCheck, Palette } from 'lucide-vue-next'
+import { computed } from 'vue'
+
+const page = usePage()
+
+/**
+ * Interface dan computed untuk store branding
+ */
+interface StoreBranding {
+    name: string
+    tagline: string
+    logo: string | null
+}
+
+const store = computed<StoreBranding>(() => {
+    return (page.props as { store?: StoreBranding }).store ?? {
+        name: 'Simple Store',
+        tagline: 'Premium Quality Products',
+        logo: null,
+    }
+})
 
 /**
  * Navigation items dengan icons untuk iOS-style list
  */
 const sidebarNavItems: NavItem[] = [
     {
-        title: 'Profile',
+        title: 'Profil',
         href: editProfile(),
         icon: User,
     },
@@ -38,12 +59,12 @@ const sidebarNavItems: NavItem[] = [
         icon: Lock,
     },
     {
-        title: 'Two-Factor Auth',
+        title: 'Autentikasi 2 Faktor',
         href: show(),
         icon: ShieldCheck,
     },
     {
-        title: 'Appearance',
+        title: 'Tampilan',
         href: editAppearance(),
         icon: Palette,
     },
@@ -54,15 +75,15 @@ const currentPath = typeof window !== undefined ? window.location.pathname : ''
 
 <template>
     <div class="px-4 py-6 md:px-6 md:py-8">
-        <!-- Page Header dengan animation -->
+        <!-- Page Header dengan animation dan dynamic store name -->
         <Motion
             :initial="{ opacity: 0, y: 20 }"
             :animate="{ opacity: 1, y: 0 }"
             :transition="springPresets.ios"
         >
             <Heading
-                title="Settings"
-                description="Manage your profile and account settings"
+                title="Pengaturan"
+                :description="`Kelola profil dan pengaturan akun Anda di ${store.name}`"
             />
         </Motion>
 

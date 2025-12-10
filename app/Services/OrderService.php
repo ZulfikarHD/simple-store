@@ -62,8 +62,9 @@ class OrderService
             $deliveryFee = $this->storeSettingService->getDeliveryFee();
             $total = $subtotal + $deliveryFee;
 
-            // Buat order record dengan customer data
+            // Buat order record dengan customer data dan user_id jika authenticated
             $order = Order::create([
+                'user_id' => auth()->id(),
                 'customer_name' => $customerData['customer_name'],
                 'customer_phone' => $customerData['customer_phone'],
                 'customer_address' => $customerData['customer_address'],
@@ -227,7 +228,7 @@ class OrderService
     {
         $order->load(['items', 'user']);
 
-        return [
+        $data = [
             'id' => $order->id,
             'order_number' => $order->order_number,
             'customer_name' => $order->customer_name,
@@ -259,6 +260,14 @@ class OrderService
                 'cancelled_at' => $order->cancelled_at?->format('Y-m-d H:i:s'),
             ],
         ];
+
+        // Sertakan WhatsApp URL untuk order dengan status pending
+        // agar user dapat mengirim ulang konfirmasi jika sebelumnya lupa
+        if ($order->status === 'pending') {
+            $data['whatsapp_url'] = $this->generateWhatsAppUrl($order);
+        }
+
+        return $data;
     }
 
     /**

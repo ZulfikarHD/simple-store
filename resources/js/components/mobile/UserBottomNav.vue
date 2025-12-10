@@ -2,7 +2,7 @@
 /**
  * UserBottomNav Component
  * iOS-style bottom navigation dengan motion-v spring animations,
- * haptic feedback, dan badge bounce animations
+ * haptic feedback, badge bounce animations, dan order tracking
  *
  * @author Zulfikar Hidayatullah
  */
@@ -18,6 +18,7 @@ import {
     Home,
     ShoppingCart,
     User,
+    Package,
 } from 'lucide-vue-next'
 
 const page = usePage()
@@ -32,6 +33,7 @@ const pressedItem = ref<string | null>(null)
  * State untuk badge bounce animation
  */
 const badgeBounce = ref(false)
+const orderBadgeBounce = ref(false)
 
 /**
  * Computed untuk mendapatkan jumlah item di cart
@@ -39,6 +41,14 @@ const badgeBounce = ref(false)
 const cartItemsCount = computed(() => {
     const cart = (page.props as { cart?: { total_items: number } }).cart
     return cart?.total_items ?? 0
+})
+
+/**
+ * Computed untuk mendapatkan jumlah active orders
+ */
+const activeOrdersCount = computed(() => {
+    const activeOrders = (page.props as { active_orders?: { count: number } }).active_orders
+    return activeOrders?.count ?? 0
 })
 
 /**
@@ -55,39 +65,69 @@ watch(cartItemsCount, (newVal, oldVal) => {
 })
 
 /**
+ * Watch active orders count untuk trigger badge bounce
+ */
+watch(activeOrdersCount, (newVal, oldVal) => {
+    if (newVal !== oldVal) {
+        orderBadgeBounce.value = true
+        haptic.light()
+        setTimeout(() => {
+            orderBadgeBounce.value = false
+        }, 400)
+    }
+})
+
+/**
  * Computed untuk current route matching
  */
 const currentPath = computed(() => page.url)
 
 /**
  * Navigation items untuk bottom nav
+ * Includes order tracking untuk user yang memiliki active orders
  */
-const navItems = computed(() => [
-    {
-        id: 'home',
-        title: 'Beranda',
-        href: home(),
-        icon: Home,
-        badge: 0,
-        isActive: currentPath.value === '/' || currentPath.value.startsWith('/products'),
-    },
-    {
-        id: 'cart',
-        title: 'Keranjang',
-        href: cartShow(),
-        icon: ShoppingCart,
-        badge: cartItemsCount.value,
-        isActive: currentPath.value.startsWith('/cart') || currentPath.value.startsWith('/checkout'),
-    },
-    {
-        id: 'account',
-        title: 'Akun',
-        href: '/account',
-        icon: User,
-        badge: 0,
-        isActive: currentPath.value.startsWith('/account') || currentPath.value.startsWith('/settings') || currentPath.value.startsWith('/login') || currentPath.value.startsWith('/register'),
-    },
-])
+const navItems = computed(() => {
+    const items = [
+        {
+            id: 'home',
+            title: 'Beranda',
+            href: home(),
+            icon: Home,
+            badge: 0,
+            badgeType: 'default' as const,
+            isActive: currentPath.value === '/' || currentPath.value.startsWith('/products'),
+        },
+        {
+            id: 'orders',
+            title: 'Pesanan',
+            href: '/account/orders',
+            icon: Package,
+            badge: activeOrdersCount.value,
+            badgeType: 'orders' as const,
+            isActive: currentPath.value.startsWith('/account/orders'),
+        },
+        {
+            id: 'cart',
+            title: 'Keranjang',
+            href: cartShow(),
+            icon: ShoppingCart,
+            badge: cartItemsCount.value,
+            badgeType: 'cart' as const,
+            isActive: currentPath.value.startsWith('/cart') || currentPath.value.startsWith('/checkout'),
+        },
+        {
+            id: 'account',
+            title: 'Akun',
+            href: '/account',
+            icon: User,
+            badge: 0,
+            badgeType: 'default' as const,
+            isActive: currentPath.value === '/account' || currentPath.value.startsWith('/settings') || currentPath.value.startsWith('/login') || currentPath.value.startsWith('/register'),
+        },
+    ]
+
+    return items
+})
 
 /**
  * Handle press start dengan haptic feedback
@@ -165,20 +205,25 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                     <!-- Badge dengan bounce animation -->
                     <AnimatePresence>
                         <Motion
-                        v-if="item.badge && item.badge > 0"
-                        :initial="{ scale: 0 }"
+                            v-if="item.badge && item.badge > 0"
+                            :initial="{ scale: 0 }"
                             :animate="{
-                                scale: badgeBounce && item.id === 'cart' ? [1, 1.3, 1] : 1,
+                                scale: (badgeBounce && item.badgeType === 'cart') || (orderBadgeBounce && item.badgeType === 'orders') ? [1, 1.3, 1] : 1,
                             }"
                             :exit="{ scale: 0 }"
                             :transition="bouncyTransition"
                             class="absolute -right-2.5 -top-1.5"
                         >
                             <Badge
-                                class="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground shadow-sm ring-2 ring-background"
-                    >
-                        {{ item.badge > 99 ? '99+' : item.badge }}
-                    </Badge>
+                                :class="[
+                                    'flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold shadow-sm ring-2 ring-background',
+                                    item.badgeType === 'orders'
+                                        ? 'bg-gradient-to-r from-brand-gold-500 to-brand-gold-600 text-white'
+                                        : 'bg-primary text-primary-foreground',
+                                ]"
+                            >
+                                {{ item.badge > 99 ? '99+' : item.badge }}
+                            </Badge>
                         </Motion>
                     </AnimatePresence>
                 </Motion>

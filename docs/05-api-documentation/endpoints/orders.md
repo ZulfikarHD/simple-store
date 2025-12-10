@@ -949,7 +949,115 @@ Gate::authorize('view', $order);
 
 ---
 
+## User Endpoints
+
+### 7. View User Order Detail
+
+Menampilkan detail pesanan untuk user yang memiliki order tersebut.
+
+#### Request
+
+```http
+GET /account/orders/{order}
+Accept: application/json
+X-Inertia: true
+Cookie: laravel_session={SESSION_TOKEN}
+```
+
+#### URL Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `order` | integer | Yes | Order ID |
+
+#### Response (Success)
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+X-Inertia: true
+```
+
+```json
+{
+  "component": "Account/OrderDetail",
+  "props": {
+    "order": {
+      "id": 123,
+      "order_number": "ORD-20251210-A7B9C",
+      "customer_name": "John Doe",
+      "customer_phone": "081234567890",
+      "customer_address": "Jl. Sudirman No. 123",
+      "notes": "Tidak pedas",
+      "subtotal": 50000,
+      "delivery_fee": 5000,
+      "total": 55000,
+      "status": "pending",
+      "status_label": "Menunggu Konfirmasi",
+      "items": [
+        {
+          "id": 1,
+          "product_name": "Nasi Goreng Spesial",
+          "product_price": 25000,
+          "quantity": 2,
+          "subtotal": 50000,
+          "notes": null
+        }
+      ],
+      "items_count": 1,
+      "cancellation_reason": null,
+      "timestamps": {
+        "created_at": "2025-12-10 14:30:00",
+        "created_at_human": "5 minutes ago",
+        "confirmed_at": null,
+        "preparing_at": null,
+        "ready_at": null,
+        "delivered_at": null,
+        "cancelled_at": null
+      },
+      "whatsapp_url": "https://wa.me/628xxx?text=..."
+    }
+  }
+}
+```
+
+**Note:** `whatsapp_url` hanya disertakan untuk order dengan status `pending` agar user dapat mengirim ulang konfirmasi WhatsApp.
+
+#### Response (Forbidden - Not Owner)
+
+```http
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+```
+
+```json
+{
+  "message": "This action is unauthorized."
+}
+```
+
+#### Authorization
+
+- Requires authentication
+- User must be the owner of the order (`order.user_id === auth.user.id`)
+
+---
+
 ## Changelog
+
+### Version 1.2.0 (2025-12-10)
+
+**Added:**
+- ✅ User order detail endpoint (`GET /account/orders/{order}`)
+- ✅ `whatsapp_url` field in order detail for pending orders
+- ✅ Order creation now saves `user_id` for authenticated users
+- ✅ Status timeline with timestamps in order detail
+
+**Changed:**
+- `getOrderDetail()` now conditionally includes `whatsapp_url` for pending orders
+
+**Fixed:**
+- Orders were created with `user_id: null` for authenticated users - now correctly saves user ID
 
 ### Version 1.1.0 (2025-12-10)
 

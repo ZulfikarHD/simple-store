@@ -9,11 +9,11 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { disable, enable, show } from '@/routes/two-factor';
 import { BreadcrumbItem } from '@/types';
-import { Form, Head } from '@inertiajs/vue3';
+import { Form, Head, usePage } from '@inertiajs/vue3';
 import { Motion } from 'motion-v';
 import { springPresets, staggerDelay } from '@/composables/useMotionV';
 import { ShieldBan, ShieldCheck } from 'lucide-vue-next';
-import { onUnmounted, ref } from 'vue';
+import { computed, onUnmounted, ref } from 'vue';
 
 interface Props {
     requiresConfirmation?: boolean;
@@ -25,9 +25,28 @@ withDefaults(defineProps<Props>(), {
     twoFactorEnabled: false,
 });
 
+const page = usePage()
+
+/**
+ * Interface dan computed untuk store branding
+ */
+interface StoreBranding {
+    name: string
+    tagline: string
+    logo: string | null
+}
+
+const store = computed<StoreBranding>(() => {
+    return (page.props as { store?: StoreBranding }).store ?? {
+        name: 'Simple Store',
+        tagline: 'Premium Quality Products',
+        logo: null,
+    }
+})
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Two-Factor Authentication',
+        title: 'Autentikasi 2 Faktor',
         href: show.url(),
     },
 ];
@@ -42,7 +61,7 @@ onUnmounted(() => {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
-        <Head title="Two-Factor Authentication" />
+        <Head :title="`Autentikasi 2 Faktor - ${store.name}`" />
         <SettingsLayout>
             <div class="space-y-6">
                 <Motion
@@ -51,8 +70,8 @@ onUnmounted(() => {
                     :transition="springPresets.ios"
                 >
                     <HeadingSmall
-                        title="Two-Factor Authentication"
-                        description="Manage your two-factor authentication settings"
+                        title="Autentikasi 2 Faktor"
+                        description="Kelola pengaturan autentikasi dua faktor Anda"
                     />
                 </Motion>
 
@@ -68,14 +87,13 @@ onUnmounted(() => {
                         :animate="{ opacity: 1, scale: 1 }"
                         :transition="springPresets.bouncy"
                     >
-                        <Badge variant="destructive">Disabled</Badge>
+                        <Badge variant="destructive">Nonaktif</Badge>
                     </Motion>
 
                     <p class="text-muted-foreground">
-                        When you enable two-factor authentication, you will be
-                        prompted for a secure pin during login. This pin can be
-                        retrieved from a TOTP-supported application on your
-                        phone.
+                        Ketika Anda mengaktifkan autentikasi dua faktor, Anda akan
+                        diminta PIN keamanan saat login. PIN ini dapat diperoleh dari
+                        aplikasi TOTP di ponsel Anda (seperti Google Authenticator).
                     </p>
 
                     <div>
@@ -83,7 +101,7 @@ onUnmounted(() => {
                             v-if="hasSetupData"
                             @click="showSetupModal = true"
                         >
-                            <ShieldCheck />Continue Setup
+                            <ShieldCheck />Lanjutkan Setup
                         </Button>
                         <Form
                             v-else
@@ -92,7 +110,7 @@ onUnmounted(() => {
                             #default="{ processing }"
                         >
                             <Button type="submit" :disabled="processing">
-                                <ShieldCheck />Enable 2FA</Button
+                                <ShieldCheck />Aktifkan 2FA</Button
                             ></Form
                         >
                     </div>
@@ -110,14 +128,13 @@ onUnmounted(() => {
                         :animate="{ opacity: 1, scale: 1 }"
                         :transition="springPresets.bouncy"
                     >
-                        <Badge variant="default">Enabled</Badge>
+                        <Badge variant="default">Aktif</Badge>
                     </Motion>
 
                     <p class="text-muted-foreground">
-                        With two-factor authentication enabled, you will be
-                        prompted for a secure, random pin during login, which
-                        you can retrieve from the TOTP-supported application on
-                        your phone.
+                        Dengan autentikasi dua faktor aktif, Anda akan diminta
+                        PIN keamanan saat login, yang dapat Anda ambil dari
+                        aplikasi TOTP di ponsel Anda.
                     </p>
 
                     <TwoFactorRecoveryCodes />
@@ -130,7 +147,7 @@ onUnmounted(() => {
                                 :disabled="processing"
                             >
                                 <ShieldBan />
-                                Disable 2FA
+                                Nonaktifkan 2FA
                             </Button>
                         </Form>
                     </div>

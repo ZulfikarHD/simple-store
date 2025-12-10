@@ -33,11 +33,12 @@ Route::middleware(['auth', 'throttle:checkout'])->group(function () {
 
 // Account routes untuk profil dan riwayat pesanan user
 // Halaman index bisa diakses guest (akan tampilkan prompt login)
-// Halaman orders memerlukan authentication
+// Halaman orders dan order detail memerlukan authentication
 Route::get('/account', [AccountController::class, 'index'])->name('account.index');
-Route::get('/account/orders', [AccountController::class, 'orders'])
-    ->middleware('auth')
-    ->name('account.orders');
+Route::middleware('auth')->group(function () {
+    Route::get('/account/orders', [AccountController::class, 'orders'])->name('account.orders');
+    Route::get('/account/orders/{order}', [AccountController::class, 'orderShow'])->name('account.orders.show');
+});
 
 // Admin routes dengan auth, verified, dan admin middleware untuk proteksi akses
 // Hanya user dengan role admin yang dapat mengakses halaman-halaman ini
