@@ -22,6 +22,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
+import PasswordConfirmDialog from '@/components/admin/PasswordConfirmDialog.vue'
 import PriceDisplay from '@/components/store/PriceDisplay.vue'
 import PullToRefresh from '@/components/mobile/PullToRefresh.vue'
 import { type BreadcrumbItem } from '@/types'
@@ -119,11 +120,10 @@ const isActive = ref(props.filters.is_active || '')
 
 // Dialog delete
 const showDeleteDialog = ref(false)
+const showPasswordDialog = ref(false)
 const productToDelete = ref<Product | null>(null)
 const isDeleting = ref(false)
 
-// Press state untuk iOS-like feedback
-const pressedRow = ref<number | null>(null)
 
 /**
  * Has active filters
@@ -174,7 +174,7 @@ function resetFilters() {
 }
 
 /**
- * Buka dialog konfirmasi delete
+ * Buka dialog konfirmasi delete - tampilkan preview
  */
 function confirmDelete(product: Product) {
     haptic.warning()
@@ -183,20 +183,42 @@ function confirmDelete(product: Product) {
 }
 
 /**
- * Eksekusi delete produk
+ * Lanjut ke verifikasi password
  */
-function deleteProduct() {
+function proceedToPasswordConfirm() {
+    showDeleteDialog.value = false
+    showPasswordDialog.value = true
+}
+
+/**
+ * Eksekusi delete produk setelah password terverifikasi
+ */
+function executeDelete() {
     if (!productToDelete.value) return
 
     haptic.heavy()
     isDeleting.value = true
     router.delete(destroy(productToDelete.value.id).url, {
+        onSuccess: () => {
+            haptic.success()
+        },
+        onError: () => {
+            haptic.error()
+        },
         onFinish: () => {
             isDeleting.value = false
-            showDeleteDialog.value = false
+            showPasswordDialog.value = false
             productToDelete.value = null
         },
     })
+}
+
+/**
+ * Handle password dialog cancel
+ */
+function handlePasswordCancel() {
+    showPasswordDialog.value = false
+    productToDelete.value = null
 }
 
 /**
@@ -216,21 +238,6 @@ function goToPage(url: string | null) {
 function getImageUrl(image: string | null): string | undefined {
     if (!image) return undefined
     return `/storage/${image}`
-}
-
-/**
- * Handle row press
- */
-function handleRowPress(productId: number) {
-    pressedRow.value = productId
-    haptic.light()
-}
-
-/**
- * Handle row release
- */
-function handleRowRelease() {
-    pressedRow.value = null
 }
 
 /**
@@ -375,44 +382,176 @@ function handleAddClick() {
                     </div>
                 </Motion>
 
-                <!-- Products Table -->
+                <!-- Mobile Product Cards -->
+                <div class="flex flex-col gap-3 md:hidden">
+                    <Motion
+                        v-for="(product, index) in products.data"
+                        :key="product.id"
+                        :initial="{ opacity: 0, y: 20 }"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springPresets.ios, delay: 0.1 + index * 0.03 }"
+                    >
+                        <div class="overflow-hidden rounded-2xl border bg-card shadow-sm">
+                            <!-- Product Header with Image -->
+                            <div class="flex gap-4 p-4">
+                                <div class="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-muted">
+                                    <img
+                                        v-if="product.image"
+                                        :src="getImageUrl(product.image)"
+                                        :alt="product.name"
+                                        class="h-full w-full object-cover"
+                                    />
+                                    <div
+                                        v-else
+                                        class="flex h-full w-full items-center justify-center"
+                                    >
+                                        <ImageOff class="h-6 w-6 text-muted-foreground" />
+                                    </div>
+                                </div>
+                                <div class="flex min-w-0 flex-1 flex-col justify-center">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <h3 class="font-semibold leading-tight line-clamp-2">{{ product.name }}</h3>
+                                        <span
+                                            v-if="product.is_featured"
+                                            class="shrink-0 rounded-full bg-amber-100 p-1 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400"
+                                        >
+                                            <Star class="h-3.5 w-3.5 fill-current" />
+                                        </span>
+                                    </div>
+                                    <p v-if="product.category" class="mt-1 text-sm text-muted-foreground">
+                                        {{ product.category.name }}
+                                    </p>
+                                    <div class="mt-2 flex items-center gap-3">
+                                        <PriceDisplay :price="product.price" size="md" class="font-bold text-primary" />
+                                        <span
+                                            :class="[
+                                                'admin-badge tabular-nums',
+                                                product.stock > 10
+                                                    ? 'admin-badge--success'
+                                                    : product.stock > 0
+                                                      ? 'admin-badge--pending'
+                                                      : 'admin-badge--destructive',
+                                            ]"
+                                        >
+                                            Stok: {{ product.stock }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Product Footer Actions -->
+                            <div class="flex items-center justify-between border-t bg-muted/30 px-4 py-3">
+                                <span
+                                    :class="[
+                                        'admin-badge',
+                                        product.is_active ? 'admin-badge--success' : 'bg-muted text-muted-foreground',
+                                    ]"
+                                >
+                                    {{ product.is_active ? 'Aktif' : 'Tidak Aktif' }}
+                                </span>
+                                <div class="flex items-center gap-2">
+                                    <Link :href="edit(product.id).url">
+                                        <Button variant="outline" size="sm" class="h-10 gap-2">
+                                            <Pencil class="h-4 w-4" />
+                                            Edit
+                                        </Button>
+                                    </Link>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        class="h-10 gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                        @click="confirmDelete(product)"
+                                    >
+                                        <Trash2 class="h-4 w-4" />
+                                        Hapus
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </Motion>
+
+                    <!-- Mobile Empty State -->
+                    <div v-if="products.data.length === 0" class="admin-form-section">
+                        <div class="admin-empty-state">
+                            <div class="icon-wrapper">
+                                <Package />
+                            </div>
+                            <h3>Belum Ada Produk</h3>
+                            <p>Mulai tambahkan produk pertama Anda</p>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Pagination -->
+                    <div
+                        v-if="products.data?.length > 0 && products.last_page > 1"
+                        class="flex items-center justify-between rounded-2xl border bg-card p-3"
+                    >
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            class="h-10 w-10 p-0"
+                            :disabled="products.current_page === 1"
+                            @click="goToPage(products.links[0]?.url)"
+                        >
+                            <ChevronLeft class="h-4 w-4" />
+                        </Button>
+                        <span class="text-sm text-muted-foreground">
+                            {{ products.current_page }} / {{ products.last_page }}
+                        </span>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            class="h-10 w-10 p-0"
+                            :disabled="products.current_page === products.last_page"
+                            @click="goToPage(products.links[products.links.length - 1]?.url)"
+                        >
+                            <ChevronRight class="h-4 w-4" />
+                        </Button>
+                    </div>
+                </div>
+
+                <!-- Desktop Products Table -->
                 <Motion
                     :initial="{ opacity: 0, y: 20 }"
                     :animate="{ opacity: 1, y: 0 }"
                     :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
+                    class="hidden md:block"
                 >
-                    <div class="ios-grouped-table">
+                    <div class="rounded-2xl border border-border/50 bg-card shadow-sm">
                         <div class="overflow-x-auto">
-                            <table class="admin-table">
+                            <table class="w-full border-collapse">
                                 <thead>
-                                    <tr>
-                                        <th>Produk</th>
-                                        <th>Kategori</th>
-                                        <th class="text-right">Harga</th>
-                                        <th class="text-center">Stok</th>
-                                        <th class="text-center">Status</th>
-                                        <th class="text-right">Aksi</th>
+                                    <tr class="border-b bg-muted/50">
+                                        <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="min-width: 280px;">
+                                            Produk
+                                        </th>
+                                        <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 150px;">
+                                            Kategori
+                                        </th>
+                                        <th class="whitespace-nowrap px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 120px;">
+                                            Harga
+                                        </th>
+                                        <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 80px;">
+                                            Stok
+                                        </th>
+                                        <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 100px;">
+                                            Status
+                                        </th>
+                                        <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 140px;">
+                                            Aksi
+                                        </th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <Motion
-                                        v-for="(product, index) in products.data"
+                                <tbody class="divide-y divide-border/50">
+                                    <tr
+                                        v-for="product in products.data"
                                         :key="product.id"
-                                        tag="tr"
-                                        :initial="{ opacity: 0, x: -20 }"
-                                        :animate="{ opacity: 1, x: 0 }"
-                                        :transition="{ ...springPresets.ios, delay: 0.15 + index * 0.03 }"
-                                        :class="{ 'scale-[0.995] bg-muted/60': pressedRow === product.id }"
-                                        @mousedown="handleRowPress(product.id)"
-                                        @mouseup="handleRowRelease"
-                                        @mouseleave="handleRowRelease"
-                                        @touchstart.passive="handleRowPress(product.id)"
-                                        @touchend="handleRowRelease"
+                                        class="group transition-colors hover:bg-muted/30"
                                     >
                                         <!-- Product Info -->
-                                        <td>
+                                        <td class="px-4 py-3">
                                             <div class="flex items-center gap-4">
-                                                <div class="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-muted">
+                                                <div class="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted">
                                                     <img
                                                         v-if="product.image"
                                                         :src="getImageUrl(product.image)"
@@ -426,9 +565,9 @@ function handleAddClick() {
                                                         <ImageOff class="h-5 w-5 text-muted-foreground" />
                                                     </div>
                                                 </div>
-                                                <div class="flex flex-col gap-1">
-                                                    <span class="font-semibold">{{ product.name }}</span>
-                                                    <div v-if="product.is_featured" class="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
+                                                <div class="flex flex-col">
+                                                    <span class="font-semibold text-foreground">{{ product.name }}</span>
+                                                    <div v-if="product.is_featured" class="mt-0.5 flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
                                                         <Star class="h-3 w-3 fill-current" />
                                                         Featured
                                                     </div>
@@ -437,23 +576,23 @@ function handleAddClick() {
                                         </td>
 
                                         <!-- Category -->
-                                        <td>
-                                            <span v-if="product.category" class="text-sm">
+                                        <td class="px-4 py-3">
+                                            <span v-if="product.category" class="text-sm text-foreground">
                                                 {{ product.category.name }}
                                             </span>
                                             <span v-else class="text-sm text-muted-foreground">-</span>
                                         </td>
 
                                         <!-- Price -->
-                                        <td class="text-right">
-                                            <PriceDisplay :price="product.price" size="sm" class="font-semibold" />
+                                        <td class="px-4 py-3 text-right">
+                                            <PriceDisplay :price="product.price" size="sm" class="font-semibold text-primary" />
                                         </td>
 
                                         <!-- Stock -->
-                                        <td class="text-center">
-                                            <Badge
+                                        <td class="px-4 py-3 text-center">
+                                            <span
                                                 :class="[
-                                                    'tabular-nums',
+                                                    'admin-badge tabular-nums',
                                                     product.stock > 10
                                                         ? 'admin-badge--success'
                                                         : product.stock > 0
@@ -462,55 +601,57 @@ function handleAddClick() {
                                                 ]"
                                             >
                                                 {{ product.stock }}
-                                            </Badge>
+                                            </span>
                                         </td>
 
                                         <!-- Status -->
-                                        <td class="text-center">
+                                        <td class="px-4 py-3 text-center">
                                             <span
                                                 :class="[
                                                     'admin-badge',
                                                     product.is_active ? 'admin-badge--success' : 'bg-muted text-muted-foreground',
                                                 ]"
                                             >
-                                                {{ product.is_active ? 'Aktif' : 'Tidak Aktif' }}
+                                                {{ product.is_active ? 'Aktif' : 'Nonaktif' }}
                                             </span>
                                         </td>
 
                                         <!-- Actions -->
-                                        <td class="text-right">
-                                            <div class="flex items-center justify-end gap-1">
+                                        <td class="px-4 py-3 text-center">
+                                            <div class="flex items-center justify-center gap-1">
                                                 <Link :href="edit(product.id).url">
                                                     <Button
-                                                        variant="ghost"
+                                                        variant="outline"
                                                         size="sm"
-                                                        class="ios-button h-9 w-9 p-0"
+                                                        class="h-8 gap-1.5"
                                                     >
-                                                        <Pencil class="h-4 w-4" />
+                                                        <Pencil class="h-3.5 w-3.5" />
+                                                        Edit
                                                     </Button>
                                                 </Link>
                                                 <Button
-                                                    variant="ghost"
+                                                    variant="outline"
                                                     size="sm"
-                                                    class="ios-button h-9 w-9 p-0 text-destructive hover:text-destructive"
+                                                    class="h-8 gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive"
                                                     @click="confirmDelete(product)"
                                                 >
-                                                    <Trash2 class="h-4 w-4" />
+                                                    <Trash2 class="h-3.5 w-3.5" />
+                                                    Hapus
                                                 </Button>
                                             </div>
                                         </td>
-                                    </Motion>
+                                    </tr>
 
                                     <!-- Empty State -->
                                     <tr v-if="products.data.length === 0">
-                                        <td colspan="6">
-                                            <div class="admin-empty-state">
-                                                <div class="icon-wrapper">
-                                                    <Package />
+                                        <td colspan="6" class="px-4 py-16">
+                                            <div class="flex flex-col items-center justify-center text-center">
+                                                <div class="mb-4 rounded-2xl bg-muted p-4">
+                                                    <Package class="h-10 w-10 text-muted-foreground/50" />
                                                 </div>
-                                                <h3>Belum Ada Produk</h3>
-                                                <p>Mulai tambahkan produk pertama Anda</p>
-                                                <Link :href="create().url" @click="handleAddClick">
+                                                <h3 class="text-lg font-semibold">Belum Ada Produk</h3>
+                                                <p class="mt-1 text-sm text-muted-foreground">Mulai tambahkan produk pertama Anda</p>
+                                                <Link :href="create().url" class="mt-4" @click="handleAddClick">
                                                     <Button class="admin-btn-primary gap-2">
                                                         <Plus class="h-4 w-4" />
                                                         Tambah Produk
@@ -523,34 +664,34 @@ function handleAddClick() {
                             </table>
                         </div>
 
-                        <!-- Pagination -->
+                        <!-- Desktop Pagination -->
                         <div
                             v-if="products.last_page > 1"
-                            class="flex items-center justify-between border-t px-4 py-3"
+                            class="flex items-center justify-between border-t border-border/50 px-4 py-3"
                         >
                             <p class="text-sm text-muted-foreground">
-                                Menampilkan {{ products.from }} - {{ products.to }} dari {{ products.total }} produk
+                                Menampilkan <span class="font-medium text-foreground">{{ products.from }}</span> - <span class="font-medium text-foreground">{{ products.to }}</span> dari <span class="font-medium text-foreground">{{ products.total }}</span> produk
                             </p>
                             <div class="flex items-center gap-2">
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    class="ios-button"
                                     :disabled="products.current_page === 1"
                                     @click="goToPage(products.links[0]?.url)"
                                 >
                                     <ChevronLeft class="h-4 w-4" />
+                                    Prev
                                 </Button>
-                                <span class="text-sm tabular-nums text-muted-foreground">
+                                <span class="rounded-lg bg-muted px-3 py-1 text-sm font-medium tabular-nums">
                                     {{ products.current_page }} / {{ products.last_page }}
                                 </span>
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    class="ios-button"
                                     :disabled="products.current_page === products.last_page"
                                     @click="goToPage(products.links[products.links.length - 1]?.url)"
                                 >
+                                    Next
                                     <ChevronRight class="h-4 w-4" />
                                 </Button>
                             </div>
@@ -569,33 +710,77 @@ function handleAddClick() {
         </Link>
     </AppLayout>
 
-    <!-- Delete Confirmation Dialog -->
+    <!-- Delete Confirmation Dialog with Product Preview -->
     <Dialog v-model:open="showDeleteDialog">
-        <DialogContent class="rounded-2xl">
+        <DialogContent class="rounded-2xl sm:max-w-md">
             <DialogHeader>
-                <DialogTitle>Hapus Produk</DialogTitle>
+                <DialogTitle class="flex items-center gap-2 text-destructive">
+                    <Trash2 class="h-5 w-5" />
+                    Hapus Produk
+                </DialogTitle>
                 <DialogDescription>
-                    Apakah Anda yakin ingin menghapus produk "{{ productToDelete?.name }}"?
-                    Tindakan ini tidak dapat dibatalkan.
+                    Tindakan ini tidak dapat dibatalkan. Produk akan dihapus permanen.
                 </DialogDescription>
             </DialogHeader>
-            <DialogFooter>
+
+            <!-- Product Preview -->
+            <div v-if="productToDelete" class="my-4 rounded-xl border bg-muted/30 p-4">
+                <div class="flex items-center gap-4">
+                    <div class="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted">
+                        <img
+                            v-if="productToDelete.image"
+                            :src="getImageUrl(productToDelete.image)"
+                            :alt="productToDelete.name"
+                            class="h-full w-full object-cover"
+                        />
+                        <div v-else class="flex h-full w-full items-center justify-center">
+                            <ImageOff class="h-6 w-6 text-muted-foreground" />
+                        </div>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <h4 class="font-semibold">{{ productToDelete.name }}</h4>
+                        <p v-if="productToDelete.category" class="text-sm text-muted-foreground">
+                            {{ productToDelete.category.name }}
+                        </p>
+                        <div class="mt-1 flex items-center gap-3">
+                            <PriceDisplay :price="productToDelete.price" size="sm" class="font-medium" />
+                            <span class="text-sm text-muted-foreground">
+                                Stok: {{ productToDelete.stock }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <DialogFooter class="flex-col gap-2 sm:flex-row">
                 <Button
                     variant="outline"
-                    class="ios-button"
+                    class="w-full sm:w-auto"
                     @click="showDeleteDialog = false"
                 >
                     Batal
                 </Button>
                 <Button
                     variant="destructive"
-                    class="ios-button"
-                    :disabled="isDeleting"
-                    @click="deleteProduct"
+                    class="w-full gap-2 sm:w-auto"
+                    @click="proceedToPasswordConfirm"
                 >
-                    {{ isDeleting ? 'Menghapus...' : 'Hapus' }}
+                    <Trash2 class="h-4 w-4" />
+                    Ya, Hapus Produk
                 </Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>
+
+    <!-- Password Confirmation Dialog -->
+    <PasswordConfirmDialog
+        v-model:open="showPasswordDialog"
+        title="Konfirmasi Hapus Produk"
+        :description="`Masukkan password untuk menghapus produk '${productToDelete?.name}'`"
+        confirm-label="Hapus Permanen"
+        confirm-variant="destructive"
+        :loading="isDeleting"
+        @confirm="executeDelete"
+        @cancel="handlePasswordCancel"
+    />
 </template>

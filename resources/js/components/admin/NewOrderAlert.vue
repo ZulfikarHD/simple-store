@@ -3,6 +3,7 @@
  * NewOrderAlert Component
  * Banner alert untuk menampilkan pesanan baru yang perlu diproses
  * dengan polling otomatis dan quick actions untuk konfirmasi langsung
+ * serta password confirmation untuk keamanan aksi sensitif
  *
  * @author Zulfikar Hidayatullah
  */
@@ -11,6 +12,7 @@ import { router, usePage } from '@inertiajs/vue3'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import PriceDisplay from '@/components/store/PriceDisplay.vue'
+import PasswordConfirmDialog from '@/components/admin/PasswordConfirmDialog.vue'
 import {
     Bell,
     X,
@@ -48,6 +50,12 @@ const isDismissed = ref(false)
 const isExpanded = ref(false)
 const lastSeenOrderId = ref<number | null>(null)
 const pollingInterval = ref<ReturnType<typeof setInterval> | null>(null)
+
+/**
+ * State untuk password confirmation dialog
+ */
+const showPasswordDialog = ref(false)
+const pendingConfirmOrderId = ref<number | null>(null)
 
 const page = usePage()
 
@@ -100,37 +108,52 @@ async function fetchPendingOrders(): Promise<void> {
 }
 
 /**
- * Quick confirm order langsung dari alert banner
+ * Memulai proses konfirmasi order dengan membuka password dialog
+ * untuk keamanan aksi sensitif
  */
-async function quickConfirmOrder(orderId: number): Promise<void> {
+function requestConfirmOrder(orderId: number): void {
     if (isConfirming.value !== null) return
+    pendingConfirmOrderId.value = orderId
+    showPasswordDialog.value = true
+}
 
+/**
+ * Eksekusi konfirmasi order setelah password diverifikasi
+ * menggunakan Inertia router untuk menghindari CSRF issues
+ */
+function executeConfirmOrder(): void {
+    if (pendingConfirmOrderId.value === null) return
+
+    const orderId = pendingConfirmOrderId.value
     isConfirming.value = orderId
+    showPasswordDialog.value = false
 
-    try {
-        const response = await fetch(`/admin/api/orders/${orderId}/quick-status`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '',
+    router.patch(
+        `/admin/orders/${orderId}/status`,
+        { status: 'confirmed' },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                // Refresh pending orders
+                fetchPendingOrders()
             },
-            credentials: 'same-origin',
-            body: JSON.stringify({ status: 'confirmed' }),
-        })
-
-        if (response.ok) {
-            // Refresh pending orders
-            await fetchPendingOrders()
-            // Trigger Inertia reload untuk update sidebar badge
-            router.reload({ only: ['pending_orders_count'] })
+            onError: (errors) => {
+                console.error('Failed to confirm order:', errors)
+            },
+            onFinish: () => {
+                isConfirming.value = null
+                pendingConfirmOrderId.value = null
+            },
         }
-    } catch (error) {
-        console.error('Failed to confirm order:', error)
-    } finally {
-        isConfirming.value = null
-    }
+    )
+}
+
+/**
+ * Handle cancel password dialog
+ */
+function handlePasswordDialogCancel(): void {
+    showPasswordDialog.value = false
+    pendingConfirmOrderId.value = null
 }
 
 /**
@@ -355,7 +378,7 @@ watch(
                                     size="sm"
                                     class="h-9 gap-1.5"
                                     :disabled="isConfirming === latestOrder.id"
-                                    @click="quickConfirmOrder(latestOrder.id)"
+                                    @click="requestConfirmOrder(latestOrder.id)"
                                 >
                                     <Loader2 v-if="isConfirming === latestOrder.id" class="h-3.5 w-3.5 animate-spin" />
                                     <Check v-else class="h-3.5 w-3.5" />
@@ -413,7 +436,7 @@ watch(
                                             size="icon"
                                             class="h-8 w-8"
                                             :disabled="isConfirming === order.id"
-                                            @click="quickConfirmOrder(order.id)"
+                                            @click="requestConfirmOrder(order.id)"
                                         >
                                             <Loader2 v-if="isConfirming === order.id" class="h-4 w-4 animate-spin" />
                                             <Check v-else class="h-4 w-4" />
@@ -427,6 +450,14 @@ watch(
             </div>
         </div>
     </Transition>
+
+    <!-- Password Confirmation Dialog -->
+    <PasswordConfirmDialog
+        v-model:open="showPasswordDialog"
+        title="Konfirmasi Pesanan"
+        description="Masukkan password Anda untuk mengkonfirmasi pesanan ini."
+        confirm-label="Konfirmasi Pesanan"
+        @confirm="executeConfirmOrder"
+        @cancel="handlePasswordDialogCancel"
+    />
 </template>
-
-

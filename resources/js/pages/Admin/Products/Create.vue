@@ -181,7 +181,7 @@ function cancel() {
                 </Motion>
 
                 <!-- Form -->
-                <form @submit.prevent="submitForm" class="grid gap-6 lg:grid-cols-3">
+                <form id="product-form" @submit.prevent="submitForm" class="grid gap-6 lg:grid-cols-3">
                     <!-- Main Content -->
                     <div class="flex flex-col gap-6 lg:col-span-2">
                         <!-- Basic Info -->
@@ -430,9 +430,36 @@ function cancel() {
                     </div>
                 </form>
 
-                <!-- Bottom padding untuk mobile nav -->
-                <div class="h-20 md:hidden" />
+                <!-- Bottom padding untuk mobile nav + sticky bar -->
+                <div class="h-36 md:hidden" />
             </div>
         </PullToRefresh>
+
+        <!-- Mobile Sticky Submit Bar -->
+        <div
+            class="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:hidden"
+            style="padding-bottom: env(safe-area-inset-bottom)"
+        >
+            <div class="flex gap-3 p-4">
+                <Button
+                    type="button"
+                    variant="outline"
+                    class="h-12 flex-1"
+                    @click="cancel"
+                >
+                    Batal
+                </Button>
+                <Button
+                    type="submit"
+                    form="product-form"
+                    class="h-12 flex-1 gap-2"
+                    :disabled="isSubmitting"
+                    @click="submitForm"
+                >
+                    <Save class="h-4 w-4" />
+                    {{ isSubmitting ? 'Menyimpan...' : 'Simpan' }}
+                </Button>
+            </div>
+        </div>
     </AppLayout>
 </template>

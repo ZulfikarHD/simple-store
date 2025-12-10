@@ -162,7 +162,7 @@ function cancel() {
                 </Motion>
 
                 <!-- Form -->
-                <form @submit.prevent="submitForm" class="grid gap-6 lg:grid-cols-3">
+                <form id="category-form" @submit.prevent="submitForm" class="grid gap-6 lg:grid-cols-3">
                     <!-- Main Content -->
                     <div class="flex flex-col gap-6 lg:col-span-2">
                         <!-- Basic Info -->
@@ -352,9 +352,22 @@ function cancel() {
                     </div>
                 </form>
 
-                <!-- Bottom padding untuk mobile nav -->
-                <div class="h-20 md:hidden" />
+                <!-- Bottom padding untuk sticky button + mobile nav -->
+                <div class="h-36 md:hidden" />
             </div>
         </PullToRefresh>
+
+        <!-- Sticky Bottom Bar for Mobile -->
+        <div class="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80 p-4 md:hidden">
+            <Button
+                type="submit"
+                form="category-form"
+                class="admin-btn-primary gap-2 w-full"
+                :disabled="isSubmitting"
+            >
+                <Save class="h-4 w-4" />
+                {{ isSubmitting ? 'Menyimpan...' : 'Simpan Kategori' }}
+            </Button>
+        </div>
     </AppLayout>
 </template>

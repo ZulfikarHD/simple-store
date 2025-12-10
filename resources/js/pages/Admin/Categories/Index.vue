@@ -1,11 +1,11 @@
 <script setup lang="ts">
 /**
  * Admin Categories Index Page
- * Menampilkan daftar kategori dengan iOS-style premium design, yaitu:
- * - iOS grouped table dengan category thumbnails
- * - Premium modal form untuk CRUD
- * - Animated rows dengan press feedback
- * - Mobile FAB untuk quick add
+ * Menampilkan daftar kategori dengan design yang konsisten dengan Orders, yaitu:
+ * - Card view untuk mobile
+ * - Tabel data untuk desktop
+ * - Modal form untuk CRUD
+ * - Password confirmation untuk delete
  *
  * @author Zulfikar Hidayatullah
  */
@@ -23,6 +23,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
+import PasswordConfirmDialog from '@/components/admin/PasswordConfirmDialog.vue'
 import InputError from '@/components/InputError.vue'
 import PullToRefresh from '@/components/mobile/PullToRefresh.vue'
 import { type BreadcrumbItem } from '@/types'
@@ -74,12 +75,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 ]
 
 // Flash messages
-const flashSuccess = computed(() => page.props.flash?.success as string | undefined)
-const flashError = computed(() => page.props.flash?.error as string | undefined)
+const flash = computed(() => page.props.flash as { success?: string; error?: string } | undefined)
+const flashSuccess = computed(() => flash.value?.success)
+const flashError = computed(() => flash.value?.error)
 
 // Modal states
 const showFormModal = ref(false)
 const showDeleteModal = ref(false)
+const showPasswordDialog = ref(false)
 const isEditing = ref(false)
 const categoryToEdit = ref<Category | null>(null)
 const categoryToDelete = ref<Category | null>(null)
@@ -100,9 +103,6 @@ const isDeleting = ref(false)
 
 // Image preview
 const imagePreview = ref<string | null>(null)
-
-// Press state
-const pressedRow = ref<number | null>(null)
 
 /**
  * Reset form
@@ -228,7 +228,7 @@ function submitForm() {
 }
 
 /**
- * Buka dialog konfirmasi delete
+ * Buka dialog konfirmasi delete dengan preview
  */
 function confirmDelete(category: Category) {
     haptic.warning()
@@ -237,27 +237,49 @@ function confirmDelete(category: Category) {
 }
 
 /**
- * Eksekusi delete kategori
+ * Lanjut ke verifikasi password
  */
-function deleteCategory() {
+function proceedToPasswordConfirm() {
+    showDeleteModal.value = false
+    showPasswordDialog.value = true
+}
+
+/**
+ * Eksekusi delete kategori setelah password terverifikasi
+ */
+function executeDelete() {
     if (!categoryToDelete.value) return
 
     haptic.heavy()
     isDeleting.value = true
     router.delete(destroy(categoryToDelete.value.id).url, {
+        onSuccess: () => {
+            haptic.success()
+        },
+        onError: () => {
+            haptic.error()
+        },
         onFinish: () => {
             isDeleting.value = false
-            showDeleteModal.value = false
+            showPasswordDialog.value = false
             categoryToDelete.value = null
         },
     })
 }
 
 /**
+ * Handle password dialog cancel
+ */
+function handlePasswordCancel() {
+    showPasswordDialog.value = false
+    categoryToDelete.value = null
+}
+
+/**
  * Get image URL
  */
-function getImageUrl(image: string | null): string | null {
-    if (!image) return null
+function getImageUrl(image: string | null | undefined): string | undefined {
+    if (!image) return undefined
     return `/storage/${image}`
 }
 
@@ -268,23 +290,8 @@ const existingImageUrl = computed(() => {
     if (categoryToEdit.value?.image) {
         return getImageUrl(categoryToEdit.value.image)
     }
-    return null
+    return undefined
 })
-
-/**
- * Handle row press
- */
-function handleRowPress(categoryId: number) {
-    pressedRow.value = categoryId
-    haptic.light()
-}
-
-/**
- * Handle row release
- */
-function handleRowRelease() {
-    pressedRow.value = null
-}
 </script>
 
 <template>
@@ -351,42 +358,131 @@ function handleRowRelease() {
                     </div>
                 </Transition>
 
-                <!-- Categories Table -->
+                <!-- Mobile Category Cards -->
+                <div class="flex flex-col gap-3 md:hidden">
+                    <Motion
+                        v-for="(category, index) in categories"
+                        :key="category.id"
+                        :initial="{ opacity: 0, y: 20 }"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springPresets.ios, delay: 0.1 + index * 0.03 }"
+                        class="rounded-2xl border border-border/50 bg-card p-4 shadow-sm"
+                    >
+                        <div class="flex items-center gap-4">
+                            <div class="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-muted">
+                                <img
+                                    v-if="category.image"
+                                    :src="getImageUrl(category.image)"
+                                    :alt="category.name"
+                                    class="h-full w-full object-cover"
+                                />
+                                <div
+                                    v-else
+                                    class="flex h-full w-full items-center justify-center"
+                                >
+                                    <FolderTree class="h-6 w-6 text-muted-foreground" />
+                                </div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="font-semibold text-lg truncate">{{ category.name }}</h3>
+                                <p v-if="category.description" class="text-sm text-muted-foreground line-clamp-1">
+                                    {{ category.description }}
+                                </p>
+                                <div class="flex items-center gap-3 mt-2">
+                                    <span class="flex items-center gap-1 text-sm text-muted-foreground">
+                                        <Package class="h-3.5 w-3.5" />
+                                        {{ category.products_count }} produk
+                                    </span>
+                                    <span
+                                        :class="[
+                                            'admin-badge',
+                                            category.is_active ? 'admin-badge--success' : 'admin-badge--muted',
+                                        ]"
+                                    >
+                                        {{ category.is_active ? 'Aktif' : 'Nonaktif' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-2 mt-4 pt-3 border-t border-border/50">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                class="h-9 gap-1.5"
+                                @click="openEditModal(category)"
+                            >
+                                <Pencil class="h-4 w-4" />
+                                Edit
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                class="h-9 gap-1.5 text-destructive hover:text-destructive"
+                                :disabled="category.products_count > 0"
+                                @click="confirmDelete(category)"
+                            >
+                                <Trash2 class="h-4 w-4" />
+                                Hapus
+                            </Button>
+                        </div>
+                    </Motion>
+
+                    <!-- Mobile Empty State -->
+                    <div v-if="categories.length === 0" class="admin-form-section">
+                        <div class="admin-empty-state">
+                            <div class="icon-wrapper">
+                                <FolderTree />
+                            </div>
+                            <h3>Belum Ada Kategori</h3>
+                            <p>Mulai tambahkan kategori pertama Anda</p>
+                            <Button class="admin-btn-primary gap-2" @click="openCreateModal">
+                                <Plus class="h-4 w-4" />
+                                Tambah Kategori
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desktop Table (same style as Orders) -->
                 <Motion
                     :initial="{ opacity: 0, y: 20 }"
                     :animate="{ opacity: 1, y: 0 }"
                     :transition="{ ...springPresets.ios, delay: staggerDelay(0) }"
+                    class="hidden md:block"
                 >
-                    <div class="ios-grouped-table">
+                    <div class="rounded-2xl border border-border/50 bg-card shadow-sm">
                         <div class="overflow-x-auto">
-                            <table class="admin-table">
+                            <table class="w-full border-collapse">
                                 <thead>
-                                    <tr>
-                                        <th>Kategori</th>
-                                        <th>Deskripsi</th>
-                                        <th class="text-center">Produk</th>
-                                        <th class="text-center">Urutan</th>
-                                        <th class="text-center">Status</th>
-                                        <th class="text-right">Aksi</th>
+                                    <tr class="border-b bg-muted/50">
+                                        <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 280px;">
+                                            Kategori
+                                        </th>
+                                        <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="min-width: 200px;">
+                                            Deskripsi
+                                        </th>
+                                        <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 100px;">
+                                            Produk
+                                        </th>
+                                        <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 80px;">
+                                            Urutan
+                                        </th>
+                                        <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 100px;">
+                                            Status
+                                        </th>
+                                        <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 160px;">
+                                            Aksi
+                                        </th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <Motion
-                                        v-for="(category, index) in categories"
+                                <tbody class="divide-y divide-border/50">
+                                    <tr
+                                        v-for="category in categories"
                                         :key="category.id"
-                                        tag="tr"
-                                        :initial="{ opacity: 0, x: -20 }"
-                                        :animate="{ opacity: 1, x: 0 }"
-                                        :transition="{ ...springPresets.ios, delay: 0.1 + index * 0.03 }"
-                                        :class="{ 'scale-[0.995] bg-muted/60': pressedRow === category.id }"
-                                        @mousedown="handleRowPress(category.id)"
-                                        @mouseup="handleRowRelease"
-                                        @mouseleave="handleRowRelease"
-                                        @touchstart.passive="handleRowPress(category.id)"
-                                        @touchend="handleRowRelease"
+                                        class="group transition-colors hover:bg-muted/30"
                                     >
                                         <!-- Category Info -->
-                                        <td>
+                                        <td class="px-4 py-3">
                                             <div class="flex items-center gap-4">
                                                 <div class="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-muted">
                                                     <img
@@ -402,12 +498,12 @@ function handleRowRelease() {
                                                         <FolderTree class="h-5 w-5 text-muted-foreground" />
                                                     </div>
                                                 </div>
-                                                <span class="font-semibold">{{ category.name }}</span>
+                                                <span class="font-medium text-foreground">{{ category.name }}</span>
                                             </div>
                                         </td>
 
                                         <!-- Description -->
-                                        <td>
+                                        <td class="px-4 py-3">
                                             <span
                                                 v-if="category.description"
                                                 class="line-clamp-2 text-sm text-muted-foreground"
@@ -418,7 +514,7 @@ function handleRowRelease() {
                                         </td>
 
                                         <!-- Products Count -->
-                                        <td class="text-center">
+                                        <td class="px-4 py-3 text-center">
                                             <Badge variant="outline" class="gap-1 tabular-nums">
                                                 <Package class="h-3 w-3" />
                                                 {{ category.products_count }}
@@ -426,56 +522,58 @@ function handleRowRelease() {
                                         </td>
 
                                         <!-- Sort Order -->
-                                        <td class="text-center">
-                                            <span class="text-sm tabular-nums">{{ category.sort_order }}</span>
+                                        <td class="px-4 py-3 text-center">
+                                            <span class="text-sm tabular-nums text-muted-foreground">{{ category.sort_order }}</span>
                                         </td>
 
                                         <!-- Status -->
-                                        <td class="text-center">
+                                        <td class="px-4 py-3 text-center">
                                             <span
                                                 :class="[
                                                     'admin-badge',
-                                                    category.is_active ? 'admin-badge--success' : 'bg-muted text-muted-foreground',
+                                                    category.is_active ? 'admin-badge--success' : 'admin-badge--muted',
                                                 ]"
                                             >
-                                                {{ category.is_active ? 'Aktif' : 'Tidak Aktif' }}
+                                                {{ category.is_active ? 'Aktif' : 'Nonaktif' }}
                                             </span>
                                         </td>
 
                                         <!-- Actions -->
-                                        <td class="text-right">
-                                            <div class="flex items-center justify-end gap-1">
+                                        <td class="px-4 py-3 text-center">
+                                            <div class="flex items-center justify-center gap-2">
                                                 <Button
-                                                    variant="ghost"
+                                                    variant="outline"
                                                     size="sm"
-                                                    class="ios-button h-9 w-9 p-0"
+                                                    class="h-8 gap-1.5"
                                                     @click="openEditModal(category)"
                                                 >
                                                     <Pencil class="h-4 w-4" />
+                                                    Edit
                                                 </Button>
                                                 <Button
-                                                    variant="ghost"
+                                                    variant="outline"
                                                     size="sm"
-                                                    class="ios-button h-9 w-9 p-0 text-destructive hover:text-destructive"
+                                                    class="h-8 gap-1.5 text-destructive hover:text-destructive"
                                                     :disabled="category.products_count > 0"
                                                     @click="confirmDelete(category)"
                                                 >
                                                     <Trash2 class="h-4 w-4" />
+                                                    Hapus
                                                 </Button>
                                             </div>
                                         </td>
-                                    </Motion>
+                                    </tr>
 
                                     <!-- Empty State -->
                                     <tr v-if="categories.length === 0">
-                                        <td colspan="6">
-                                            <div class="admin-empty-state">
-                                                <div class="icon-wrapper">
-                                                    <FolderTree />
+                                        <td colspan="6" class="px-4 py-16">
+                                            <div class="flex flex-col items-center justify-center text-center">
+                                                <div class="mb-4 rounded-2xl bg-muted p-4">
+                                                    <FolderTree class="h-10 w-10 text-muted-foreground/50" />
                                                 </div>
-                                                <h3>Belum Ada Kategori</h3>
-                                                <p>Mulai tambahkan kategori pertama Anda</p>
-                                                <Button class="admin-btn-primary gap-2" @click="openCreateModal">
+                                                <h3 class="text-lg font-semibold">Belum Ada Kategori</h3>
+                                                <p class="mt-1 text-sm text-muted-foreground">Mulai tambahkan kategori pertama Anda</p>
+                                                <Button class="mt-4 admin-btn-primary gap-2" @click="openCreateModal">
                                                     <Plus class="h-4 w-4" />
                                                     Tambah Kategori
                                                 </Button>
@@ -568,7 +666,7 @@ function handleRowRelease() {
                         :transition="springPresets.bouncy"
                         class="admin-image-preview"
                     >
-                        <img :src="imagePreview" alt="Preview" class="!h-28 !w-28" />
+                        <img :src="imagePreview" alt="Preview" class="h-28 w-28 rounded-xl object-cover" />
                         <button
                             type="button"
                             class="remove-btn ios-button"
@@ -586,13 +684,13 @@ function handleRowRelease() {
                         </div>
                         <img
                             :src="existingImageUrl"
-                            :alt="categoryToEdit?.name"
+                            :alt="categoryToEdit?.name ?? undefined"
                             class="h-28 w-28 rounded-xl object-cover"
                         />
                     </div>
 
                     <!-- Upload Input -->
-                    <div class="admin-upload-area !p-6">
+                    <div class="admin-upload-area">
                         <div class="flex items-center gap-2 text-sm text-muted-foreground">
                             <Upload class="h-4 w-4" />
                             <span>Pilih gambar</span>
@@ -641,33 +739,75 @@ function handleRowRelease() {
         </DialogContent>
     </Dialog>
 
-    <!-- Delete Confirmation Dialog -->
+    <!-- Delete Confirmation Dialog with Preview -->
     <Dialog v-model:open="showDeleteModal">
-        <DialogContent class="rounded-2xl">
+        <DialogContent class="rounded-2xl sm:max-w-md">
             <DialogHeader>
-                <DialogTitle>Hapus Kategori</DialogTitle>
+                <DialogTitle class="flex items-center gap-2 text-destructive">
+                    <Trash2 class="h-5 w-5" />
+                    Hapus Kategori
+                </DialogTitle>
                 <DialogDescription>
-                    Apakah Anda yakin ingin menghapus kategori "{{ categoryToDelete?.name }}"?
-                    Tindakan ini tidak dapat dibatalkan.
+                    Tindakan ini tidak dapat dibatalkan. Kategori akan dihapus permanen.
                 </DialogDescription>
             </DialogHeader>
-            <DialogFooter>
+
+            <!-- Category Preview -->
+            <div v-if="categoryToDelete" class="my-4 rounded-xl border bg-muted/30 p-4">
+                <div class="flex items-center gap-4">
+                    <div class="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-muted">
+                        <img
+                            v-if="categoryToDelete.image"
+                            :src="getImageUrl(categoryToDelete.image)"
+                            :alt="categoryToDelete.name"
+                            class="h-full w-full object-cover"
+                        />
+                        <div v-else class="flex h-full w-full items-center justify-center">
+                            <FolderTree class="h-6 w-6 text-muted-foreground" />
+                        </div>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <h4 class="font-semibold">{{ categoryToDelete.name }}</h4>
+                        <p v-if="categoryToDelete.description" class="text-sm text-muted-foreground line-clamp-1">
+                            {{ categoryToDelete.description }}
+                        </p>
+                        <div class="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+                            <Package class="h-3.5 w-3.5" />
+                            {{ categoryToDelete.products_count }} produk
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <DialogFooter class="flex-col gap-2 sm:flex-row">
                 <Button
                     variant="outline"
-                    class="ios-button"
+                    class="w-full sm:w-auto"
                     @click="showDeleteModal = false"
                 >
                     Batal
                 </Button>
                 <Button
                     variant="destructive"
-                    class="ios-button"
-                    :disabled="isDeleting"
-                    @click="deleteCategory"
+                    class="w-full gap-2 sm:w-auto"
+                    @click="proceedToPasswordConfirm"
                 >
-                    {{ isDeleting ? 'Menghapus...' : 'Hapus' }}
+                    <Trash2 class="h-4 w-4" />
+                    Ya, Hapus Kategori
                 </Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>
+
+    <!-- Password Confirmation Dialog -->
+    <PasswordConfirmDialog
+        v-model:open="showPasswordDialog"
+        title="Konfirmasi Hapus Kategori"
+        :description="`Masukkan password untuk menghapus kategori '${categoryToDelete?.name}'`"
+        confirm-label="Hapus Permanen"
+        confirm-variant="destructive"
+        :loading="isDeleting"
+        @confirm="executeDelete"
+        @cancel="handlePasswordCancel"
+    />
 </template>

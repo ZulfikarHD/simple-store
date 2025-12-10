@@ -1,7 +1,7 @@
 # Admin Guide - F&B Web App
 
 **Zulfikar Hidayatullah**  
-**Version**: 1.3.0  
+**Version**: 1.4.0  
 **Last Updated**: 2025-12-10
 
 ## Overview
@@ -295,15 +295,24 @@ Form edit sama dengan form tambah, dengan perbedaan:
 
 1. Di halaman Produk, cari produk yang ingin dihapus
 2. Klik tombol **Hapus** (icon trash) pada row produk
-3. Dialog konfirmasi akan muncul
-4. Baca konfirmasi dengan seksama
-5. Klik tombol **Hapus** untuk konfirmasi atau **Batal** untuk membatalkan
+3. Dialog preview akan muncul dengan informasi produk (gambar, nama, kategori, harga, stok)
+4. Klik tombol **Ya, Hapus Produk** untuk melanjutkan
+5. Dialog verifikasi password akan muncul
+6. Masukkan password admin Anda
+7. Klik tombol **Hapus Permanen** untuk konfirmasi
 
-#### Konfirmasi Hapus
+#### Konfirmasi Hapus (2 Tahap)
 
-Dialog konfirmasi menampilkan informasi:
-- Nama produk yang akan dihapus
+**Tahap 1 - Preview Dialog:**
+- Gambar produk
+- Nama produk
+- Kategori
+- Harga dan stok
 - Peringatan bahwa tindakan tidak dapat dibatalkan
+
+**Tahap 2 - Password Verification:**
+- Input password admin
+- Sistem akan memverifikasi password sebelum eksekusi delete
 
 #### Constraint Check
 
@@ -452,9 +461,25 @@ Form edit sama dengan form tambah, dengan fitur tambahan:
 #### Langkah-langkah
 
 1. Di halaman Kategori, cari kategori yang ingin dihapus
-2. Klik tombol **Hapus** (icon trash)
-3. Dialog konfirmasi akan muncul
-4. Klik **Hapus** untuk konfirmasi atau **Batal** untuk membatalkan
+2. Klik tombol **Hapus** (icon trash) - tombol akan disabled jika kategori memiliki produk
+3. Dialog preview akan muncul dengan informasi kategori (gambar, nama, deskripsi, jumlah produk)
+4. Klik tombol **Ya, Hapus Kategori** untuk melanjutkan
+5. Dialog verifikasi password akan muncul
+6. Masukkan password admin Anda
+7. Klik tombol **Hapus Permanen** untuk konfirmasi
+
+#### Konfirmasi Hapus (2 Tahap)
+
+**Tahap 1 - Preview Dialog:**
+- Gambar kategori
+- Nama kategori
+- Deskripsi (jika ada)
+- Jumlah produk dalam kategori
+- Peringatan bahwa tindakan tidak dapat dibatalkan
+
+**Tahap 2 - Password Verification:**
+- Input password admin
+- Sistem akan memverifikasi password sebelum eksekusi delete
 
 #### Constraint Check
 
@@ -1136,6 +1161,14 @@ Jika mengalami masalah yang tidak dapat diselesaikan dengan panduan ini, silakan
 ---
 
 ## Changelog
+
+### Version 1.4.0 (2025-12-10)
+- Tambah password confirmation untuk delete produk
+- Tambah password confirmation untuk delete kategori
+- Preview dialog sebelum delete menampilkan image dan info item
+- Design Categories Index disesuaikan dengan Orders Index
+- Badge styling menggunakan `admin-badge` classes yang konsisten
+- Tambah `admin-badge--muted` untuk status nonaktif
 
 ### Version 1.3.0 (2025-12-10)
 - Tambah dokumentasi branding toko (logo, tagline)

@@ -4,6 +4,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\PasswordVerificationController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\StoreSettingController;
 use App\Http\Controllers\Api\OrderApiController;
@@ -59,6 +60,9 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     // API routes untuk mobile alert system (polling pending orders)
     Route::get('/api/orders/pending', [OrderApiController::class, 'pendingOrders'])->name('api.orders.pending');
     Route::patch('/api/orders/{order}/quick-status', [OrderApiController::class, 'quickStatusUpdate'])->name('api.orders.quickStatus');
+
+    // Password verification route untuk aksi sensitif
+    Route::post('/api/verify-password', [PasswordVerificationController::class, 'verify'])->name('api.verifyPassword');
 });
 
 require __DIR__.'/settings.php';

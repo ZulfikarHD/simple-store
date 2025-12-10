@@ -29,17 +29,20 @@ class OrderController extends Controller
      * - Pagination dengan 10 item per halaman
      * - Search berdasarkan order number, nama customer, atau nomor telepon
      * - Filter berdasarkan status dan date range
+     * - Status counts untuk quick filter tabs
      */
     public function index(Request $request): Response
     {
         $filters = $request->only(['search', 'status', 'start_date', 'end_date', 'per_page']);
         $orders = $this->orderService->getFilteredOrders($filters);
         $statuses = $this->orderService->getAvailableStatuses();
+        $statusCounts = $this->orderService->getAllStatusCounts();
 
         return Inertia::render('Admin/Orders/Index', [
             'orders' => $orders,
             'statuses' => $statuses,
             'filters' => $filters,
+            'statusCounts' => $statusCounts,
         ]);
     }
 

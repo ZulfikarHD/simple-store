@@ -35,6 +35,12 @@ import {
     SlidersHorizontal,
     X,
     Sparkles,
+    Clock,
+    CheckCircle2,
+    ChefHat,
+    Truck,
+    CircleCheck,
+    XCircle,
 } from 'lucide-vue-next'
 import { ref, watch, computed } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
@@ -96,10 +102,16 @@ interface Filters {
     end_date?: string
 }
 
+interface StatusCount {
+    status: string
+    count: number
+}
+
 interface Props {
     orders: PaginatedOrders
     statuses: Record<string, string>
     filters: Filters
+    statusCounts?: StatusCount[]
 }
 
 const props = defineProps<Props>()
@@ -123,8 +135,6 @@ const endDate = ref(props.filters.end_date || '')
 // Mobile filter visibility
 const showMobileFilter = ref(false)
 
-// Press state untuk iOS-like feedback
-const pressedRow = ref<number | null>(null)
 
 /**
  * Toggle mobile filter visibility
@@ -197,6 +207,58 @@ function resetFilters() {
 }
 
 /**
+ * Quick filter by status - satu tap untuk filter
+ */
+function quickFilterStatus(newStatus: string) {
+    haptic.selection()
+    status.value = newStatus
+    router.get(
+        ordersIndex().url,
+        {
+            search: search.value || undefined,
+            status: newStatus || undefined,
+            start_date: startDate.value || undefined,
+            end_date: endDate.value || undefined,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+        }
+    )
+}
+
+/**
+ * Get count untuk status tertentu dari statusCounts
+ */
+function getStatusCount(statusKey: string): number {
+    if (!props.statusCounts) return 0
+    const found = props.statusCounts.find(sc => sc.status === statusKey)
+    return found?.count ?? 0
+}
+
+/**
+ * Get icon untuk status
+ */
+function getStatusIcon(statusKey: string) {
+    switch (statusKey) {
+        case 'pending':
+            return Clock
+        case 'confirmed':
+            return CheckCircle2
+        case 'preparing':
+            return ChefHat
+        case 'ready':
+            return Truck
+        case 'delivered':
+            return CircleCheck
+        case 'cancelled':
+            return XCircle
+        default:
+            return Package
+    }
+}
+
+/**
  * Navigate ke halaman pagination
  */
 function goToPage(url: string | null) {
@@ -251,28 +313,6 @@ function openWhatsApp(phone: string) {
     window.open(`https://wa.me/${cleanPhone}`, '_blank')
 }
 
-/**
- * Handle row press untuk iOS-like feedback
- */
-function handleRowPress(orderId: number) {
-    pressedRow.value = orderId
-    haptic.light()
-}
-
-/**
- * Handle row release
- */
-function handleRowRelease() {
-    pressedRow.value = null
-}
-
-/**
- * Navigate to order detail
- */
-function navigateToDetail(orderId: number) {
-    haptic.selection()
-    router.visit(show(orderId).url)
-}
 </script>
 
 <template>
@@ -333,11 +373,77 @@ function navigateToDetail(orderId: number) {
                     </div>
                 </Transition>
 
-                <!-- Mobile Search + Filter Toggle -->
+                <!-- Quick Status Filter Tabs - Mobile -->
                 <Motion
                     :initial="{ opacity: 0, y: 20 }"
                     :animate="{ opacity: 1, y: 0 }"
                     :transition="{ ...springPresets.ios, delay: staggerDelay(0) }"
+                    class="md:hidden"
+                >
+                    <div class="-mx-4 overflow-x-auto px-4 scrollbar-hide">
+                        <div class="flex gap-2 pb-2">
+                            <!-- All Orders Tab -->
+                            <button
+                                class="ios-button flex h-10 shrink-0 items-center gap-2 rounded-full px-4 text-sm font-medium transition-all"
+                                :class="[
+                                    !status
+                                        ? 'bg-primary text-primary-foreground shadow-md'
+                                        : 'bg-muted/50 text-muted-foreground hover:bg-muted',
+                                ]"
+                                @click="quickFilterStatus('')"
+                            >
+                                <Package class="h-4 w-4" />
+                                Semua
+                                <span
+                                    v-if="orders.total"
+                                    class="rounded-full px-1.5 text-xs tabular-nums"
+                                    :class="!status ? 'bg-primary-foreground/20' : 'bg-muted'"
+                                >
+                                    {{ orders.total }}
+                                </span>
+                            </button>
+
+                            <!-- Status Tabs -->
+                            <button
+                                v-for="(label, key) in statuses"
+                                :key="key"
+                                class="ios-button flex h-10 shrink-0 items-center gap-2 rounded-full px-4 text-sm font-medium transition-all"
+                                :class="[
+                                    status === key
+                                        ? key === 'pending'
+                                            ? 'bg-amber-500 text-white shadow-md'
+                                            : key === 'cancelled'
+                                                ? 'bg-red-500 text-white shadow-md'
+                                                : 'bg-primary text-primary-foreground shadow-md'
+                                        : 'bg-muted/50 text-muted-foreground hover:bg-muted',
+                                ]"
+                                @click="quickFilterStatus(key)"
+                            >
+                                <component :is="getStatusIcon(key)" class="h-4 w-4" />
+                                {{ label }}
+                                <span
+                                    v-if="getStatusCount(key) > 0"
+                                    class="rounded-full px-1.5 text-xs tabular-nums"
+                                    :class="[
+                                        status === key
+                                            ? 'bg-white/20'
+                                            : key === 'pending'
+                                                ? 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300'
+                                                : 'bg-muted',
+                                    ]"
+                                >
+                                    {{ getStatusCount(key) }}
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </Motion>
+
+                <!-- Mobile Search + Filter Toggle -->
+                <Motion
+                    :initial="{ opacity: 0, y: 20 }"
+                    :animate="{ opacity: 1, y: 0 }"
+                    :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
                     class="flex gap-2 md:hidden"
                 >
                     <div class="relative flex-1">
@@ -353,20 +459,20 @@ function navigateToDetail(orderId: number) {
                         variant="outline"
                         size="icon"
                         class="ios-button relative h-12 w-12 shrink-0"
-                        :class="{ 'border-primary bg-primary/5': hasActiveFilters }"
+                        :class="{ 'border-primary bg-primary/5': startDate || endDate }"
                         @click="toggleMobileFilter"
                     >
-                        <SlidersHorizontal class="h-4 w-4" />
+                        <Calendar class="h-4 w-4" />
                         <span
-                            v-if="activeFilterCount > 0"
-                            class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white"
+                            v-if="startDate || endDate"
+                            class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary"
                         >
-                            {{ activeFilterCount }}
+                            <span class="h-2 w-2 rounded-full bg-white" />
                         </span>
                     </Button>
                 </Motion>
 
-                <!-- Mobile Filter Panel -->
+                <!-- Mobile Date Filter Panel - Status sudah di tabs -->
                 <Transition
                     enter-active-class="transition-all duration-300 ease-[var(--ios-spring-smooth)]"
                     enter-from-class="opacity-0 -translate-y-2 scale-95"
@@ -378,24 +484,9 @@ function navigateToDetail(orderId: number) {
                     <div v-if="showMobileFilter" class="admin-form-section md:hidden">
                         <div class="admin-form-section-content">
                             <div class="flex flex-col gap-4">
-                                <!-- Status Filter -->
-                                <div class="admin-input-group">
-                                    <label>Status Pesanan</label>
-                                    <select
-                                        v-model="status"
-                                        class="admin-select"
-                                        @change="applyFilters"
-                                    >
-                                        <option value="">Semua Status</option>
-                                        <option
-                                            v-for="(label, value) in statuses"
-                                            :key="value"
-                                            :value="value"
-                                        >
-                                            {{ label }}
-                                        </option>
-                                    </select>
-                                </div>
+                                <p class="text-sm font-medium text-muted-foreground">
+                                    Filter berdasarkan tanggal
+                                </p>
 
                                 <!-- Date Range -->
                                 <div class="grid grid-cols-2 gap-3">
@@ -421,13 +512,13 @@ function navigateToDetail(orderId: number) {
 
                                 <!-- Reset Button -->
                                 <Button
-                                    v-if="hasActiveFilters"
+                                    v-if="startDate || endDate"
                                     variant="outline"
                                     class="admin-btn-secondary"
-                                    @click="resetFilters"
+                                    @click="startDate = ''; endDate = ''; applyFilters()"
                                 >
                                     <X class="mr-2 h-4 w-4" />
-                                    Reset Filter
+                                    Reset Tanggal
                                 </Button>
                             </div>
                         </div>
@@ -567,96 +658,102 @@ function navigateToDetail(orderId: number) {
                     :transition="{ ...springPresets.ios, delay: staggerDelay(1) }"
                     class="hidden md:block"
                 >
-                    <div class="ios-grouped-table">
+                    <div class="rounded-2xl border border-border/50 bg-card shadow-sm">
                         <div class="overflow-x-auto">
-                            <table class="admin-table">
+                            <table class="w-full border-collapse">
                                 <thead>
-                                    <tr>
-                                        <th>No. Pesanan</th>
-                                        <th>Customer</th>
-                                        <th class="text-right">Total</th>
-                                        <th class="text-center">Items</th>
-                                        <th class="text-center">Status</th>
-                                        <th class="text-center">Tanggal</th>
-                                        <th class="text-right">Aksi</th>
+                                    <tr class="border-b bg-muted/50">
+                                        <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 180px;">
+                                            No. Pesanan
+                                        </th>
+                                        <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="min-width: 200px;">
+                                            Customer
+                                        </th>
+                                        <th class="whitespace-nowrap px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 120px;">
+                                            Total
+                                        </th>
+                                        <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 80px;">
+                                            Items
+                                        </th>
+                                        <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 120px;">
+                                            Status
+                                        </th>
+                                        <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 160px;">
+                                            Tanggal
+                                        </th>
+                                        <th class="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" style="width: 100px;">
+                                            Aksi
+                                        </th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <Motion
-                                        v-for="(order, index) in orders.data"
+                                <tbody class="divide-y divide-border/50">
+                                    <tr
+                                        v-for="order in orders.data"
                                         :key="order.id"
-                                        tag="tr"
-                                        :initial="{ opacity: 0, x: -20 }"
-                                        :animate="{ opacity: 1, x: 0 }"
-                                        :transition="{ ...springPresets.ios, delay: 0.15 + index * 0.03 }"
-                                        class="cursor-pointer"
-                                        :class="{ 'scale-[0.995] bg-muted/60': pressedRow === order.id }"
-                                        @mousedown="handleRowPress(order.id)"
-                                        @mouseup="handleRowRelease"
-                                        @mouseleave="handleRowRelease"
-                                        @touchstart.passive="handleRowPress(order.id)"
-                                        @touchend="handleRowRelease"
-                                        @click="navigateToDetail(order.id)"
+                                        class="group transition-colors hover:bg-muted/30"
                                     >
-                                        <td>
-                                            <span class="font-mono text-sm font-semibold text-primary">
+                                        <td class="px-4 py-3">
+                                            <Link
+                                                :href="show(order.id).url"
+                                                class="font-mono text-sm font-semibold text-primary hover:underline"
+                                            >
                                                 {{ order.order_number }}
-                                            </span>
+                                            </Link>
                                         </td>
-                                        <td>
-                                            <div class="flex flex-col gap-0.5">
-                                                <span class="font-medium">{{ order.customer_name }}</span>
+                                        <td class="px-4 py-3">
+                                            <div class="flex flex-col">
+                                                <span class="font-medium text-foreground">{{ order.customer_name }}</span>
                                                 <button
-                                                    class="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
-                                                    @click.stop="openWhatsApp(order.customer_phone)"
+                                                    class="mt-0.5 flex w-fit items-center gap-1.5 text-sm text-green-600 transition-colors hover:text-green-700 dark:text-green-400"
+                                                    @click="openWhatsApp(order.customer_phone)"
                                                 >
-                                                    <Phone class="h-3 w-3" />
+                                                    <Phone class="h-3.5 w-3.5" />
                                                     {{ order.customer_phone }}
                                                 </button>
                                             </div>
                                         </td>
-                                        <td class="text-right">
-                                            <PriceDisplay :price="order.total" size="sm" />
+                                        <td class="px-4 py-3 text-right">
+                                            <PriceDisplay :price="order.total" size="sm" class="font-semibold text-primary" />
                                         </td>
-                                        <td class="text-center">
+                                        <td class="px-4 py-3 text-center">
                                             <Badge variant="outline" class="gap-1 tabular-nums">
                                                 <Package class="h-3 w-3" />
                                                 {{ order.items.length }}
                                             </Badge>
                                         </td>
-                                        <td class="text-center">
+                                        <td class="px-4 py-3 text-center">
                                             <span :class="['admin-badge', getStatusClass(order.status)]">
                                                 {{ statuses[order.status] || order.status }}
                                             </span>
                                         </td>
-                                        <td class="text-center">
-                                            <span class="text-sm text-muted-foreground">
+                                        <td class="px-4 py-3 text-center">
+                                            <span class="whitespace-nowrap text-sm text-muted-foreground">
                                                 {{ formatDate(order.created_at) }}
                                             </span>
                                         </td>
-                                        <td class="text-right">
-                                            <Link :href="show(order.id).url" @click.stop>
+                                        <td class="px-4 py-3 text-center">
+                                            <Link :href="show(order.id).url">
                                                 <Button
-                                                    variant="ghost"
+                                                    variant="outline"
                                                     size="sm"
-                                                    class="ios-button h-8 gap-1.5"
+                                                    class="h-8 gap-1.5"
                                                 >
                                                     <Eye class="h-4 w-4" />
                                                     Detail
                                                 </Button>
                                             </Link>
                                         </td>
-                                    </Motion>
+                                    </tr>
 
                                     <!-- Empty State -->
                                     <tr v-if="orders.data.length === 0">
-                                        <td colspan="7">
-                                            <div class="admin-empty-state">
-                                                <div class="icon-wrapper">
-                                                    <ShoppingBag />
+                                        <td colspan="7" class="px-4 py-16">
+                                            <div class="flex flex-col items-center justify-center text-center">
+                                                <div class="mb-4 rounded-2xl bg-muted p-4">
+                                                    <ShoppingBag class="h-10 w-10 text-muted-foreground/50" />
                                                 </div>
-                                                <h3>Belum Ada Pesanan</h3>
-                                                <p>Pesanan customer akan muncul di sini</p>
+                                                <h3 class="text-lg font-semibold">Belum Ada Pesanan</h3>
+                                                <p class="mt-1 text-sm text-muted-foreground">Pesanan customer akan muncul di sini</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -667,31 +764,31 @@ function navigateToDetail(orderId: number) {
                         <!-- Desktop Pagination -->
                         <div
                             v-if="orders.last_page > 1"
-                            class="flex items-center justify-between border-t px-4 py-3"
+                            class="flex items-center justify-between border-t border-border/50 px-4 py-3"
                         >
                             <p class="text-sm text-muted-foreground">
-                                Menampilkan {{ orders.from }} - {{ orders.to }} dari {{ orders.total }} pesanan
+                                Menampilkan <span class="font-medium text-foreground">{{ orders.from }}</span> - <span class="font-medium text-foreground">{{ orders.to }}</span> dari <span class="font-medium text-foreground">{{ orders.total }}</span> pesanan
                             </p>
                             <div class="flex items-center gap-2">
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    class="ios-button"
                                     :disabled="orders.current_page === 1"
                                     @click="goToPage(orders.links[0]?.url)"
                                 >
                                     <ChevronLeft class="h-4 w-4" />
+                                    Prev
                                 </Button>
-                                <span class="text-sm tabular-nums text-muted-foreground">
+                                <span class="rounded-lg bg-muted px-3 py-1 text-sm font-medium tabular-nums">
                                     {{ orders.current_page }} / {{ orders.last_page }}
                                 </span>
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    class="ios-button"
                                     :disabled="orders.current_page === orders.last_page"
                                     @click="goToPage(orders.links[orders.links.length - 1]?.url)"
                                 >
+                                    Next
                                     <ChevronRight class="h-4 w-4" />
                                 </Button>
                             </div>

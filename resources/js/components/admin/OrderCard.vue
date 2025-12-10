@@ -23,7 +23,6 @@ import PriceDisplay from '@/components/store/PriceDisplay.vue'
 import { OrderStatusBadge } from '@/components/store'
 import { show } from '@/routes/admin/orders'
 import {
-    Phone,
     Eye,
     Check,
     Package,
@@ -175,58 +174,36 @@ function closeConfirmModal(): void {
 }
 
 /**
- * Quick status update handler dengan proper error handling
- * untuk memberikan feedback ke user jika terjadi kesalahan
+ * Quick status update handler menggunakan Inertia router
+ * untuk menghindari masalah CSRF token pada mobile
  * Dipanggil setelah user mengkonfirmasi melalui modal
  */
-async function confirmUpdateStatus(): Promise<void> {
+function confirmUpdateStatus(): void {
     if (!nextStatus.value || isUpdating.value) return
 
     isUpdating.value = true
     errorMessage.value = null
     showConfirmModal.value = false
 
-    try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-
-        if (!csrfToken) {
-            throw new Error('CSRF token tidak ditemukan')
-        }
-
-        const response = await fetch(`/admin/api/orders/${props.order.id}/quick-status`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': csrfToken,
+    router.patch(
+        `/admin/orders/${props.order.id}/status`,
+        { status: nextStatus.value.status },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                emit('statusUpdated', props.order.id, nextStatus.value!.status)
             },
-            credentials: 'same-origin',
-            body: JSON.stringify({ status: nextStatus.value.status }),
-        })
-
-        if (response.ok) {
-            emit('statusUpdated', props.order.id, nextStatus.value.status)
-            // Reload halaman untuk refresh data
-            router.reload({ only: ['orders', 'pending_orders_count'] })
-        } else {
-            const data = await response.json().catch(() => ({}))
-            errorMessage.value = data.message || 'Gagal mengubah status pesanan'
-            // Auto-clear error setelah 3 detik
-            setTimeout(() => {
-                errorMessage.value = null
-            }, 3000)
+            onError: (errors) => {
+                errorMessage.value = errors.status || 'Gagal mengubah status pesanan'
+                setTimeout(() => {
+                    errorMessage.value = null
+                }, 3000)
+            },
+            onFinish: () => {
+                isUpdating.value = false
+            },
         }
-    } catch (error) {
-        console.error('Failed to update order status:', error)
-        errorMessage.value = error instanceof Error ? error.message : 'Terjadi kesalahan'
-        // Auto-clear error setelah 3 detik
-        setTimeout(() => {
-            errorMessage.value = null
-        }, 3000)
-    } finally {
-        isUpdating.value = false
-    }
+    )
 }
 
 /**
@@ -256,9 +233,19 @@ function openWhatsApp(): void {
         :class="[
             'overflow-hidden transition-all duration-200',
             urgencyBorderClass,
-            urgencyLevel === 'urgent' && 'animate-pulse-subtle',
+            urgencyLevel === 'urgent' && 'animate-pulse-subtle ring-2 ring-red-200 dark:ring-red-900',
+            urgencyLevel === 'warning' && 'ring-1 ring-amber-200 dark:ring-amber-900',
         ]"
     >
+        <!-- Urgency Banner for Urgent Orders -->
+        <div
+            v-if="urgencyLevel === 'urgent'"
+            class="flex items-center gap-2 bg-red-500 px-4 py-2 text-sm font-medium text-white"
+        >
+            <AlertCircle class="h-4 w-4" />
+            Menunggu {{ waitingTimeText }} - Segera proses!
+        </div>
+
         <CardContent class="p-4">
             <!-- Header Row: Order Number & Status -->
             <div class="flex items-start justify-between gap-2">
@@ -277,10 +264,10 @@ function openWhatsApp(): void {
                     </h3>
                 </div>
 
-                <!-- Waiting Time Badge (untuk status aktif) -->
+                <!-- Waiting Time Badge (untuk status aktif, non-urgent) -->
                 <Badge
-                    v-if="['pending', 'confirmed', 'preparing'].includes(order.status)"
-                    :variant="urgencyLevel === 'urgent' ? 'destructive' : urgencyLevel === 'warning' ? 'secondary' : 'outline'"
+                    v-if="['pending', 'confirmed', 'preparing'].includes(order.status) && urgencyLevel !== 'urgent'"
+                    :variant="urgencyLevel === 'warning' ? 'secondary' : 'outline'"
                     class="shrink-0 gap-1"
                 >
                     <Clock class="h-3 w-3" />
@@ -318,51 +305,55 @@ function openWhatsApp(): void {
                 {{ errorMessage }}
             </div>
 
-            <!-- Footer Row: Total & Actions -->
-            <div class="mt-4 flex items-center justify-between gap-3">
-                <PriceDisplay
-                    :price="order.total"
-                    size="lg"
-                    class="font-bold"
-                />
+            <!-- Footer Row: Total & Actions - Redesigned for better mobile UX -->
+            <div class="mt-4 flex flex-col gap-3">
+                <!-- Price Row -->
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-muted-foreground">Total Pesanan</span>
+                    <PriceDisplay
+                        :price="order.total"
+                        size="lg"
+                        class="font-bold text-primary"
+                    />
+                </div>
 
+                <!-- Action Buttons Row - larger touch targets -->
                 <div class="flex items-center gap-2">
-                    <!-- WhatsApp Button -->
+                    <!-- WhatsApp Button - always show label -->
                     <Button
                         variant="outline"
-                        size="sm"
-                        class="h-9 w-9 p-0 sm:h-9 sm:w-auto sm:px-3"
+                        class="h-11 flex-1 gap-2 text-green-600 hover:bg-green-50 hover:text-green-700 dark:text-green-400 dark:hover:bg-green-950"
                         @click="openWhatsApp"
                     >
-                        <Phone class="h-4 w-4" />
-                        <span class="hidden sm:ml-2 sm:inline">WhatsApp</span>
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        <span class="text-sm">WhatsApp</span>
                     </Button>
 
                     <!-- View Detail Button -->
-                    <Link :href="show(order.id).url">
+                    <Link :href="show(order.id).url" class="flex-1">
                         <Button
                             variant="outline"
-                            size="sm"
-                            class="h-9 w-9 p-0 sm:h-9 sm:w-auto sm:px-3"
+                            class="h-11 w-full gap-2"
                         >
                             <Eye class="h-4 w-4" />
-                            <span class="hidden sm:ml-2 sm:inline">Detail</span>
+                            <span class="text-sm">Detail</span>
                         </Button>
                     </Link>
-
-                    <!-- Quick Action Button -->
-                    <Button
-                        v-if="nextStatus"
-                        size="sm"
-                        class="h-9 gap-1.5"
-                        :disabled="isUpdating"
-                        @click="openConfirmModal"
-                    >
-                        <Loader2 v-if="isUpdating" class="h-4 w-4 animate-spin" />
-                        <component :is="nextStatus.icon" v-else class="h-4 w-4" />
-                        <span class="hidden xs:inline">{{ nextStatus.label }}</span>
-                    </Button>
                 </div>
+
+                <!-- Quick Action Button - Full width, prominent -->
+                <Button
+                    v-if="nextStatus"
+                    class="h-12 w-full gap-2 rounded-xl text-base font-semibold"
+                    :disabled="isUpdating"
+                    @click="openConfirmModal"
+                >
+                    <Loader2 v-if="isUpdating" class="h-5 w-5 animate-spin" />
+                    <component :is="nextStatus.icon" v-else class="h-5 w-5" />
+                    {{ nextStatus.label }}
+                </Button>
             </div>
         </CardContent>
     </Card>

@@ -328,4 +328,23 @@ class OrderService
     {
         return Order::where('status', $status)->count();
     }
+
+    /**
+     * Mendapatkan jumlah order untuk semua status
+     * untuk menampilkan badge count pada filter tabs
+     *
+     * @return array<int, array{status: string, count: int}>
+     */
+    public function getAllStatusCounts(): array
+    {
+        return Order::query()
+            ->select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->get()
+            ->map(fn ($item) => [
+                'status' => $item->status,
+                'count' => $item->count,
+            ])
+            ->toArray();
+    }
 }
