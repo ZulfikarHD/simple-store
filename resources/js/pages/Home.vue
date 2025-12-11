@@ -627,7 +627,7 @@ const bouncyTransition = { type: 'spring' as const, ...springPresets.bouncy }
                             <span class="font-bold text-foreground">{{ store.name }}</span>
                         </div>
                         <p class="text-center text-sm text-muted-foreground">
-                            &copy; {{ new Date().getFullYear() }} {{ store.name }}. Created By Zulfikar Hidayatullah.
+                            &copy; {{ new Date().getFullYear() }} {{ store.name }}.
                         </p>
                         <p class="text-xs text-brand-gold">{{ store.tagline }}</p>
                     </div>

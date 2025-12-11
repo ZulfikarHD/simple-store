@@ -532,7 +532,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
             <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div class="flex flex-col items-center gap-2">
                     <p class="text-center text-sm text-muted-foreground">
-                        &copy; {{ new Date().getFullYear() }} {{ store.name }}. Created By Zulfikar Hidayatullah.
+                        &copy; {{ new Date().getFullYear() }} {{ store.name }}.
                     </p>
                     <p class="text-xs text-brand-gold">{{ store.tagline }}</p>
                 </div>
