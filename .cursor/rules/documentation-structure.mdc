@@ -1,0 +1,81 @@
+---
+alwaysApply: false
+---
+📁 PROJECT_HANDOVER_DOCUMENTATION/
+│
+├── 📁 01_PROJECT_OVERVIEW/
+│   ├── 01_Project_Summary.md
+│   ├── 02_Business_Case.md
+│   └── 03_Technology_Stack.md
+│
+├── 📁 02_USER_DOCUMENTATION/
+│   ├── 01_User_Manual.md
+│   ├── 02_Feature_Guide.md
+│   ├── 03_User_Flows.md
+│   └── 📁 screenshots/
+│       ├── feature_1/
+│       ├── feature_2/
+│       └── admin_panel/
+│
+├── 📁 03_ADMIN_DOCUMENTATION/
+│   ├── 01_Admin_Guide.md
+│   ├── 02_User_Management.md
+│   ├── 03_Content_Management.md
+│   └── 04_Settings_Configuration.md
+│
+├── 📁 04_TECHNICAL_DOCUMENTATION/
+│   ├── 01_System_Architecture.md
+│   ├── 02_Database_Schema.md
+│   ├── 03_API_Documentation.md
+│   ├── 04_File_Structure.md
+│   └── 📁 diagrams/
+│       ├── architecture_diagram.png
+│       ├── database_ERD.png
+│       └── user_flow_diagram.png
+│
+├── 📁 05_DEPLOYMENT_SETUP/
+│   ├── 01_Hosting_Configuration.md
+│   ├── 02_Environment_Setup.md
+│   ├── 03_Domain_SSL_Configuration.md
+│   └── 04_Initial_Deployment_Guide.md
+│
+├── 📁 06_DATABASE/
+│   ├── 01_Database_Documentation.md
+│   ├── 02_Backup_Procedures.md
+│   ├── 03_Restore_Procedures.md
+│   └── 📁 backup_scripts/
+│       └── database_backup.sh
+│
+├── 📁 07_THIRD_PARTY_SERVICES/
+│   ├── 01_WhatsApp_Integration.md
+│   ├── 02_API_Keys_Reference.md
+│   └── 03_Service_Renewal_Guide.md
+│
+├── 📁 08_MAINTENANCE_OPERATIONS/
+│   ├── 01_Regular_Maintenance_Tasks.md
+│   ├── 02_Update_Procedures.md
+│   ├── 03_Security_Best_Practices.md
+│   └── 04_Performance_Monitoring.md
+│
+├── 📁 09_TROUBLESHOOTING/
+│   ├── 01_Common_Issues_Solutions.md
+│   ├── 02_Error_Messages_Guide.md
+│   ├── 03_Emergency_Contacts.md
+│   └── 04_Site_Down_Checklist.md
+│
+├── 📁 10_CREDENTIALS_ACCESS/
+│   ├── 01_Access_List.md
+│   ├── 02_Hostinger_Account_Details.md
+│   ├── 03_Database_Credentials.md
+│   └── ⚠️ IMPORTANT_Security_Notice.md
+│
+├── 📁 11_SOURCE_CODE/
+│   ├── 01_Repository_Information.md
+│   ├── 02_Code_Documentation.md
+│   └── 03_Development_Guidelines.md
+│
+└── 📁 12_APPENDIX/
+    ├── 01_Glossary_Terms.md
+    ├── 02_Useful_Resources.md
+    ├── 03_Change_Log.md
+    └── 04_Support_Contacts.md
