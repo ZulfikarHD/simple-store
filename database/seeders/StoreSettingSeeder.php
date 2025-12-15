@@ -61,6 +61,12 @@ class StoreSettingSeeder extends Seeder
                 'type' => 'string',
                 'group' => 'whatsapp',
             ],
+            [
+                'key' => 'phone_country_code',
+                'value' => 'ID',
+                'type' => 'string',
+                'group' => 'whatsapp',
+            ],
 
             // Operating Hours - JSON format
             [

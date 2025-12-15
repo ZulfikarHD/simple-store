@@ -1,5 +1,17 @@
 # Panduan Deployment Awal
 
+**Penulis**: Zulfikar Hidayatullah  
+**Terakhir Diperbarui**: Desember 2024
+
+## Jenis Deployment
+
+Dokumen ini mencakup deployment untuk **VPS/Cloud Server** dengan akses root. Untuk jenis hosting lainnya, lihat panduan spesifik:
+
+| Hosting Type | Panduan |
+|--------------|---------|
+| VPS/Cloud (root access) | Dokumen ini |
+| Hostinger Shared Hosting | [05_Hostinger_Shared_Hosting_Guide.md](./05_Hostinger_Shared_Hosting_Guide.md) |
+
 ## Pre-Deployment Checklist
 - [ ] Server memenuhi minimum requirements
 - [ ] Domain dan SSL sudah dikonfigurasi
@@ -229,12 +241,22 @@ chmod 600 .env
 Lihat: `06_DATABASE/02_Backup_Procedures.md`
 
 ## Support Contacts
-Lihat: `09_TROUBLESHOOTING/03_Emergency_Contacts.md`
+
+- **Developer**: Zulfikar Hidayatullah (+62 857-1583-8733)
+- Lihat juga: `09_TROUBLESHOOTING/03_Emergency_Contacts.md`
+
+## Panduan Terkait
+
+- [05_Hostinger_Shared_Hosting_Guide.md](./05_Hostinger_Shared_Hosting_Guide.md) - Untuk deployment ke Hostinger shared hosting
+- [01_Hosting_Configuration.md](./01_Hosting_Configuration.md) - Konfigurasi web server
+- [02_Environment_Setup.md](./02_Environment_Setup.md) - Setup environment variables
+- [03_Domain_SSL_Configuration.md](./03_Domain_SSL_Configuration.md) - Konfigurasi domain dan SSL
 
 ## Deployment Completed!
 - **Deployment Date**: [Date]
 - **Deployed By**: [Name]
 - **Version**: [Version/Commit]
 - **Status**: [Success/Issues]
+
 
 

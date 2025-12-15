@@ -35,6 +35,7 @@ class UpdateStoreSettingsRequest extends FormRequest
 
             // WhatsApp Settings
             'whatsapp_number' => ['required', 'string', 'max:20'],
+            'phone_country_code' => ['required', 'string', 'in:ID,MY,SG,PH,TH,VN,US,AU'],
 
             // Operating Hours - JSON format
             'operating_hours' => ['required', 'array'],
@@ -95,6 +96,8 @@ class UpdateStoreSettingsRequest extends FormRequest
             'store_phone.max' => 'Nomor telepon maksimal 50 karakter.',
             'whatsapp_number.required' => 'Nomor WhatsApp wajib diisi.',
             'whatsapp_number.max' => 'Nomor WhatsApp maksimal 20 karakter.',
+            'phone_country_code.required' => 'Negara/region wajib dipilih.',
+            'phone_country_code.in' => 'Negara/region yang dipilih tidak valid.',
             'operating_hours.required' => 'Jam operasional wajib diisi.',
             'delivery_fee.required' => 'Biaya pengiriman wajib diisi.',
             'delivery_fee.integer' => 'Biaya pengiriman harus berupa angka.',
@@ -125,6 +128,7 @@ class UpdateStoreSettingsRequest extends FormRequest
             'store_address' => 'alamat toko',
             'store_phone' => 'nomor telepon toko',
             'whatsapp_number' => 'nomor WhatsApp',
+            'phone_country_code' => 'negara/region',
             'operating_hours' => 'jam operasional',
             'delivery_areas' => 'area pengiriman',
             'delivery_fee' => 'biaya pengiriman',

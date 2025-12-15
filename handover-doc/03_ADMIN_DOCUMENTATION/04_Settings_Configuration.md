@@ -40,6 +40,7 @@ Halaman Pengaturan Toko merupakan pusat konfigurasi untuk mengelola semua aspek 
 | `store_address` | string | "" | Alamat fisik toko |
 | `store_phone` | string | "" | Nomor telepon toko |
 | `whatsapp_number` | string | "" | Nomor WhatsApp bisnis |
+| `phone_country_code` | string | "ID" | Kode negara untuk format nomor telepon |
 | `operating_hours` | json | {...} | Jam operasional per hari |
 | `delivery_areas` | json | [] | List area pengiriman |
 | `delivery_fee` | integer | 0 | Biaya pengiriman (Rupiah) |
@@ -137,6 +138,36 @@ Nomor telepon toko untuk kontak umum (bukan WhatsApp).
 
 ## WhatsApp Bisnis
 
+### Negara/Region
+
+**Field**: `phone_country_code`
+
+| Attribute | Value |
+|-----------|-------|
+| Type | Dropdown/Select |
+| Required | ✅ |
+| Default | ID (Indonesia) |
+
+Pengaturan negara/region yang menentukan format kode telepon internasional untuk integrasi WhatsApp, yaitu: sistem akan otomatis mengkonversi nomor lokal ke format internasional berdasarkan negara yang dipilih.
+
+**Negara yang Didukung:**
+
+| Kode | Negara | Calling Code |
+|------|--------|--------------|
+| ID | Indonesia | +62 |
+| MY | Malaysia | +60 |
+| SG | Singapore | +65 |
+| PH | Philippines | +63 |
+| TH | Thailand | +66 |
+| VN | Vietnam | +84 |
+| US | United States | +1 |
+| AU | Australia | +61 |
+
+**Konversi Otomatis:**
+- Nomor `081234567890` dengan region `ID` → `6281234567890`
+- Nomor `0123456789` dengan region `MY` → `60123456789`
+- Nomor `91234567` dengan region `SG` → `6591234567`
+
 ### Nomor WhatsApp
 
 **Field**: `whatsapp_number`
@@ -145,14 +176,14 @@ Nomor telepon toko untuk kontak umum (bukan WhatsApp).
 |-----------|-------|
 | Type | Text |
 | Required | ✅ |
-| Format | Kode negara tanpa + (contoh: 6281234567890) |
-| Placeholder | "6281234567890" |
+| Format | Bisa dengan atau tanpa kode negara |
+| Placeholder | "081234567890" atau "6281234567890" |
 
-**Format yang Valid:**
-- ✅ `6281234567890` (Indonesia)
-- ✅ `628123456789` (tanpa 0 di depan)
-- ❌ `+6281234567890` (jangan pakai +)
-- ❌ `081234567890` (harus dengan kode negara)
+**Format yang Valid (dengan multi-region support):**
+- ✅ `081234567890` (lokal Indonesia, akan di-convert ke 62)
+- ✅ `6281234567890` (sudah dengan kode negara)
+- ✅ `0123456789` (lokal Malaysia, akan di-convert ke 60)
+- ❌ `+6281234567890` (jangan pakai tanda +)
 
 ### Penggunaan WhatsApp
 
@@ -402,7 +433,8 @@ new Intl.NumberFormat('id-ID', {
 | Field | Validasi |
 |-------|----------|
 | store_name | Required, max 100 chars |
-| whatsapp_number | Required, numeric string |
+| whatsapp_number | Required, max 20 chars |
+| phone_country_code | Required, max 5 chars |
 | delivery_fee | Required, numeric, min 0 |
 | minimum_order | Required, numeric, min 0 |
 | auto_cancel_minutes | Required if enabled, 5-1440 |
@@ -445,6 +477,7 @@ Jika validasi gagal:
   "store_address": "Alamat",
   "store_phone": "021-1234567",
   "whatsapp_number": "6281234567890",
+  "phone_country_code": "ID",
   "operating_hours": {...},
   "delivery_areas": ["Area 1", "Area 2"],
   "delivery_fee": 10000,

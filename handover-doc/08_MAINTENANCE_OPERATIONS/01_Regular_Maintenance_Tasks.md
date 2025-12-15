@@ -542,3 +542,4 @@ Keep a maintenance log:
 - **Logs**: `/var/www/simple-store/storage/logs/`
 
 
+

@@ -65,6 +65,10 @@ class HandleInertiaRequests extends Middleware
             ],
             // Store branding untuk logo, nama, dan tagline toko
             'store' => fn () => app(StoreSettingService::class)->getStoreBranding(),
+            // Store settings untuk phone country code (digunakan oleh usePhoneFormat composable)
+            'store_settings' => fn () => [
+                'phone_country_code' => app(StoreSettingService::class)->getSetting('phone_country_code', 'ID'),
+            ],
             // Pending orders count untuk admin notifications
             'pending_orders_count' => fn () => $request->user()
                 ? Order::where('status', 'pending')->count()

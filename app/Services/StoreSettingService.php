@@ -24,6 +24,7 @@ class StoreSettingService
         'store_address' => ['value' => '', 'type' => 'text', 'group' => 'general'],
         'store_phone' => ['value' => '', 'type' => 'string', 'group' => 'general'],
         'whatsapp_number' => ['value' => '', 'type' => 'string', 'group' => 'whatsapp'],
+        'phone_country_code' => ['value' => 'ID', 'type' => 'string', 'group' => 'whatsapp'],
         'operating_hours' => [
             'value' => [
                 'monday' => ['open' => '08:00', 'close' => '21:00', 'is_open' => true],
@@ -116,6 +117,21 @@ class StoreSettingService
     }
 
     /**
+     * Daftar konfigurasi dial code per negara
+     * untuk format nomor telepon internasional
+     */
+    private const COUNTRY_DIAL_CODES = [
+        'ID' => ['dialCode' => '62', 'localPrefix' => '0'],
+        'MY' => ['dialCode' => '60', 'localPrefix' => '0'],
+        'SG' => ['dialCode' => '65', 'localPrefix' => ''],
+        'PH' => ['dialCode' => '63', 'localPrefix' => '0'],
+        'TH' => ['dialCode' => '66', 'localPrefix' => '0'],
+        'VN' => ['dialCode' => '84', 'localPrefix' => '0'],
+        'US' => ['dialCode' => '1', 'localPrefix' => ''],
+        'AU' => ['dialCode' => '61', 'localPrefix' => '0'],
+    ];
+
+    /**
      * Mendapatkan nomor WhatsApp yang sudah di-format dengan country code
      * untuk digunakan di WhatsApp API (customer to owner)
      */
@@ -123,20 +139,52 @@ class StoreSettingService
     {
         $number = $this->getSetting('whatsapp_number', '');
 
+        return $this->formatPhoneToInternational($number);
+    }
+
+    /**
+     * Format nomor telepon ke format internasional berdasarkan phone_country_code setting
+     * Berguna untuk WhatsApp API yang memerlukan format internasional
+     *
+     * @param  string  $phone  Nomor telepon dalam format apapun
+     * @return string Nomor telepon dalam format internasional (tanpa +)
+     */
+    public function formatPhoneToInternational(string $phone): string
+    {
         // Remove non-numeric characters
-        $phone = preg_replace('/\D/', '', $number) ?? '';
+        $cleanPhone = preg_replace('/\D/', '', $phone) ?? '';
 
-        // Jika nomor dimulai dengan 0, ganti dengan 62 (Indonesia)
-        if (str_starts_with($phone, '0')) {
-            $phone = '62'.substr($phone, 1);
+        // Ambil country code dari settings
+        $countryCode = $this->getSetting('phone_country_code', 'ID');
+        $config = self::COUNTRY_DIAL_CODES[$countryCode] ?? self::COUNTRY_DIAL_CODES['ID'];
+
+        $dialCode = $config['dialCode'];
+        $localPrefix = $config['localPrefix'];
+
+        // Jika sudah dimulai dengan dial code, return langsung
+        if (str_starts_with($cleanPhone, $dialCode)) {
+            return $cleanPhone;
         }
 
-        // Jika nomor tidak dimulai dengan country code, tambahkan 62
-        if (! str_starts_with($phone, '62') && strlen($phone) >= 9) {
-            $phone = '62'.$phone;
+        // Jika dimulai dengan local prefix (contoh: 0 untuk Indonesia)
+        // ganti dengan dial code
+        if ($localPrefix && str_starts_with($cleanPhone, $localPrefix)) {
+            $cleanPhone = $dialCode.substr($cleanPhone, strlen($localPrefix));
+        }
+        // Jika tidak ada prefix, tambahkan dial code
+        elseif (! str_starts_with($cleanPhone, $dialCode) && strlen($cleanPhone) >= 8) {
+            $cleanPhone = $dialCode.$cleanPhone;
         }
 
-        return $phone;
+        return $cleanPhone;
+    }
+
+    /**
+     * Mendapatkan phone country code yang dikonfigurasi
+     */
+    public function getPhoneCountryCode(): string
+    {
+        return $this->getSetting('phone_country_code', 'ID');
     }
 
     /**

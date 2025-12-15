@@ -4,9 +4,13 @@
  * Dialog untuk verifikasi password admin sebelum melakukan aksi sensitif
  * seperti update status, edit data, atau pembatalan pesanan
  *
+ * Menggunakan axios dengan XSRF cookie handling untuk menghindari CSRF mismatch
+ *
  * @author Zulfikar Hidayatullah
  */
 import { ref, watch } from 'vue'
+import { router } from '@inertiajs/vue3'
+import axios from 'axios'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -77,7 +81,16 @@ function togglePasswordVisibility(): void {
 }
 
 /**
+ * Refresh CSRF cookie sebelum request
+ * untuk memastikan token tidak expired
+ */
+async function refreshCsrfCookie(): Promise<void> {
+    await axios.get('/sanctum/csrf-cookie')
+}
+
+/**
  * Handle submit form untuk verifikasi password
+ * menggunakan axios dengan withCredentials untuk XSRF cookie handling
  */
 async function handleSubmit(): Promise<void> {
     if (!password.value.trim()) {
@@ -90,22 +103,21 @@ async function handleSubmit(): Promise<void> {
     error.value = null
 
     try {
-        const response = await fetch('/admin/api/verify-password', {
-            method: 'POST',
+        // Refresh CSRF cookie terlebih dahulu untuk menghindari token mismatch
+        await refreshCsrfCookie()
+
+        const response = await axios.post('/admin/api/verify-password', {
+            password: password.value,
+        }, {
             headers: {
-                'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '',
             },
-            credentials: 'same-origin',
-            body: JSON.stringify({ password: password.value }),
+            withCredentials: true,
         })
 
-        const data = await response.json()
-
-        if (!response.ok || !data.success) {
-            error.value = data.message || 'Verifikasi password gagal.'
+        if (!response.data.success) {
+            error.value = response.data.message || 'Verifikasi password gagal.'
             haptic.error()
             return
         }
@@ -113,8 +125,21 @@ async function handleSubmit(): Promise<void> {
         // Password verified, emit confirm event
         haptic.success()
         emit('confirm', password.value)
-    } catch (err) {
-        error.value = 'Terjadi kesalahan. Silakan coba lagi.'
+    } catch (err: unknown) {
+        // Handle axios error response
+        if (axios.isAxiosError(err) && err.response?.data?.message) {
+            error.value = err.response.data.message
+        } else if (axios.isAxiosError(err) && err.response?.status === 419) {
+            // CSRF token mismatch - reload halaman untuk mendapatkan token baru
+            error.value = 'Sesi telah berakhir. Halaman akan di-refresh.'
+            haptic.error()
+            setTimeout(() => {
+                router.reload()
+            }, 1500)
+            return
+        } else {
+            error.value = 'Terjadi kesalahan. Silakan coba lagi.'
+        }
         haptic.error()
     } finally {
         isVerifying.value = false

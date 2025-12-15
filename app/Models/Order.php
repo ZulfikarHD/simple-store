@@ -254,15 +254,13 @@ class Order extends Model
 
     /**
      * Generate WhatsApp URL untuk owner mengirim pesan ke customer
+     * menggunakan StoreSettingService untuk format nomor berdasarkan phone_country_code
      */
     public function getWhatsAppToCustomerUrl(string $type = 'confirmed'): string
     {
-        $phone = preg_replace('/\D/', '', $this->customer_phone);
-
-        // Jika nomor dimulai dengan 0, ganti dengan 62 (Indonesia)
-        if (str_starts_with($phone, '0')) {
-            $phone = '62'.substr($phone, 1);
-        }
+        // Gunakan StoreSettingService untuk format nomor sesuai country code
+        $phone = app(\App\Services\StoreSettingService::class)
+            ->formatPhoneToInternational($this->customer_phone);
 
         $message = $this->generateOwnerToCustomerMessage($type);
         $encodedMessage = urlencode($message);

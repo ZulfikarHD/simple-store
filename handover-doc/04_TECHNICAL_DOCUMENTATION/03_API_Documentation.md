@@ -563,6 +563,7 @@ Halaman pengaturan toko.
     store_address: string,
     store_description: string,
     whatsapp_number: string,
+    phone_country_code: string,  // Kode negara (ID, MY, SG, dll)
     delivery_fee: number,
     logo_url: string | null,
     operational_hours: object
@@ -585,6 +586,7 @@ Update pengaturan toko.
   "store_address": "Jl. Contoh No. 123",
   "store_description": "Toko online terpercaya",
   "whatsapp_number": "6281234567890",
+  "phone_country_code": "ID",
   "delivery_fee": 10000,
   "operational_hours": {
     "monday": { "open": "08:00", "close": "21:00" },
@@ -592,6 +594,27 @@ Update pengaturan toko.
   }
 }
 ```
+
+**Validation Rules**:
+| Field | Rules |
+|-------|-------|
+| `store_name` | required, string, max:100 |
+| `whatsapp_number` | required, string, max:20 |
+| `phone_country_code` | required, string, max:5 |
+| `delivery_fee` | required, numeric, min:0 |
+| `minimum_order` | required, numeric, min:0 |
+
+**Supported Country Codes**:
+| Code | Country | Calling Code |
+|------|---------|--------------|
+| ID | Indonesia | +62 |
+| MY | Malaysia | +60 |
+| SG | Singapore | +65 |
+| PH | Philippines | +63 |
+| TH | Thailand | +66 |
+| VN | Vietnam | +84 |
+| US | United States | +1 |
+| AU | Australia | +61 |
 
 ---
 

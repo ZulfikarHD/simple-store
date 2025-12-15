@@ -8,6 +8,7 @@
  */
 import { ref, computed } from 'vue'
 import { router, Link } from '@inertiajs/vue3'
+import { usePhoneFormat } from '@/composables/usePhoneFormat'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -31,6 +32,7 @@ import {
     CircleCheck,
     Loader2,
     AlertCircle,
+    Phone,
 } from 'lucide-vue-next'
 
 /**
@@ -64,6 +66,11 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+/**
+ * Phone format composable untuk WhatsApp integration
+ */
+const { openWhatsApp: openWhatsAppComposable } = usePhoneFormat()
 
 const emit = defineEmits<{
     statusUpdated: [orderId: number, newStatus: string]
@@ -221,10 +228,10 @@ function getStatusLabel(status: string): string {
 
 /**
  * Open WhatsApp dengan nomor customer
+ * menggunakan composable usePhoneFormat untuk format internasional
  */
 function openWhatsApp(): void {
-    const cleanPhone = props.order.customer_phone.replace(/\D/g, '')
-    window.open(`https://wa.me/${cleanPhone}`, '_blank')
+    openWhatsAppComposable(props.order.customer_phone)
 }
 </script>
 

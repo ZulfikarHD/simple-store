@@ -9,6 +9,7 @@
  */
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { router, usePage } from '@inertiajs/vue3'
+import { usePhoneFormat } from '@/composables/usePhoneFormat'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import PriceDisplay from '@/components/store/PriceDisplay.vue'
@@ -58,6 +59,11 @@ const showPasswordDialog = ref(false)
 const pendingConfirmOrderId = ref<number | null>(null)
 
 const page = usePage()
+
+/**
+ * Phone format composable untuk WhatsApp integration
+ */
+const { openWhatsApp: openWhatsAppComposable } = usePhoneFormat()
 
 /**
  * Computed untuk menampilkan alert (ada pesanan pending dan belum di-dismiss)
@@ -183,10 +189,10 @@ function toggleExpand(): void {
 
 /**
  * Open WhatsApp dengan nomor customer
+ * menggunakan composable usePhoneFormat untuk format internasional
  */
 function openWhatsApp(phone: string): void {
-    const cleanPhone = phone.replace(/\D/g, '')
-    window.open(`https://wa.me/${cleanPhone}`, '_blank')
+    openWhatsAppComposable(phone)
 }
 
 /**

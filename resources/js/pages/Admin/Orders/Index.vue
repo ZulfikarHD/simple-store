@@ -69,11 +69,17 @@ function handleSort(column: string) {
 import { useDebounceFn } from '@vueuse/core'
 import { Motion } from 'motion-v'
 import { springPresets, staggerDelay } from '@/composables/useMotionV'
+import { usePhoneFormat } from '@/composables/usePhoneFormat'
 
 /**
  * Haptic feedback untuk iOS-like tactile response
  */
 const haptic = useHapticFeedback()
+
+/**
+ * Phone format composable untuk WhatsApp integration
+ */
+const { openWhatsApp: openWhatsAppComposable } = usePhoneFormat()
 
 interface OrderItem {
     id: number
@@ -353,11 +359,11 @@ function formatDate(dateString: string): string {
 
 /**
  * Open WhatsApp dengan nomor telepon customer
+ * menggunakan composable usePhoneFormat untuk format internasional
  */
 function openWhatsApp(phone: string) {
     haptic.medium()
-    const cleanPhone = phone.replace(/\D/g, '')
-    window.open(`https://wa.me/${cleanPhone}`, '_blank')
+    openWhatsAppComposable(phone)
 }
 
 </script>

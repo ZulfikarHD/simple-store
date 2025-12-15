@@ -65,6 +65,7 @@ class StoreSettingControllerTest extends TestCase
             'store_address' => 'Jl. Test No. 123',
             'store_phone' => '021-1234567',
             'whatsapp_number' => '6281234567890',
+            'phone_country_code' => 'ID',
             'operating_hours' => [
                 'monday' => ['open' => '08:00', 'close' => '21:00', 'is_open' => true],
                 'tuesday' => ['open' => '08:00', 'close' => '21:00', 'is_open' => true],
@@ -100,6 +101,7 @@ class StoreSettingControllerTest extends TestCase
         $response = $this->actingAs($user)->patch(route('admin.settings.update'), [
             'store_name' => 'Test Store',
             'whatsapp_number' => '6289876543210',
+            'phone_country_code' => 'ID',
             'operating_hours' => [
                 'monday' => ['open' => '08:00', 'close' => '21:00', 'is_open' => true],
                 'tuesday' => ['open' => '08:00', 'close' => '21:00', 'is_open' => true],
@@ -141,6 +143,7 @@ class StoreSettingControllerTest extends TestCase
         $response = $this->actingAs($user)->patch(route('admin.settings.update'), [
             'store_name' => 'Test Store',
             'whatsapp_number' => '6281234567890',
+            'phone_country_code' => 'ID',
             'operating_hours' => $operatingHours,
             'delivery_fee' => 10000,
             'minimum_order' => 0,
@@ -167,6 +170,7 @@ class StoreSettingControllerTest extends TestCase
         $response = $this->actingAs($user)->patch(route('admin.settings.update'), [
             'store_name' => 'Test Store',
             'whatsapp_number' => '6281234567890',
+            'phone_country_code' => 'ID',
             'operating_hours' => [
                 'monday' => ['open' => '08:00', 'close' => '21:00', 'is_open' => true],
                 'tuesday' => ['open' => '08:00', 'close' => '21:00', 'is_open' => true],

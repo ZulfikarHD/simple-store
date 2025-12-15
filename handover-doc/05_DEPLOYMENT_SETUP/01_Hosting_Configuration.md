@@ -1,9 +1,47 @@
 # Konfigurasi Hosting
 
+**Penulis**: Zulfikar Hidayatullah  
+**Terakhir Diperbarui**: Desember 2024
+
 ## Hosting Provider
-**Provider**: [Hostinger/VPS/Cloud]
-**Plan**: [Plan name]
-**Account**: Lihat `10_CREDENTIALS_ACCESS/02_Hostinger_Account_Details.md`
+
+| Item | Value |
+|------|-------|
+| **Provider** | Hostinger |
+| **Plan** | [Plan name - Business/Premium/etc] |
+| **Account** | Lihat `10_CREDENTIALS_ACCESS/02_Hostinger_Account_Details.md` |
+| **Deployment Guide** | [05_Hostinger_Shared_Hosting_Guide.md](./05_Hostinger_Shared_Hosting_Guide.md) |
+
+## Hostinger Shared Hosting Specifics
+
+Hostinger shared hosting memiliki karakteristik khusus yang perlu diperhatikan, antara lain:
+
+### Keterbatasan
+- **Tidak ada npm/yarn** - Build assets harus dilakukan di lokal
+- **Tidak ada sudo access** - Tidak bisa install package tambahan
+- **Tidak ada supervisor** - Queue harus menggunakan sync driver
+- **SSH access terbatas** - Basic commands only
+
+### Struktur Folder Hostinger
+```
+/home/u123456789/
+├── domains/
+│   ├── yourdomain.com/
+│   │   └── public_html/          # Document root
+│   └── subdomain.yourdomain.com/
+│       └── public_html/          # Subdomain document root
+├── logs/
+└── ssl/
+```
+
+### Symlink Setup untuk Laravel
+```bash
+# Di folder subdomain
+cd domains/subdomain.yourdomain.com/
+git clone [repository] simple-store
+mv public_html public_html_backup
+ln -s simple-store/public public_html
+```
 
 ## Server Specifications
 
@@ -123,5 +161,13 @@ php artisan storage:link
 - **Uptime Monitoring**: [Service yang digunakan]
 - **Error Tracking**: [Sentry/Bugsnag/etc jika digunakan]
 - **Performance Monitoring**: [Service yang digunakan]
+
+## Panduan Terkait
+
+- [05_Hostinger_Shared_Hosting_Guide.md](./05_Hostinger_Shared_Hosting_Guide.md) - Panduan lengkap deployment Hostinger
+- [02_Environment_Setup.md](./02_Environment_Setup.md) - Konfigurasi environment variables
+- [03_Domain_SSL_Configuration.md](./03_Domain_SSL_Configuration.md) - Setup domain dan SSL
+- [04_Initial_Deployment_Guide.md](./04_Initial_Deployment_Guide.md) - Panduan deployment VPS/Cloud
+
 
 

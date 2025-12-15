@@ -1,5 +1,12 @@
 # Setup Environment
 
+**Penulis**: Zulfikar Hidayatullah  
+**Terakhir Diperbarui**: Desember 2024
+
+## Overview
+
+Dokumen ini merupakan panduan konfigurasi environment yang bertujuan untuk memastikan aplikasi berjalan dengan benar di berbagai environment, yaitu: development, staging, dan production dengan konfigurasi yang sesuai untuk masing-masing environment.
+
 ## Environment Variables (.env)
 
 ### Application
@@ -162,7 +169,38 @@ APP_DEBUG=false
 APP_URL=https://your-domain.com
 ```
 
+## Catatan Khusus Shared Hosting
+
+Untuk shared hosting (seperti Hostinger) yang tidak memiliki akses npm/yarn:
+
+### Build Assets Lokal
+
+```bash
+# Di komputer lokal
+yarn install
+yarn run build
+
+# Commit build assets ke repository
+git add public/build
+git commit -m "chore: add production build assets"
+git push origin main
+```
+
+### Queue Configuration
+
+Shared hosting tidak support supervisor, gunakan sync driver:
+
+```env
+QUEUE_CONNECTION=sync
+```
+
+### Panduan Lengkap
+
+Untuk panduan deployment lengkap ke Hostinger shared hosting, lihat:
+- [05_Hostinger_Shared_Hosting_Guide.md](./05_Hostinger_Shared_Hosting_Guide.md)
+
 ## Troubleshooting
 Lihat: `09_TROUBLESHOOTING/01_Common_Issues_Solutions.md`
+
 
 

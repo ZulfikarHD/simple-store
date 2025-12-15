@@ -19,6 +19,124 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.4.0] - 2025-12-15
+
+### Added - Multi-Region Phone Formatting & CSRF Token Fix
+
+#### Multi-Region Phone Number Support
+- **Phone Country Code Setting**
+  - Admin dapat memilih negara/region untuk format nomor telepon
+  - Dropdown selection dengan 8 negara yang didukung
+  - Konversi otomatis nomor lokal ke format internasional
+  - Konfigurasi tersimpan di `store_settings` dengan key `phone_country_code`
+
+- **Supported Countries**
+  | Kode | Negara | Calling Code |
+  |------|--------|--------------|
+  | ID | Indonesia | +62 |
+  | MY | Malaysia | +60 |
+  | SG | Singapore | +65 |
+  | PH | Philippines | +63 |
+  | TH | Thailand | +66 |
+  | VN | Vietnam | +84 |
+  | US | United States | +1 |
+  | AU | Australia | +61 |
+
+- **usePhoneFormat Composable**
+  - Centralized phone formatting logic untuk frontend
+  - Functions: `formatPhoneToInternational()`, `getWhatsAppUrl()`, `openWhatsApp()`, `formatPhoneForDisplay()`
+  - Automatically reads `phone_country_code` dari Inertia shared props
+  - Reusable di semua komponen yang memerlukan WhatsApp integration
+
+#### WhatsApp Integration Improvements
+- **Admin-to-Customer WhatsApp**
+  - Semua interaksi WhatsApp dari admin ke customer sekarang menggunakan format internasional
+  - Konsisten dengan customer-to-admin formatting
+  - Auto-convert nomor lokal (0xxx) ke format internasional (+62xxx)
+
+- **Unified Phone Formatting**
+  - `Order::getWhatsAppToCustomerUrl()` sekarang menggunakan `StoreSettingService::getFormattedCustomerPhone()`
+  - Backend dan frontend menggunakan logic yang sama untuk phone formatting
+  - Support multi-region berdasarkan konfigurasi admin
+
+#### CSRF Token Mismatch Fix
+- **Password Confirmation Dialog**
+  - Fixed CSRF token mismatch saat konfirmasi update status dengan password
+  - Implementasi `refreshCsrfCookie()` sebelum sensitive requests
+  - Menggunakan axios dengan `withCredentials: true`
+  - Auto-reload page jika terjadi 419 error untuk refresh token
+
+### Changed
+
+- **Admin Settings Page**
+  - Added dropdown "Negara/Region" untuk phone country code selection
+  - Reorganized WhatsApp section dengan country code di atas nomor WhatsApp
+
+- **Phone Formatting Logic**
+  - Dari hardcoded Indonesia (62) ke configurable multi-region
+  - Backend `StoreSettingService::getWhatsAppNumber()` sekarang membaca `phone_country_code`
+  - Added `getCountryCallingCode()` helper method
+
+- **Order Model**
+  - `getWhatsAppToCustomerUrl()` sekarang menggunakan `StoreSettingService::getFormattedCustomerPhone()`
+  - Konsisten phone formatting untuk semua WhatsApp interactions
+
+### Technical Details
+
+**New Composable:**
+- `resources/js/composables/usePhoneFormat.ts`
+  - Centralized phone formatting untuk Vue components
+  - Exports: `formatPhoneToInternational`, `getWhatsAppUrl`, `openWhatsApp`, `formatPhoneForDisplay`, `defaultCountryCode`, `countryCodes`
+
+**Backend Changes:**
+- `app/Services/StoreSettingService.php`
+  - Added `phone_country_code` to `DEFAULT_SETTINGS`
+  - Added `getFormattedCustomerPhone()` method
+  - Added `getCountryCallingCode()` helper
+  - Updated `getWhatsAppNumber()` untuk multi-region support
+
+- `app/Models/Order.php`
+  - Updated `getWhatsAppToCustomerUrl()` untuk menggunakan service
+
+- `app/Http/Requests/Admin/UpdateStoreSettingsRequest.php`
+  - Added validation rules untuk `phone_country_code`
+
+- `app/Http/Middleware/HandleInertiaRequests.php`
+  - Added `phone_country_code` ke shared props
+
+**Frontend Changes:**
+- `resources/js/pages/Admin/Settings/Index.vue` - Added country code dropdown
+- `resources/js/pages/Admin/Orders/Index.vue` - Using usePhoneFormat composable
+- `resources/js/pages/Admin/Orders/Show.vue` - Using usePhoneFormat composable
+- `resources/js/components/admin/NewOrderAlert.vue` - Using usePhoneFormat composable
+- `resources/js/components/admin/OrderCard.vue` - Using usePhoneFormat composable
+- `resources/js/components/admin/PasswordConfirmDialog.vue` - CSRF fix dengan axios
+
+**Database Seeder:**
+- `database/seeders/StoreSettingSeeder.php` - Added `phone_country_code` default
+
+### Testing
+
+- Updated `tests/Feature/Admin/StoreSettingControllerTest.php`
+  - All test cases sekarang include `phone_country_code` field
+  - Validation tests untuk new field
+- Build successful dengan `yarn run build`
+- All existing tests passing
+
+### Documentation
+
+- Updated `handover-doc/03_ADMIN_DOCUMENTATION/04_Settings_Configuration.md`
+  - Added phone_country_code documentation
+  - Updated WhatsApp section dengan multi-region support
+  - Updated validation rules
+
+- Updated `handover-doc/04_TECHNICAL_DOCUMENTATION/03_API_Documentation.md`
+  - Added phone_country_code ke settings props
+  - Added supported country codes table
+  - Updated request body examples
+
+---
+
 ## [1.3.0] - 2025-12-10
 
 ### Added - Admin Table Sorting & iOS UI Enhancements
@@ -448,6 +566,7 @@ None introduced in this release.
 
 | Version | Release Date | Key Features |
 |---------|--------------|--------------|
+| 1.4.0   | 2025-12-15   | Multi-Region Phone Formatting, CSRF Token Fix, usePhoneFormat Composable |
 | 1.3.0   | 2025-12-10   | Admin Table Sorting, iOS Badge & Table Styling, Dynamic Auth Logo |
 | 1.2.0   | 2025-12-10   | Store Branding, Checkout Autofill, WhatsApp Phone Formatting |
 | 1.1.0   | 2025-12-10   | WhatsApp Integration, Auto-Cancel, Rate Limiting |
@@ -456,6 +575,50 @@ None introduced in this release.
 ---
 
 ## Upgrade Guide
+
+### From 1.3.0 to 1.4.0
+
+#### Database Changes
+
+```bash
+# Run seeder untuk menambahkan phone_country_code default
+php artisan db:seed --class=StoreSettingSeeder
+```
+
+**Store Settings Keys Added:**
+- `phone_country_code` (string) - Kode negara untuk format telepon (default: "ID")
+
+#### Configuration Changes
+
+1. **Phone Country Code Setup**
+   ```bash
+   # Login as admin
+   # Navigate to: /admin/settings
+   # Pilih negara/region dari dropdown
+   # Default: Indonesia (ID)
+   ```
+
+2. **No Migration Required**
+   - Menggunakan existing `store_settings` table
+   - New key ditambahkan via seeder
+
+#### Code Changes
+
+- No breaking changes
+- WhatsApp phone formatting sekarang configurable
+- Existing hardcoded Indonesia format tetap berfungsi sebagai default
+
+#### Assets Rebuild
+
+```bash
+# Rebuild frontend assets untuk composable baru
+yarn install
+yarn run build
+# atau untuk development
+yarn run dev
+```
+
+---
 
 ### From 1.1.0 to 1.2.0
 

@@ -44,6 +44,7 @@ import {
 import { ref, computed } from 'vue'
 import { Motion } from 'motion-v'
 import { springPresets, staggerDelay } from '@/composables/useMotionV'
+import { COUNTRY_CONFIGS } from '@/composables/usePhoneFormat'
 
 /**
  * Haptic feedback untuk iOS-like tactile response
@@ -82,6 +83,7 @@ interface Settings {
     store_address: string
     store_phone: string
     whatsapp_number: string
+    phone_country_code: string
     operating_hours: OperatingHours
     delivery_areas: string[]
     delivery_fee: number
@@ -89,6 +91,16 @@ interface Settings {
     auto_cancel_enabled: boolean
     auto_cancel_minutes: number
 }
+
+/**
+ * Daftar negara yang didukung untuk dropdown selection
+ * dengan format { code, name, dialCode }
+ */
+const supportedCountries = Object.values(COUNTRY_CONFIGS).map(config => ({
+    code: config.code,
+    name: config.name,
+    dialCode: `+${config.dialCode}`,
+}))
 
 interface Props {
     settings: Settings
@@ -125,6 +137,7 @@ const form = ref<Settings>({
     store_address: props.settings.store_address || '',
     store_phone: props.settings.store_phone || '',
     whatsapp_number: props.settings.whatsapp_number || '',
+    phone_country_code: props.settings.phone_country_code || 'ID',
     operating_hours: props.settings.operating_hours || {
         monday: { open: '08:00', close: '21:00', is_open: true },
         tuesday: { open: '08:00', close: '21:00', is_open: true },
@@ -493,20 +506,46 @@ function submitForm() {
                                     </h3>
                                 </div>
                                 <div class="admin-form-section-content">
-                                    <div class="admin-input-group">
-                                        <Label for="whatsapp_number">Nomor WhatsApp Bisnis *</Label>
-                                        <Input
-                                            id="whatsapp_number"
-                                            v-model="form.whatsapp_number"
-                                            type="text"
-                                            placeholder="6281234567890"
-                                            class="admin-input"
-                                            :class="{ 'border-destructive': errors.whatsapp_number }"
-                                        />
-                                        <p class="hint">
-                                            Format: Kode negara tanpa tanda + (contoh: 6281234567890)
-                                        </p>
-                                        <InputError :message="errors.whatsapp_number" />
+                                    <div class="flex flex-col gap-5">
+                                        <!-- Phone Country Code -->
+                                        <div class="admin-input-group">
+                                            <Label for="phone_country_code">Negara / Region *</Label>
+                                            <select
+                                                id="phone_country_code"
+                                                v-model="form.phone_country_code"
+                                                class="admin-select"
+                                                :class="{ 'border-destructive': errors.phone_country_code }"
+                                            >
+                                                <option
+                                                    v-for="country in supportedCountries"
+                                                    :key="country.code"
+                                                    :value="country.code"
+                                                >
+                                                    {{ country.name }} ({{ country.dialCode }})
+                                                </option>
+                                            </select>
+                                            <p class="hint">
+                                                Pilih negara untuk format nomor telepon WhatsApp customer
+                                            </p>
+                                            <InputError :message="errors.phone_country_code" />
+                                        </div>
+
+                                        <!-- WhatsApp Number -->
+                                        <div class="admin-input-group">
+                                            <Label for="whatsapp_number">Nomor WhatsApp Bisnis *</Label>
+                                            <Input
+                                                id="whatsapp_number"
+                                                v-model="form.whatsapp_number"
+                                                type="text"
+                                                placeholder="6281234567890"
+                                                class="admin-input"
+                                                :class="{ 'border-destructive': errors.whatsapp_number }"
+                                            />
+                                            <p class="hint">
+                                                Format: Kode negara tanpa tanda + (contoh: 6281234567890)
+                                            </p>
+                                            <InputError :message="errors.whatsapp_number" />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
