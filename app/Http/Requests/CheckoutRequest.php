@@ -2,12 +2,15 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidPersonName;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * Form Request untuk validasi form checkout
- * dengan rules untuk customer name, phone, address, dan notes
+ * dengan rules untuk customer first name, last name, phone, address, dan notes
  * serta custom messages dalam bahasa Indonesia
+ *
+ * @author Zulfikar Hidayatullah
  */
 class CheckoutRequest extends FormRequest
 {
@@ -21,13 +24,28 @@ class CheckoutRequest extends FormRequest
 
     /**
      * Get the validation rules that apply to the request.
+     * Validasi mencakup nama depan dan nama belakang terpisah
+     * dengan validasi khusus untuk keduanya (tidak boleh title/simbol)
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            'customer_name' => ['required', 'string', 'min:3', 'max:100'],
+            'customer_first_name' => [
+                'required',
+                'string',
+                'min:2',
+                'max:50',
+                new ValidPersonName,
+            ],
+            'customer_last_name' => [
+                'required',
+                'string',
+                'min:2',
+                'max:50',
+                new ValidPersonName,
+            ],
             'customer_phone' => ['required', 'string', 'min:10', 'max:15', 'regex:/^[0-9+\-\s]+$/'],
             'customer_address' => ['nullable', 'string', 'max:500'],
             'notes' => ['nullable', 'string', 'max:500'],
@@ -42,10 +60,16 @@ class CheckoutRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'customer_name.required' => 'Nama lengkap harus diisi.',
-            'customer_name.string' => 'Nama harus berupa teks.',
-            'customer_name.min' => 'Nama minimal 3 karakter.',
-            'customer_name.max' => 'Nama maksimal 100 karakter.',
+            'customer_first_name.required' => 'Nama depan harus diisi.',
+            'customer_first_name.string' => 'Nama depan harus berupa teks.',
+            'customer_first_name.min' => 'Nama depan minimal 2 karakter.',
+            'customer_first_name.max' => 'Nama depan maksimal 50 karakter.',
+            'customer_first_name.regex' => 'Nama depan hanya boleh mengandung huruf dan spasi.',
+
+            'customer_last_name.required' => 'Nama belakang harus diisi.',
+            'customer_last_name.string' => 'Nama belakang harus berupa teks.',
+            'customer_last_name.min' => 'Nama belakang minimal 2 karakter.',
+            'customer_last_name.max' => 'Nama belakang maksimal 50 karakter.',
 
             'customer_phone.required' => 'Nomor telepon harus diisi.',
             'customer_phone.string' => 'Nomor telepon harus berupa teks.',
@@ -69,10 +93,42 @@ class CheckoutRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'customer_name' => 'nama lengkap',
+            'customer_first_name' => 'nama depan',
+            'customer_last_name' => 'nama belakang',
             'customer_phone' => 'nomor telepon',
             'customer_address' => 'alamat pengiriman',
             'notes' => 'catatan',
         ];
+    }
+
+    /**
+     * Get the validated data with customer_name combined.
+     * Menggabungkan first name dan last name menjadi customer_name
+     * untuk disimpan ke database
+     *
+     * @param  string|null  $key
+     * @param  mixed  $default
+     * @return array<string, mixed>|mixed
+     */
+    public function validated($key = null, $default = null): mixed
+    {
+        $validated = parent::validated($key, $default);
+
+        // Jika requesting specific key, return as-is
+        if ($key !== null) {
+            if ($key === 'customer_name') {
+                return trim($this->customer_first_name).' '.trim($this->customer_last_name);
+            }
+
+            return $validated;
+        }
+
+        // Gabungkan first_name dan last_name menjadi customer_name
+        $validated['customer_name'] = trim($this->customer_first_name).' '.trim($this->customer_last_name);
+
+        // Hapus field yang tidak diperlukan untuk database
+        unset($validated['customer_first_name'], $validated['customer_last_name']);
+
+        return $validated;
     }
 }

@@ -62,9 +62,11 @@ interface CartData {
 
 /**
  * Interface untuk customer data dari authenticated user
+ * dengan pemisahan first name dan last name untuk validasi yang lebih baik
  */
 interface CustomerData {
-    name: string
+    first_name: string
+    last_name: string
     phone: string | null
     address: string | null
 }
@@ -298,28 +300,58 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                         </h2>
 
                         <div class="space-y-4">
-                            <!-- Nama Lengkap dengan iOS-like focus animation -->
-                            <div class="space-y-2">
-                                <Label for="customer_name" class="text-sm sm:text-base">Nama Lengkap *</Label>
-                                <Motion
-                                    :animate="{ scale: focusedField === 'customer_name' ? 1.02 : 1 }"
-                                    :transition="snappyTransition"
-                                >
-                                    <Input
-                                        id="customer_name"
-                                        name="customer_name"
-                                        type="text"
-                                        placeholder="Masukkan nama lengkap"
-                                        :default-value="customer?.name ?? ''"
-                                        class="ios-input h-12 rounded-xl text-base sm:h-11 sm:text-sm"
-                                        :aria-invalid="!!errors.customer_name"
-                                        @focus="handleFieldFocus('customer_name')"
-                                        @blur="handleFieldBlur"
-                                    />
-                                </Motion>
-                                <p v-if="errors.customer_name" class="animate-ios-shake text-sm text-destructive">
-                                    {{ errors.customer_name }}
-                                </p>
+                            <!-- Nama Depan dan Nama Belakang dengan iOS-like focus animation -->
+                            <div class="grid gap-4 sm:grid-cols-2">
+                                <!-- Nama Depan -->
+                                <div class="space-y-2">
+                                    <Label for="customer_first_name" class="text-sm sm:text-base">Nama Depan *</Label>
+                                    <Motion
+                                        :animate="{ scale: focusedField === 'customer_first_name' ? 1.02 : 1 }"
+                                        :transition="snappyTransition"
+                                    >
+                                        <Input
+                                            id="customer_first_name"
+                                            name="customer_first_name"
+                                            type="text"
+                                            placeholder="Masukkan nama depan"
+                                            :default-value="customer?.first_name ?? ''"
+                                            class="ios-input h-12 rounded-xl text-base sm:h-11 sm:text-sm"
+                                            :aria-invalid="!!errors.customer_first_name"
+                                            @focus="handleFieldFocus('customer_first_name')"
+                                            @blur="handleFieldBlur"
+                                        />
+                                    </Motion>
+                                    <p v-if="errors.customer_first_name" class="animate-ios-shake text-sm text-destructive">
+                                        {{ errors.customer_first_name }}
+                                    </p>
+                                </div>
+
+                                <!-- Nama Belakang -->
+                                <div class="space-y-2">
+                                    <Label for="customer_last_name" class="text-sm sm:text-base">Nama Belakang *</Label>
+                                    <Motion
+                                        :animate="{ scale: focusedField === 'customer_last_name' ? 1.02 : 1 }"
+                                        :transition="snappyTransition"
+                                    >
+                                        <Input
+                                            id="customer_last_name"
+                                            name="customer_last_name"
+                                            type="text"
+                                            placeholder="Masukkan nama belakang"
+                                            :default-value="customer?.last_name ?? ''"
+                                            class="ios-input h-12 rounded-xl text-base sm:h-11 sm:text-sm"
+                                            :aria-invalid="!!errors.customer_last_name"
+                                            @focus="handleFieldFocus('customer_last_name')"
+                                            @blur="handleFieldBlur"
+                                        />
+                                    </Motion>
+                                    <p v-if="errors.customer_last_name" class="animate-ios-shake text-sm text-destructive">
+                                        {{ errors.customer_last_name }}
+                                    </p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-muted-foreground">
+                                Gunakan nama asli tanpa gelar (Pak, Bu, Mr, Mrs, dll) dan tanpa simbol (-)</p>
                             </div>
 
                             <!-- Nomor Telepon -->

@@ -41,12 +41,18 @@ class CheckoutController extends Controller
         }
 
         // Pre-fill data dari authenticated user jika tersedia
+        // dengan pemisahan nama depan dan nama belakang
+        /** @var \App\Models\User|null $user */
         $user = auth()->user();
         $customerData = null;
 
         if ($user) {
+            // Split nama user menjadi first name dan last name
+            $nameParts = $this->splitFullName($user->name);
+
             $customerData = [
-                'name' => $user->name,
+                'first_name' => $nameParts['first_name'],
+                'last_name' => $nameParts['last_name'],
                 'phone' => $user->phone,
                 'address' => $user->address,
             ];
@@ -79,6 +85,27 @@ class CheckoutController extends Controller
                 'checkout' => $e->getMessage(),
             ])->withInput();
         }
+    }
+
+    /**
+     * Memisahkan nama lengkap menjadi nama depan dan nama belakang
+     * dengan asumsi kata pertama adalah nama depan, sisanya nama belakang
+     *
+     * @param  string|null  $fullName  Nama lengkap user
+     * @return array{first_name: string, last_name: string}
+     */
+    private function splitFullName(?string $fullName): array
+    {
+        if (empty($fullName)) {
+            return ['first_name' => '', 'last_name' => ''];
+        }
+
+        $parts = preg_split('/\s+/', trim($fullName), 2);
+
+        return [
+            'first_name' => $parts[0] ?? '',
+            'last_name' => $parts[1] ?? '',
+        ];
     }
 
     /**

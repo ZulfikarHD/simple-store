@@ -184,7 +184,7 @@ Menampilkan halaman checkout.
 ---
 
 #### POST `/checkout`
-Memproses checkout dan membuat order.
+Memproses checkout dan membuat order dengan validasi nama yang ketat.
 
 **Controller**: `CheckoutController@store`  
 **Route Name**: `checkout.store`
@@ -192,7 +192,8 @@ Memproses checkout dan membuat order.
 **Request Body**:
 ```json
 {
-  "customer_name": "John Doe",
+  "customer_first_name": "John",
+  "customer_last_name": "Doe",
   "customer_phone": "081234567890",
   "customer_address": "Jl. Contoh No. 123",
   "notes": "Tidak pedas"
@@ -202,10 +203,23 @@ Memproses checkout dan membuat order.
 **Validation**:
 | Field | Rules |
 |-------|-------|
-| `customer_name` | required, string, max:255 |
-| `customer_phone` | required, string, max:20 |
-| `customer_address` | nullable, string |
-| `notes` | nullable, string |
+| `customer_first_name` | required, string, min:2, max:50, ValidPersonName |
+| `customer_last_name` | required, string, min:2, max:50, ValidPersonName |
+| `customer_phone` | required, string, min:10, max:15, regex:/^[0-9+\-\s]+$/ |
+| `customer_address` | nullable, string, max:500 |
+| `notes` | nullable, string, max:500 |
+
+**ValidPersonName Rule**:
+Custom validation rule yang memvalidasi nama tidak mengandung:
+- Gelar/title (Sir, Mr, Mrs, Pak, Bu, Mas, Mbak, dll)
+- Simbol seperti "-", "_", "@", dll
+- Hanya mengizinkan huruf, spasi, dan apostrof
+
+**Forbidden Titles**:
+- English: sir, mr, mrs, ms, miss, dr, prof, madam, lord, lady
+- Indonesian: pak, bu, bapak, ibu, mas, mbak, kak, kakak, bang, abang, tuan, nyonya, nona, haji, hajjah, ustadz, ustadzah, kyai, nyai, raden, drs, drg, ir, sh, se, mm, mba
+
+**Note**: First name dan last name akan digabungkan menjadi `customer_name` untuk disimpan ke database.
 
 **Response**: Redirect ke checkout success dengan WhatsApp URL
 

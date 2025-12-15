@@ -80,10 +80,11 @@ Dokumentasi ini menjelaskan secara detail setiap fitur yang tersedia dalam aplik
 
 ### 4. Checkout
 
-**Deskripsi**: Halaman form data pengiriman untuk menyelesaikan pesanan.
+**Deskripsi**: Halaman form data pengiriman untuk menyelesaikan pesanan dengan validasi nama yang ketat.
 
 **Fitur yang Tersedia**:
-- **Form Data Penerima**: Input nama lengkap dan nomor telepon
+- **Form Data Penerima**: Input nama depan, nama belakang, dan nomor telepon
+- **Validasi Nama Ketat**: Nama tidak boleh menggunakan gelar (Pak, Bu, Mr, Mrs, dll) dan simbol
 - **Form Alamat Pengiriman**: Input alamat dan catatan tambahan
 - **iOS-like Form Inputs**: Input dengan focus animation dan validation
 - **Error Shake Animation**: Animasi getaran pada field dengan error
@@ -92,12 +93,23 @@ Dokumentasi ini menjelaskan secara detail setiap fitur yang tersedia dalam aplik
 - **Submit via WhatsApp**: Button untuk mengirim pesanan
 
 **Cara Menggunakan**:
-1. Isi **Nama Lengkap** (wajib)
-2. Isi **Nomor Telepon/WhatsApp** (wajib)
-3. Isi **Alamat Lengkap** (opsional)
-4. Isi **Catatan** jika diperlukan (opsional)
-5. Review ringkasan pesanan
-6. Klik **"Pesan via WhatsApp"**
+1. Isi **Nama Depan** (wajib, nama asli tanpa gelar)
+2. Isi **Nama Belakang** (wajib, nama asli tanpa gelar)
+3. Isi **Nomor Telepon/WhatsApp** (wajib)
+4. Isi **Alamat Lengkap** (opsional)
+5. Isi **Catatan** jika diperlukan (opsional)
+6. Review ringkasan pesanan
+7. Klik **"Pesan via WhatsApp"**
+
+**Validasi Nama**:
+| Field | Validasi |
+|-------|----------|
+| Nama Depan | Wajib, min 2 karakter, hanya huruf dan spasi, tidak boleh gelar |
+| Nama Belakang | Wajib, min 2 karakter, hanya huruf dan spasi, tidak boleh gelar |
+
+**Gelar yang Tidak Diperbolehkan**:
+- English: Sir, Mr, Mrs, Ms, Miss, Dr, Prof, dll
+- Indonesia: Pak, Bu, Bapak, Ibu, Mas, Mbak, Kak, Bang, Tuan, Nyonya, dll
 
 **Screenshot**: `screenshots/checkout/`
 

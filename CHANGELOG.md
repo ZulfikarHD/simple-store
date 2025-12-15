@@ -19,6 +19,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.0] - 2025-12-15
+
+### Added - Checkout Name Validation Enhancement
+
+#### Separate First Name & Last Name Fields
+- **Form Checkout Baru**
+  - Field "Nama Lengkap" sekarang dipisah menjadi "Nama Depan" dan "Nama Belakang"
+  - Kedua field wajib diisi dengan validasi ketat
+  - Auto-prefill dari data user yang login (split nama)
+
+- **ValidPersonName Validation Rule**
+  - Custom validation rule untuk memvalidasi nama (first name dan last name)
+  - Tidak boleh menggunakan gelar/title (Sir, Mr, Mrs, Pak, Bu, Mas, Mbak, dll)
+  - Tidak boleh mengandung simbol seperti "-", "_", "@", dll
+  - Hanya mengizinkan huruf, spasi, dan apostrof (untuk nama seperti O'Connor)
+
+- **Forbidden Titles List**
+  - English: sir, mr, mrs, ms, miss, dr, prof, madam, lord, lady
+  - Indonesian: pak, bu, bapak, ibu, mas, mbak, kak, kakak, bang, abang, tuan, nyonya, nona, haji, hajjah, ustadz, ustadzah, kyai, nyai, raden, drs, drg, ir, sh, se, mm, mba
+
+#### Backend Changes
+- **New Files**
+  - `app/Rules/ValidPersonName.php` - Custom validation rule untuk nama
+  - `tests/Unit/ValidLastNameTest.php` - Unit test untuk validation rule
+
+- **Modified Files**
+  - `app/Http/Requests/CheckoutRequest.php` - Updated validation rules dan override `validated()` method
+  - `app/Http/Controllers/CheckoutController.php` - Added `splitFullName()` method untuk pre-fill
+
+#### Frontend Changes
+- **Checkout.vue**
+  - Form dengan 2 input terpisah (Nama Depan & Nama Belakang)
+  - Hint text untuk menjelaskan validasi nama
+  - Responsive grid layout (2 kolom di desktop, 1 kolom di mobile)
+
+### Technical Implementation
+
+**Validation Rules**:
+| Field | Rules |
+|-------|-------|
+| `customer_first_name` | required, string, min:2, max:50, ValidPersonName |
+| `customer_last_name` | required, string, min:2, max:50, ValidPersonName |
+
+**Data Flow**:
+```
+Frontend (first_name + last_name)
+        ↓
+CheckoutRequest validation
+        ↓
+validated() combines to customer_name
+        ↓
+OrderService stores customer_name
+```
+
+### Testing
+- 47 tests passing (20 unit + 27 feature)
+- New test cases untuk validasi nama dengan title dan simbol
+- All existing checkout tests updated untuk format baru
+
+### Documentation
+- Updated `02_Feature_Guide.md` - Checkout section dengan validasi nama
+- Updated `03_API_Documentation.md` - Request body dan validation rules
+
+---
+
 ## [1.6.1] - 2025-12-15
 
 ### Added - Success Dialog WhatsApp Integration
@@ -809,6 +874,9 @@ None introduced in this release.
 
 | Version | Release Date | Key Features |
 |---------|--------------|--------------|
+| 1.7.0   | 2025-12-15   | Checkout Name Validation (Separate First/Last Name, No Titles) |
+| 1.6.1   | 2025-12-15   | Success Dialog WhatsApp Integration |
+| 1.6.0   | 2025-12-15   | Customizable WhatsApp Templates & Timeline Icons |
 | 1.5.0   | 2025-12-15   | Status Update Success Dialog, Favicon Settings, WhatsApp Integration UX |
 | 1.4.0   | 2025-12-15   | Multi-Region Phone Formatting, CSRF Token Fix, usePhoneFormat Composable |
 | 1.3.0   | 2025-12-10   | Admin Table Sorting, iOS Badge & Table Styling, Dynamic Auth Logo |

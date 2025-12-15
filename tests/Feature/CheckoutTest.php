@@ -183,19 +183,109 @@ class CheckoutTest extends TestCase
     }
 
     /**
-     * Test validasi form checkout dengan customer_name kosong (authenticated user)
+     * Test validasi form checkout dengan customer_first_name kosong (authenticated user)
      */
-    public function test_validation_fails_when_customer_name_is_empty(): void
+    public function test_validation_fails_when_customer_first_name_is_empty(): void
     {
         $user = User::factory()->create();
 
         $response = $this->actingAs($user)->from('/checkout')->post('/checkout', [
-            'customer_name' => '',
+            'customer_first_name' => '',
+            'customer_last_name' => 'Doe',
             'customer_phone' => '081234567890',
             'customer_address' => 'Jl. Test No. 123, Jakarta Selatan',
         ]);
 
-        $response->assertSessionHasErrors('customer_name');
+        $response->assertSessionHasErrors('customer_first_name');
+    }
+
+    /**
+     * Test validasi form checkout dengan customer_last_name kosong (authenticated user)
+     */
+    public function test_validation_fails_when_customer_last_name_is_empty(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->from('/checkout')->post('/checkout', [
+            'customer_first_name' => 'John',
+            'customer_last_name' => '',
+            'customer_phone' => '081234567890',
+            'customer_address' => 'Jl. Test No. 123, Jakarta Selatan',
+        ]);
+
+        $response->assertSessionHasErrors('customer_last_name');
+    }
+
+    /**
+     * Test validasi form checkout dengan customer_last_name menggunakan title
+     */
+    public function test_validation_fails_when_customer_last_name_is_title(): void
+    {
+        $user = User::factory()->create();
+
+        // Test dengan "Pak"
+        $response = $this->actingAs($user)->from('/checkout')->post('/checkout', [
+            'customer_first_name' => 'John',
+            'customer_last_name' => 'Pak',
+            'customer_phone' => '081234567890',
+            'customer_address' => 'Jl. Test No. 123, Jakarta Selatan',
+        ]);
+
+        $response->assertSessionHasErrors('customer_last_name');
+    }
+
+    /**
+     * Test validasi form checkout dengan customer_first_name menggunakan title
+     */
+    public function test_validation_fails_when_customer_first_name_is_title(): void
+    {
+        $user = User::factory()->create();
+
+        // Test dengan "Mr"
+        $response = $this->actingAs($user)->from('/checkout')->post('/checkout', [
+            'customer_first_name' => 'Mr',
+            'customer_last_name' => 'Doe',
+            'customer_phone' => '081234567890',
+            'customer_address' => 'Jl. Test No. 123, Jakarta Selatan',
+        ]);
+
+        $response->assertSessionHasErrors('customer_first_name');
+    }
+
+    /**
+     * Test validasi form checkout dengan customer_last_name menggunakan simbol
+     */
+    public function test_validation_fails_when_customer_last_name_has_symbol(): void
+    {
+        $user = User::factory()->create();
+
+        // Test dengan simbol "-"
+        $response = $this->actingAs($user)->from('/checkout')->post('/checkout', [
+            'customer_first_name' => 'John',
+            'customer_last_name' => 'Doe-Smith',
+            'customer_phone' => '081234567890',
+            'customer_address' => 'Jl. Test No. 123, Jakarta Selatan',
+        ]);
+
+        $response->assertSessionHasErrors('customer_last_name');
+    }
+
+    /**
+     * Test validasi form checkout dengan customer_first_name menggunakan simbol
+     */
+    public function test_validation_fails_when_customer_first_name_has_symbol(): void
+    {
+        $user = User::factory()->create();
+
+        // Test dengan simbol "-"
+        $response = $this->actingAs($user)->from('/checkout')->post('/checkout', [
+            'customer_first_name' => 'John-Paul',
+            'customer_last_name' => 'Doe',
+            'customer_phone' => '081234567890',
+            'customer_address' => 'Jl. Test No. 123, Jakarta Selatan',
+        ]);
+
+        $response->assertSessionHasErrors('customer_first_name');
     }
 
     /**
@@ -206,7 +296,8 @@ class CheckoutTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->actingAs($user)->from('/checkout')->post('/checkout', [
-            'customer_name' => 'John Doe',
+            'customer_first_name' => 'John',
+            'customer_last_name' => 'Doe',
             'customer_phone' => '123', // Too short
             'customer_address' => 'Jl. Test No. 123, Jakarta Selatan',
         ]);
@@ -223,7 +314,8 @@ class CheckoutTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->actingAs($user)->from('/checkout')->post('/checkout', [
-            'customer_name' => 'John Doe',
+            'customer_first_name' => 'John',
+            'customer_last_name' => 'Doe',
             'customer_phone' => '081234567890',
             'customer_address' => str_repeat('A', 501), // Too long (max 500)
         ]);
@@ -499,7 +591,8 @@ class CheckoutTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->actingAs($user)->post('/checkout', [
-            'customer_name' => 'John Doe',
+            'customer_first_name' => 'John',
+            'customer_last_name' => 'Doe',
             'customer_phone' => '081234567890',
             'customer_address' => 'Jl. Test No. 123, Jakarta Selatan, 12345',
         ]);
