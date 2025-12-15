@@ -19,6 +19,105 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.0] - 2025-12-15
+
+### Added - Status Update Success Dialog & Favicon Settings
+
+#### Status Update Success Dialog
+- **Success Dialog Component**
+  - Dialog sukses yang muncul setelah update status pesanan berhasil
+  - iOS-style design dengan animasi checkmark
+  - Menampilkan informasi pesanan (nomor, customer, status baru)
+  - Tombol "Kirim via WhatsApp" yang prominent (hijau)
+  - Warna dinamis berdasarkan status (confirmed=biru, preparing=ungu, ready=cyan, delivered=hijau, cancelled=merah)
+
+- **Improved UX Flow**
+  - Setelah password dikonfirmasi → Success Dialog muncul
+  - Admin dapat langsung klik "Kirim via WhatsApp" tanpa navigasi tambahan
+  - One-click WhatsApp notification ke customer
+  - Mengurangi langkah untuk mengirim notifikasi status
+
+#### Favicon Settings
+- **Favicon Upload di Admin Settings**
+  - Admin dapat upload favicon custom untuk browser tab
+  - Support format: PNG, ICO, SVG, JPG, WebP
+  - Ukuran maksimal: 1MB
+  - Preview real-time sebelum save
+
+- **Dynamic Favicon**
+  - Favicon dari settings diterapkan ke semua halaman
+  - Fallback ke default favicon jika tidak diset
+  - Apple touch icon juga menggunakan favicon custom
+
+### Changed
+
+- **Order Detail Page**
+  - Flow update status sekarang menampilkan Success Dialog
+  - Tombol WhatsApp terintegrasi dalam Success Dialog
+  - Mengurangi friction untuk komunikasi dengan customer
+
+- **Admin Settings Page**
+  - Added favicon upload section di bawah logo
+  - Reorganized "Informasi Toko" section
+
+- **app.blade.php**
+  - Dynamic favicon loading dari store settings
+  - Conditional rendering untuk custom vs default favicon
+
+### Technical Details
+
+**New Component:**
+- `resources/js/components/admin/StatusUpdateSuccessDialog.vue`
+  - Props: open, newStatus, newStatusLabel, orderNumber, customerName, whatsappUrl
+  - Emits: update:open, close, sendWhatsApp
+  - Uses motion-v untuk animasi iOS-style
+
+**Backend Changes:**
+- `app/Services/StoreSettingService.php`
+  - Added `store_favicon` to `DEFAULT_SETTINGS`
+  - Updated `getStoreBranding()` untuk include favicon
+
+- `app/Http/Controllers/Admin/StoreSettingController.php`
+  - Added `uploadFavicon()` method
+
+- `app/Http/Requests/Admin/UpdateStoreSettingsRequest.php`
+  - Added validation rules untuk `store_favicon`
+
+- `routes/web.php`
+  - Added route `POST /admin/settings/upload-favicon`
+
+**Frontend Changes:**
+- `resources/js/pages/Admin/Orders/Show.vue`
+  - Integrated StatusUpdateSuccessDialog
+  - Added success dialog state management
+  - Added WhatsApp handler dari success dialog
+
+- `resources/js/pages/Admin/Settings/Index.vue`
+  - Added favicon upload UI
+  - Added favicon preview dan upload handlers
+
+- `resources/views/app.blade.php`
+  - Dynamic favicon dari store settings
+  - Conditional fallback ke default
+
+### Documentation
+
+- Updated `handover-doc/03_ADMIN_DOCUMENTATION/04_Settings_Configuration.md`
+  - Added favicon settings documentation
+  - Added upload-favicon endpoint
+
+- Updated `handover-doc/03_ADMIN_DOCUMENTATION/05_Order_Management.md`
+  - Added Success Dialog documentation
+  - Updated status update flow dengan dialog
+
+### Testing
+
+- Build successful dengan `yarn run build`
+- No linting errors
+- All existing functionality preserved
+
+---
+
 ## [1.4.0] - 2025-12-15
 
 ### Added - Multi-Region Phone Formatting & CSRF Token Fix
@@ -566,6 +665,7 @@ None introduced in this release.
 
 | Version | Release Date | Key Features |
 |---------|--------------|--------------|
+| 1.5.0   | 2025-12-15   | Status Update Success Dialog, Favicon Settings, WhatsApp Integration UX |
 | 1.4.0   | 2025-12-15   | Multi-Region Phone Formatting, CSRF Token Fix, usePhoneFormat Composable |
 | 1.3.0   | 2025-12-10   | Admin Table Sorting, iOS Badge & Table Styling, Dynamic Auth Logo |
 | 1.2.0   | 2025-12-10   | Store Branding, Checkout Autofill, WhatsApp Phone Formatting |
@@ -575,6 +675,50 @@ None introduced in this release.
 ---
 
 ## Upgrade Guide
+
+### From 1.4.0 to 1.5.0
+
+#### Database Changes
+
+```bash
+# Run seeder untuk menambahkan store_favicon default
+php artisan db:seed --class=StoreSettingSeeder
+```
+
+**Store Settings Keys Added:**
+- `store_favicon` (string, nullable) - Path favicon toko
+
+#### Configuration Changes
+
+1. **Favicon Setup (Optional)**
+   ```bash
+   # Login as admin
+   # Navigate to: /admin/settings
+   # Upload favicon di section "Informasi Toko"
+   # Format: PNG, ICO, SVG (rekomendasi: 32x32px atau 64x64px)
+   ```
+
+2. **No Migration Required**
+   - Menggunakan existing `store_settings` table
+   - New key ditambahkan via seeder
+
+#### Code Changes
+
+- No breaking changes
+- Success Dialog otomatis muncul setelah update status
+- Favicon dari settings otomatis diterapkan
+
+#### Assets Rebuild
+
+```bash
+# Rebuild frontend assets untuk component baru
+yarn install
+yarn run build
+# atau untuk development
+yarn run dev
+```
+
+---
 
 ### From 1.3.0 to 1.4.0
 

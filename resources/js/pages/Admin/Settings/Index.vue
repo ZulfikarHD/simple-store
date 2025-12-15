@@ -80,6 +80,7 @@ interface Settings {
     store_name: string
     store_tagline: string
     store_logo: string | null
+    store_favicon: string | null
     store_address: string
     store_phone: string
     whatsapp_number: string
@@ -134,6 +135,7 @@ const form = ref<Settings>({
     store_name: props.settings.store_name || '',
     store_tagline: props.settings.store_tagline || '',
     store_logo: props.settings.store_logo || null,
+    store_favicon: props.settings.store_favicon || null,
     store_address: props.settings.store_address || '',
     store_phone: props.settings.store_phone || '',
     whatsapp_number: props.settings.whatsapp_number || '',
@@ -161,6 +163,11 @@ const newArea = ref('')
 const logoInput = ref<HTMLInputElement | null>(null)
 const logoPreview = ref<string | null>(props.settings.store_logo ? `/storage/${props.settings.store_logo}` : null)
 const isUploadingLogo = ref(false)
+
+// Favicon upload refs
+const faviconInput = ref<HTMLInputElement | null>(null)
+const faviconPreview = ref<string | null>(props.settings.store_favicon ? `/storage/${props.settings.store_favicon}` : null)
+const isUploadingFavicon = ref(false)
 
 // Errors
 const errors = ref<Record<string, string>>({})
@@ -267,6 +274,95 @@ function removeLogo() {
     haptic.light()
     form.value.store_logo = null
     logoPreview.value = null
+}
+
+/**
+ * Trigger file input untuk favicon upload
+ */
+function triggerFaviconUpload() {
+    faviconInput.value?.click()
+}
+
+/**
+ * Handle favicon file selection dan upload
+ */
+async function handleFaviconUpload(event: Event) {
+    const target = event.target as HTMLInputElement
+    const file = target.files?.[0]
+
+    if (!file) return
+
+    // Validasi file type
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/x-icon', 'image/svg+xml']
+    if (!allowedTypes.includes(file.type)) {
+        errors.value.store_favicon = 'File harus berupa gambar (PNG, JPG, WebP, ICO, atau SVG)'
+        haptic.error()
+        return
+    }
+
+    // Validasi file size (max 1MB)
+    if (file.size > 1 * 1024 * 1024) {
+        errors.value.store_favicon = 'Ukuran file maksimal 1MB'
+        haptic.error()
+        return
+    }
+
+    isUploadingFavicon.value = true
+    haptic.selection()
+
+    try {
+        const formData = new FormData()
+        formData.append('favicon', file)
+
+        const response = await fetch('/admin/settings/upload-favicon', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': getCsrfToken(),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            },
+            credentials: 'same-origin',
+        })
+
+        // Handle 419 CSRF token mismatch - refresh halaman untuk mendapatkan token baru
+        if (response.status === 419) {
+            errors.value.store_favicon = 'Sesi telah berakhir. Halaman akan di-refresh...'
+            haptic.error()
+            setTimeout(() => {
+                window.location.reload()
+            }, 1500)
+            return
+        }
+
+        const data = await response.json()
+
+        if (data.success) {
+            form.value.store_favicon = data.path
+            faviconPreview.value = `/storage/${data.path}`
+            delete errors.value.store_favicon
+            haptic.success()
+        } else {
+            errors.value.store_favicon = data.message || 'Gagal mengupload favicon'
+            haptic.error()
+        }
+    } catch {
+        errors.value.store_favicon = 'Gagal mengupload favicon'
+        haptic.error()
+    } finally {
+        isUploadingFavicon.value = false
+        // Reset input
+        if (target) target.value = ''
+    }
+}
+
+/**
+ * Hapus favicon yang sudah diupload
+ */
+function removeFavicon() {
+    haptic.light()
+    form.value.store_favicon = null
+    faviconPreview.value = null
 }
 
 /**
@@ -474,6 +570,73 @@ function submitForm() {
                                             </div>
                                             <p class="hint">Format: JPG, PNG, atau WebP. Maksimal 2MB. Rekomendasi: 200x200px</p>
                                             <InputError :message="errors.store_logo" />
+                                        </div>
+
+                                        <!-- Store Favicon -->
+                                        <div class="admin-input-group">
+                                            <Label class="flex items-center gap-2">
+                                                <ImagePlus class="h-4 w-4 text-primary" />
+                                                Favicon Toko
+                                            </Label>
+                                            <div class="flex items-center gap-4">
+                                                <!-- Favicon Preview -->
+                                                <div
+                                                    class="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-border bg-muted/30"
+                                                    :class="{ 'border-primary': isUploadingFavicon }"
+                                                >
+                                                    <img
+                                                        v-if="faviconPreview"
+                                                        :src="faviconPreview"
+                                                        alt="Favicon Preview"
+                                                        class="h-full w-full object-contain"
+                                                    />
+                                                    <svg v-else class="h-6 w-6 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                                                        <circle cx="12" cy="12" r="3" />
+                                                    </svg>
+                                                    <!-- Loading overlay -->
+                                                    <div
+                                                        v-if="isUploadingFavicon"
+                                                        class="absolute inset-0 flex items-center justify-center bg-background/80"
+                                                    >
+                                                        <div class="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                                                    </div>
+                                                </div>
+                                                <!-- Upload/Remove buttons -->
+                                                <div class="flex flex-col gap-2">
+                                                    <input
+                                                        ref="faviconInput"
+                                                        type="file"
+                                                        accept="image/png,image/jpeg,image/webp,image/x-icon,image/svg+xml"
+                                                        class="hidden"
+                                                        @change="handleFaviconUpload"
+                                                    />
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        class="ios-button gap-2"
+                                                        :disabled="isUploadingFavicon"
+                                                        @click="triggerFaviconUpload"
+                                                    >
+                                                        <ImagePlus class="h-4 w-4" />
+                                                        {{ faviconPreview ? 'Ganti Favicon' : 'Upload Favicon' }}
+                                                    </Button>
+                                                    <Button
+                                                        v-if="faviconPreview"
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        class="ios-button gap-2 text-destructive hover:text-destructive"
+                                                        @click="removeFavicon"
+                                                    >
+                                                        <Trash2 class="h-4 w-4" />
+                                                        Hapus Favicon
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                            <p class="hint">Format: PNG, ICO, atau SVG. Maksimal 1MB. Rekomendasi: 32x32px atau 64x64px</p>
+                                            <InputError :message="errors.store_favicon" />
                                         </div>
 
                                         <!-- Store Name -->

@@ -37,6 +37,7 @@ Halaman Pengaturan Toko merupakan pusat konfigurasi untuk mengelola semua aspek 
 | `store_name` | string | "Simple Store" | Nama toko |
 | `store_tagline` | string | "" | Tagline toko |
 | `store_logo` | string | null | Path logo toko |
+| `store_favicon` | string | null | Path favicon toko |
 | `store_address` | string | "" | Alamat fisik toko |
 | `store_phone` | string | "" | Nomor telepon toko |
 | `whatsapp_number` | string | "" | Nomor WhatsApp bisnis |
@@ -74,6 +75,34 @@ Pengaturan logo yang ditampilkan di header storefront.
 1. Klik tombol "Hapus Logo"
 2. Logo akan dihapus dari storage
 3. Toko akan tampil tanpa logo
+
+### Favicon Toko
+
+**Field**: `store_favicon`
+
+Pengaturan favicon (icon browser tab) yang ditampilkan di browser.
+
+**Specifications:**
+- Format: PNG, ICO, SVG, JPG, WebP
+- Ukuran maksimal: 1MB
+- Resolusi rekomendasi: 32x32px atau 64x64px
+
+**Cara Upload:**
+1. Klik tombol "Upload Favicon" di section Informasi Toko
+2. Pilih file gambar dari device
+3. Gambar langsung diupload (AJAX)
+4. Preview update secara real-time
+5. Klik "Simpan Pengaturan" untuk finalisasi
+
+**Cara Menghapus:**
+1. Klik tombol "Hapus Favicon"
+2. Favicon akan dihapus dari storage
+3. Browser akan menggunakan favicon default
+
+**Catatan:**
+- Favicon akan muncul di tab browser untuk semua halaman
+- Jika tidak diset, sistem menggunakan `/favicon.ico` default
+- Perubahan favicon mungkin memerlukan hard refresh (Ctrl+F5)
 
 ### Nama Toko
 
@@ -467,6 +496,7 @@ Jika validasi gagal:
 | `/admin/settings` | GET | Tampilkan halaman settings |
 | `/admin/settings` | PATCH | Update settings |
 | `/admin/settings/upload-logo` | POST | Upload logo toko |
+| `/admin/settings/upload-favicon` | POST | Upload favicon toko |
 
 ### Request Body (PATCH)
 

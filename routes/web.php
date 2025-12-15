@@ -56,6 +56,7 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::get('/settings', [StoreSettingController::class, 'index'])->name('settings.index');
     Route::patch('/settings', [StoreSettingController::class, 'update'])->name('settings.update');
     Route::post('/settings/upload-logo', [StoreSettingController::class, 'uploadLogo'])->name('settings.uploadLogo');
+    Route::post('/settings/upload-favicon', [StoreSettingController::class, 'uploadFavicon'])->name('settings.uploadFavicon');
 
     // API routes untuk mobile alert system (polling pending orders)
     Route::get('/api/orders/pending', [OrderApiController::class, 'pendingOrders'])->name('api.orders.pending');

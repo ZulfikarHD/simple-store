@@ -228,13 +228,25 @@ Tombol untuk mengirim notifikasi ke customer via WhatsApp:
 **Via Detail Page:**
 1. Buka halaman detail pesanan
 2. Pilih status baru dari dropdown/buttons
-3. Konfirmasi perubahan
-4. Status terupdate dengan timestamp
+3. Klik tombol "Update Status"
+4. Muncul dialog konfirmasi perubahan status
+5. Klik "Ya, Lanjutkan" untuk melanjutkan
+6. Muncul dialog verifikasi password admin
+7. Masukkan password dan klik "Update Status"
+8. **Muncul Success Dialog** dengan informasi:
+   - Icon checkmark dengan animasi sukses
+   - Informasi pesanan (nomor, customer, status baru)
+   - Tombol "Kirim via WhatsApp" (hijau, prominent)
+   - Tombol "Tutup"
+9. Klik "Kirim via WhatsApp" untuk langsung mengirim notifikasi ke customer
+10. Atau klik "Tutup" untuk menutup dialog
 
 **Via Quick Actions (Mobile):**
 1. Di daftar pesanan, tap order card
 2. Gunakan quick action buttons
-3. Status langsung terupdate
+3. Konfirmasi perubahan status
+4. Masukkan password untuk verifikasi
+5. **Success Dialog** muncul dengan opsi WhatsApp
 
 ### Pembatalan Pesanan
 
@@ -272,6 +284,25 @@ Dari halaman detail pesanan, admin dapat mengirim pesan WhatsApp dengan template
 | **Ready** | Memberitahu pesanan siap diambil/dikirim |
 | **Delivered** | Konfirmasi pesanan sudah diterima |
 | **Cancelled** | Memberitahu pembatalan beserta alasan |
+
+### Success Dialog dengan WhatsApp
+
+Setelah update status berhasil, sistem menampilkan **Success Dialog** yang memudahkan admin untuk langsung mengirim notifikasi WhatsApp:
+
+**Fitur Success Dialog:**
+1. **Visual Feedback** - Icon checkmark dengan animasi sukses
+2. **Informasi Pesanan** - Menampilkan nomor pesanan, nama customer, dan status baru
+3. **Tombol WhatsApp** - Tombol hijau prominent "Kirim via WhatsApp"
+4. **One-Click Send** - Langsung membuka WhatsApp dengan template message yang sesuai status
+
+**Warna Status pada Dialog:**
+| Status | Warna |
+|--------|-------|
+| Confirmed | 🔵 Biru |
+| Preparing | 🟣 Ungu |
+| Ready | 🟢 Cyan |
+| Delivered | 🟢 Hijau |
+| Cancelled | 🔴 Merah |
 
 ### Format Pesan
 

@@ -31,6 +31,7 @@ import {
     SheetFooter,
 } from '@/components/ui/sheet'
 import PasswordConfirmDialog from '@/components/admin/PasswordConfirmDialog.vue'
+import StatusUpdateSuccessDialog from '@/components/admin/StatusUpdateSuccessDialog.vue'
 import PriceDisplay from '@/components/store/PriceDisplay.vue'
 import PullToRefresh from '@/components/mobile/PullToRefresh.vue'
 import { type BreadcrumbItem } from '@/types'
@@ -144,6 +145,8 @@ const selectedStatus = ref(props.order.status)
 const cancellationReason = ref('')
 const showConfirmDialog = ref(false)
 const showPasswordDialog = ref(false)
+const showSuccessDialog = ref(false)
+const successStatus = ref('')
 const isUpdating = ref(false)
 const showMobileStatusSheet = ref(false)
 
@@ -288,21 +291,28 @@ function proceedToPasswordVerification() {
 
 /**
  * Eksekusi update status setelah password diverifikasi (tahap 3)
+ * Setelah sukses akan menampilkan success dialog dengan opsi WhatsApp
  */
 function executeStatusUpdate() {
     haptic.heavy()
     isUpdating.value = true
     showPasswordDialog.value = false
 
+    // Simpan status yang akan diupdate untuk success dialog
+    const statusToUpdate = selectedStatus.value
+
     router.patch(
         updateStatus(props.order.id).url,
         {
-            status: selectedStatus.value,
+            status: statusToUpdate,
             cancellation_reason: isCancelledStatus.value ? cancellationReason.value : null,
         },
         {
             onSuccess: () => {
                 haptic.success()
+                // Tampilkan success dialog dengan status yang baru
+                successStatus.value = statusToUpdate
+                showSuccessDialog.value = true
             },
             onError: () => {
                 haptic.error()
@@ -312,6 +322,23 @@ function executeStatusUpdate() {
             },
         }
     )
+}
+
+/**
+ * Handle kirim WhatsApp dari success dialog
+ */
+function handleSuccessWhatsApp() {
+    const url = props.whatsappUrls[successStatus.value as keyof WhatsAppUrls]
+    if (url) {
+        window.open(url, '_blank')
+    }
+}
+
+/**
+ * Handle tutup success dialog
+ */
+function handleSuccessDialogClose() {
+    showSuccessDialog.value = false
 }
 
 /**
@@ -955,5 +982,17 @@ function makeCall(phone: string) {
         :loading="isUpdating"
         @confirm="executeStatusUpdate"
         @cancel="handlePasswordDialogCancel"
+    />
+
+    <!-- Success Dialog setelah update status -->
+    <StatusUpdateSuccessDialog
+        v-model:open="showSuccessDialog"
+        :new-status="successStatus"
+        :new-status-label="statuses[successStatus] || ''"
+        :order-number="order.order_number"
+        :customer-name="order.customer_name"
+        :whatsapp-url="whatsappUrls[successStatus as keyof WhatsAppUrls]"
+        @close="handleSuccessDialogClose"
+        @send-whats-app="handleSuccessWhatsApp"
     />
 </template>

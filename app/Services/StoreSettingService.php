@@ -21,6 +21,7 @@ class StoreSettingService
         'store_name' => ['value' => 'Simple Store', 'type' => 'string', 'group' => 'general'],
         'store_tagline' => ['value' => 'Premium Quality Products', 'type' => 'string', 'group' => 'general'],
         'store_logo' => ['value' => '', 'type' => 'string', 'group' => 'general'],
+        'store_favicon' => ['value' => '', 'type' => 'string', 'group' => 'general'],
         'store_address' => ['value' => '', 'type' => 'text', 'group' => 'general'],
         'store_phone' => ['value' => '', 'type' => 'string', 'group' => 'general'],
         'whatsapp_number' => ['value' => '', 'type' => 'string', 'group' => 'whatsapp'],
@@ -246,7 +247,7 @@ class StoreSettingService
      * Mendapatkan data branding toko untuk shared props
      * yang digunakan di seluruh aplikasi
      *
-     * @return array{name: string, tagline: string, logo: string|null}
+     * @return array{name: string, tagline: string, logo: string|null, favicon: string|null}
      */
     public function getStoreBranding(): array
     {
@@ -254,6 +255,7 @@ class StoreSettingService
             'name' => $this->getSetting('store_name', 'Simple Store'),
             'tagline' => $this->getSetting('store_tagline', 'Premium Quality Products'),
             'logo' => $this->getSetting('store_logo'),
+            'favicon' => $this->getSetting('store_favicon'),
         ];
     }
 

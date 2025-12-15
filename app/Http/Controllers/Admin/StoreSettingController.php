@@ -92,4 +92,42 @@ class StoreSettingController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Upload favicon toko dengan image processing dan optimasi
+     * Mengembalikan JSON response dengan path favicon yang tersimpan
+     */
+    public function uploadFavicon(Request $request): JsonResponse
+    {
+        $request->validate([
+            'favicon' => ['required', 'image', 'mimes:jpg,jpeg,png,webp,ico,svg', 'max:1024'],
+        ], [
+            'favicon.required' => 'File favicon wajib diupload.',
+            'favicon.image' => 'File harus berupa gambar.',
+            'favicon.mimes' => 'Format gambar harus JPG, PNG, WebP, ICO, atau SVG.',
+            'favicon.max' => 'Ukuran file maksimal 1MB.',
+        ]);
+
+        try {
+            // Hapus favicon lama jika ada
+            $oldFavicon = $this->settingService->getSetting('store_favicon');
+            if ($oldFavicon) {
+                $this->imageService->deleteImage($oldFavicon);
+            }
+
+            // Upload dan optimasi favicon baru ke direktori 'branding'
+            $path = $this->imageService->uploadAndOptimize($request->file('favicon'), 'branding');
+
+            return response()->json([
+                'success' => true,
+                'path' => $path,
+                'message' => 'Favicon berhasil diupload.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengupload favicon: '.$e->getMessage(),
+            ], 500);
+        }
+    }
 }
