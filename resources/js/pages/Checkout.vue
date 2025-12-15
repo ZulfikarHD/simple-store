@@ -351,8 +351,8 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
                                 </div>
                             </div>
                             <p class="text-xs text-muted-foreground">
-                                Gunakan nama asli tanpa gelar (Pak, Bu, Mr, Mrs, dll) dan tanpa simbol (-)</p>
-                            </div>
+                                Gunakan nama asli tanpa gelar (Pak, Bu, Mr, Mrs, dll) dan tanpa simbol (-)
+                            </p>
 
                             <!-- Nomor Telepon -->
                             <div class="space-y-2">
