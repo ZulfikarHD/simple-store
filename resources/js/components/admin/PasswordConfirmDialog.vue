@@ -81,16 +81,16 @@ function togglePasswordVisibility(): void {
 }
 
 /**
- * Refresh CSRF cookie sebelum request
- * untuk memastikan token tidak expired
+ * Get CSRF token dari meta tag
+ * Laravel Inertia menyediakan CSRF token melalui meta tag di head
  */
-async function refreshCsrfCookie(): Promise<void> {
-    await axios.get('/sanctum/csrf-cookie')
+function getCsrfToken(): string {
+    return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
 }
 
 /**
  * Handle submit form untuk verifikasi password
- * menggunakan axios dengan withCredentials untuk XSRF cookie handling
+ * menggunakan axios dengan CSRF token dari meta tag
  */
 async function handleSubmit(): Promise<void> {
     if (!password.value.trim()) {
@@ -103,15 +103,13 @@ async function handleSubmit(): Promise<void> {
     error.value = null
 
     try {
-        // Refresh CSRF cookie terlebih dahulu untuk menghindari token mismatch
-        await refreshCsrfCookie()
-
         const response = await axios.post('/admin/api/verify-password', {
             password: password.value,
         }, {
             headers: {
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': getCsrfToken(),
             },
             withCredentials: true,
         })

@@ -1,0 +1,1 @@
+import{r as t,c as n}from"./app-DSPqtYEA.js";function u(){const e=t(!1);function a(){e.value=!0,setTimeout(()=>{e.value=!1},500)}const s=n(()=>e.value?"animate-ios-shake":"");return{isShaking:e,shake:a,shakeClass:s}}export{u};

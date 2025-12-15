@@ -181,16 +181,11 @@ function triggerLogoUpload() {
 }
 
 /**
- * Refresh CSRF cookie untuk menghindari token mismatch
+ * Get CSRF token dari meta tag
+ * Laravel Inertia menyediakan CSRF token melalui meta tag di head
  */
-async function refreshCsrfCookie(): Promise<void> {
-    try {
-        await fetch('/sanctum/csrf-cookie', {
-            credentials: 'same-origin',
-        })
-    } catch (error) {
-        console.warn('Failed to refresh CSRF cookie:', error)
-    }
+function getCsrfToken(): string {
+    return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
 }
 
 /**
@@ -220,32 +215,27 @@ async function handleLogoUpload(event: Event) {
     haptic.selection()
 
     try {
-        // Refresh CSRF cookie terlebih dahulu
-        await refreshCsrfCookie()
-
         const formData = new FormData()
         formData.append('logo', file)
-
-        // Ambil fresh CSRF token dari cookie
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-            || document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='))?.split('=')[1]
-            || ''
 
         const response = await fetch('/admin/settings/upload-logo', {
             method: 'POST',
             body: formData,
             headers: {
-                'X-CSRF-TOKEN': decodeURIComponent(csrfToken),
+                'X-CSRF-TOKEN': getCsrfToken(),
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json',
             },
             credentials: 'same-origin',
         })
 
-        // Handle 419 CSRF token mismatch
+        // Handle 419 CSRF token mismatch - refresh halaman untuk mendapatkan token baru
         if (response.status === 419) {
-            errors.value.store_logo = 'Sesi telah berakhir. Silakan refresh halaman.'
+            errors.value.store_logo = 'Sesi telah berakhir. Halaman akan di-refresh...'
             haptic.error()
+            setTimeout(() => {
+                window.location.reload()
+            }, 1500)
             return
         }
 
