@@ -82,14 +82,16 @@ Manajemen Pesanan pada Simple Store merupakan modul yang bertujuan untuk mengelo
 
 ### Detail Status
 
-| Status | Badge Color | Icon | Deskripsi |
-|--------|-------------|------|-----------|
+| Status | Badge Color | Default Icon | Deskripsi |
+|--------|-------------|--------------|-----------|
 | **Pending** | 🟡 Amber | ⏳ Clock | Pesanan baru, menunggu konfirmasi |
-| **Confirmed** | 🔵 Blue | ✅ CheckCircle | Pesanan dikonfirmasi, akan diproses |
-| **Preparing** | 🟣 Purple | 👨‍🍳 Chef Hat | Pesanan sedang disiapkan |
-| **Ready** | 🟢 Green | 🚚 Truck | Pesanan siap diambil/dikirim |
-| **Delivered** | ⚫ Gray | ✔️ Circle Check | Pesanan selesai |
-| **Cancelled** | 🔴 Red | ❌ X Circle | Pesanan dibatalkan |
+| **Confirmed** | 🔵 Blue | ✅ CheckCircle2 | Pesanan dikonfirmasi, akan diproses |
+| **Preparing** | 🟣 Purple | 👨‍🍳 ChefHat | Pesanan sedang disiapkan |
+| **Ready** | 🟢 Green | 📦 Package | Pesanan siap diambil/dikirim |
+| **Delivered** | ⚫ Gray | 🚚 Truck | Pesanan selesai |
+| **Cancelled** | 🔴 Red | ❌ XCircle | Pesanan dibatalkan |
+
+> **Note**: Icon timeline dapat dikustomisasi melalui **Pengaturan Toko** > **Icon Timeline Status**. Lihat [04_Settings_Configuration.md](04_Settings_Configuration.md) untuk detail.
 
 ### Timestamp Tracking
 
@@ -304,42 +306,52 @@ Setelah update status berhasil, sistem menampilkan **Success Dialog** yang memud
 | Delivered | 🟢 Hijau |
 | Cancelled | 🔴 Merah |
 
-### Format Pesan
+### Format Pesan (Customizable)
 
-**Konfirmasi Pesanan:**
+Template pesan WhatsApp dapat dikustomisasi melalui **Pengaturan Toko** > **Template Pesan WhatsApp**.
+
+**Default Template Konfirmasi:**
 ```
-Halo [Nama Customer],
+Halo *{customer_name}*! 👋
 
-Pesanan Anda #ORD-XXXXXX telah dikonfirmasi! ✅
+Pesanan Anda dengan nomor *#{order_number}* telah *DIKONFIRMASI*. ✅
 
-Kami akan segera memprosesnya.
+Total: *{total}*
 
-Terima kasih telah berbelanja di [Nama Toko]!
-```
-
-**Pesanan Siap:**
-```
-Halo [Nama Customer],
-
-Pesanan Anda #ORD-XXXXXX sudah siap! 📦
-
-Silakan segera ambil pesanan Anda.
-
-Terima kasih telah berbelanja di [Nama Toko]!
+Pesanan sedang kami proses. Terima kasih telah berbelanja di {store_name}! 🙏
 ```
 
-**Pembatalan:**
+**Default Template Siap:**
 ```
-Halo [Nama Customer],
+Halo *{customer_name}*! 👋
 
-Mohon maaf, pesanan Anda #ORD-XXXXXX terpaksa dibatalkan.
+Pesanan *#{order_number}* sudah *SIAP*! 🎉
 
-Alasan: [Alasan Pembatalan]
-
-Silakan hubungi kami untuk informasi lebih lanjut.
-
-Terima kasih atas pengertiannya.
+Silakan ambil pesanan Anda atau tunggu pengiriman. Terima kasih! 🙏
 ```
+
+**Default Template Pembatalan:**
+```
+Halo *{customer_name}*,
+
+Mohon maaf, pesanan *#{order_number}* telah *DIBATALKAN*. ❌
+
+{cancellation_reason}
+
+Silakan hubungi kami jika ada pertanyaan. Terima kasih. 🙏
+```
+
+### Variabel Template
+
+| Variabel | Deskripsi |
+|----------|-----------|
+| `{customer_name}` | Nama customer |
+| `{order_number}` | Nomor pesanan |
+| `{total}` | Total pesanan (formatted) |
+| `{store_name}` | Nama toko |
+| `{cancellation_reason}` | Alasan pembatalan |
+
+> **Lihat**: [04_Settings_Configuration.md](04_Settings_Configuration.md) untuk panduan lengkap customisasi template.
 
 ---
 

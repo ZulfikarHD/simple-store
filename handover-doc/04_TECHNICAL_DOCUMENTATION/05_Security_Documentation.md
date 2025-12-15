@@ -218,6 +218,103 @@ Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; 
 
 ---
 
+## Template Injection Prevention (OWASP A03:2021)
+
+### WhatsApp Template Validation
+
+Template pesan WhatsApp divalidasi untuk mencegah injection attacks:
+
+```php
+// app/Http/Requests/Admin/UpdateStoreSettingsRequest.php
+private function templateSafetyRule(): \Closure
+{
+    return function (string $attribute, mixed $value, \Closure $fail): void {
+        // Pola berbahaya yang tidak diperbolehkan
+        $dangerousPatterns = [
+            '/<script/i',           // Script tags
+            '/javascript:/i',       // JavaScript protocol
+            '/on\w+\s*=/i',         // Event handlers
+            '/<iframe/i',           // Iframe injection
+            // ... more patterns
+        ];
+
+        foreach ($dangerousPatterns as $pattern) {
+            if (preg_match($pattern, $value)) {
+                $fail('Template mengandung konten yang tidak diperbolehkan.');
+                return;
+            }
+        }
+    };
+}
+```
+
+### Variable Validation
+
+Hanya variabel yang diizinkan yang dapat digunakan dalam template:
+
+```php
+$allowedVariables = [
+    '{customer_name}',
+    '{order_number}',
+    '{total}',
+    '{store_name}',
+    '{cancellation_reason}',
+];
+
+// Validasi semua variabel dalam template
+preg_match_all('/\{[^}]+\}/', $value, $matches);
+foreach ($matches[0] as $variable) {
+    if (!in_array($variable, $allowedVariables, true)) {
+        $fail("Variabel '{$variable}' tidak valid.");
+    }
+}
+```
+
+### Data Sanitization
+
+User data yang dimasukkan ke template di-sanitize:
+
+```php
+// app/Services/StoreSettingService.php
+private function sanitizeForTemplate(?string $value): string
+{
+    if ($value === null) return '';
+
+    // Remove null bytes dan control characters
+    $value = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $value);
+
+    // Limit length untuk mencegah buffer overflow
+    $value = mb_substr($value, 0, 500);
+
+    // Escape special characters
+    $value = str_replace(['\\', '{', '}'], ['\\\\', '\\{', '\\}'], $value);
+
+    return $value;
+}
+```
+
+### Icon Whitelist Validation
+
+Timeline icons divalidasi dengan whitelist untuk mencegah component injection:
+
+```php
+private function allowedIconsRule(): \Closure
+{
+    return function (string $attribute, mixed $value, \Closure $fail): void {
+        $allowedIcons = [
+            'Clock', 'Timer', 'Hourglass', 'CalendarClock',
+            'CheckCircle2', 'CircleCheck', 'Check', // ...
+        ];
+
+        if (!in_array($value, $allowedIcons, true)) {
+            $fail('Icon yang dipilih tidak valid.');
+        }
+    };
+}
+```
+
+---
+
 ## SQL Injection Prevention
 
 ### Eloquent ORM

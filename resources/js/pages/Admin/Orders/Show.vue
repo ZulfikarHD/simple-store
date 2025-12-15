@@ -60,6 +60,32 @@ import {
     Check,
     Loader2,
     Navigation,
+    // Additional timeline icons
+    Timer,
+    Hourglass,
+    CalendarClock,
+    CircleCheck,
+    CircleCheckBig,
+    BadgeCheck,
+    Utensils,
+    Flame,
+    CookingPot,
+    RefreshCw,
+    Box,
+    Gift,
+    Archive,
+    PackageCheck,
+    Car,
+    Bike,
+    Send,
+    X,
+    Ban,
+    CircleX,
+    AlertCircle,
+    ShoppingCart,
+    Star,
+    Heart,
+    ThumbsUp,
 } from 'lucide-vue-next'
 import { ref, computed } from 'vue'
 import { Motion } from 'motion-v'
@@ -121,10 +147,21 @@ interface WhatsAppUrls {
     cancelled: string
 }
 
+interface TimelineIcons {
+    created: string
+    pending: string
+    confirmed: string
+    preparing: string
+    ready: string
+    delivered: string
+    cancelled: string
+}
+
 interface Props {
     order: Order
     statuses: Record<string, string>
     whatsappUrls: WhatsAppUrls
+    timelineIcons: TimelineIcons
 }
 
 const props = defineProps<Props>()
@@ -212,11 +249,63 @@ function getStatusClass(orderStatus: string): string {
 }
 
 /**
+ * Icon components mapping untuk render dinamis dari settings
+ */
+const iconComponents: Record<string, typeof Clock> = {
+    Clock,
+    Timer,
+    Hourglass,
+    CalendarClock,
+    CheckCircle2,
+    CircleCheck,
+    Check,
+    CircleCheckBig,
+    BadgeCheck,
+    ChefHat,
+    Utensils,
+    Flame,
+    CookingPot,
+    Loader: RefreshCw,
+    RefreshCw,
+    Package,
+    Box,
+    Gift,
+    Archive,
+    PackageCheck,
+    Truck,
+    Car,
+    Bike,
+    Send,
+    Navigation,
+    XCircle,
+    X,
+    Ban,
+    CircleX,
+    AlertCircle,
+    ShoppingBag,
+    ShoppingCart,
+    Receipt,
+    FileText,
+    Star,
+    Heart,
+    ThumbsUp,
+}
+
+/**
  * Get timeline icon berdasarkan status
+ * Menggunakan dynamic icons dari props.timelineIcons (configurable di settings)
  */
 function getTimelineIcon(status: string) {
+    // Gunakan icon dari settings jika tersedia
+    const iconName = props.timelineIcons?.[status as keyof TimelineIcons]
+    if (iconName && iconComponents[iconName]) {
+        return iconComponents[iconName]
+    }
+
+    // Fallback ke default icons
     switch (status) {
         case 'created':
+        case 'pending':
             return Clock
         case 'confirmed':
             return CheckCircle2

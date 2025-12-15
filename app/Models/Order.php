@@ -217,8 +217,29 @@ class Order extends Model
     /**
      * Generate WhatsApp message dari owner ke customer
      * untuk konfirmasi atau update status pesanan
+     * Menggunakan template dari settings yang dapat di-customize oleh admin
      */
     public function generateOwnerToCustomerMessage(string $type = 'confirmed'): string
+    {
+        $settingService = app(\App\Services\StoreSettingService::class);
+
+        // Ambil template dari settings
+        $template = $settingService->getWhatsAppTemplate($type);
+
+        // Jika template kosong, gunakan default fallback
+        if (empty(trim($template))) {
+            return $this->getDefaultOwnerToCustomerMessage($type);
+        }
+
+        // Parse template dengan variabel order
+        return $settingService->parseTemplateVariables($template, $this);
+    }
+
+    /**
+     * Get default message sebagai fallback jika template kosong
+     * Mempertahankan format original untuk backward compatibility
+     */
+    private function getDefaultOwnerToCustomerMessage(string $type): string
     {
         $storeName = \App\Models\StoreSetting::get('store_name', 'Toko Kami');
 

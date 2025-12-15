@@ -44,6 +44,48 @@ class StoreSettingService
         'minimum_order' => ['value' => 0, 'type' => 'integer', 'group' => 'delivery'],
         'auto_cancel_minutes' => ['value' => 30, 'type' => 'integer', 'group' => 'orders'],
         'auto_cancel_enabled' => ['value' => true, 'type' => 'boolean', 'group' => 'orders'],
+
+        // WhatsApp Message Templates
+        'whatsapp_template_confirmed' => [
+            'value' => "Halo *{customer_name}*! 👋\n\nPesanan Anda dengan nomor *#{order_number}* telah *DIKONFIRMASI*. ✅\n\nTotal: *{total}*\n\nPesanan sedang kami proses. Terima kasih telah berbelanja di {store_name}! 🙏",
+            'type' => 'text',
+            'group' => 'whatsapp_templates',
+        ],
+        'whatsapp_template_preparing' => [
+            'value' => "Halo *{customer_name}*! 👋\n\nPesanan *#{order_number}* sedang *DIPROSES*. 🔄\n\nMohon tunggu sebentar ya. Terima kasih! 🙏",
+            'type' => 'text',
+            'group' => 'whatsapp_templates',
+        ],
+        'whatsapp_template_ready' => [
+            'value' => "Halo *{customer_name}*! 👋\n\nPesanan *#{order_number}* sudah *SIAP*! 🎉\n\nSilakan ambil pesanan Anda atau tunggu pengiriman. Terima kasih! 🙏",
+            'type' => 'text',
+            'group' => 'whatsapp_templates',
+        ],
+        'whatsapp_template_delivered' => [
+            'value' => "Halo *{customer_name}*! 👋\n\nPesanan *#{order_number}* telah *DIKIRIM/SELESAI*. ✅\n\nTerima kasih telah berbelanja di {store_name}! Semoga puas dengan pesanan Anda. 🙏",
+            'type' => 'text',
+            'group' => 'whatsapp_templates',
+        ],
+        'whatsapp_template_cancelled' => [
+            'value' => "Halo *{customer_name}*,\n\nMohon maaf, pesanan *#{order_number}* telah *DIBATALKAN*. ❌\n\n{cancellation_reason}\n\nSilakan hubungi kami jika ada pertanyaan. Terima kasih. 🙏",
+            'type' => 'text',
+            'group' => 'whatsapp_templates',
+        ],
+
+        // Timeline Icons (mapping status to Lucide icon name)
+        'timeline_icons' => [
+            'value' => [
+                'created' => 'Clock',
+                'pending' => 'Clock',
+                'confirmed' => 'CheckCircle2',
+                'preparing' => 'ChefHat',
+                'ready' => 'Package',
+                'delivered' => 'Truck',
+                'cancelled' => 'XCircle',
+            ],
+            'type' => 'json',
+            'group' => 'appearance',
+        ],
     ];
 
     /**
@@ -273,5 +315,181 @@ class StoreSettingService
     public function isAutoCancelEnabled(): bool
     {
         return (bool) $this->getSetting('auto_cancel_enabled', true);
+    }
+
+    /**
+     * Mendapatkan WhatsApp template untuk status tertentu
+     * dengan fallback ke default template jika tidak ada
+     *
+     * @param  string  $status  Status pesanan (confirmed, preparing, ready, delivered, cancelled)
+     * @return string Template message
+     */
+    public function getWhatsAppTemplate(string $status): string
+    {
+        $key = "whatsapp_template_{$status}";
+
+        return $this->getSetting($key, self::DEFAULT_SETTINGS[$key]['value'] ?? '');
+    }
+
+    /**
+     * Mendapatkan semua WhatsApp templates untuk ditampilkan di settings
+     *
+     * @return array<string, string> Mapping status ke template
+     */
+    public function getAllWhatsAppTemplates(): array
+    {
+        return [
+            'confirmed' => $this->getWhatsAppTemplate('confirmed'),
+            'preparing' => $this->getWhatsAppTemplate('preparing'),
+            'ready' => $this->getWhatsAppTemplate('ready'),
+            'delivered' => $this->getWhatsAppTemplate('delivered'),
+            'cancelled' => $this->getWhatsAppTemplate('cancelled'),
+        ];
+    }
+
+    /**
+     * Mendapatkan timeline icons mapping
+     *
+     * @return array<string, string> Mapping status ke icon name
+     */
+    public function getTimelineIcons(): array
+    {
+        return $this->getSetting('timeline_icons', self::DEFAULT_SETTINGS['timeline_icons']['value']);
+    }
+
+    /**
+     * Parse template dengan mengganti variabel dengan data order
+     * Variabel yang tersedia: {customer_name}, {order_number}, {total}, {store_name}, {cancellation_reason}
+     *
+     * SECURITY: Semua user input di-sanitize untuk mencegah injection attacks
+     *
+     * @param  string  $template  Template dengan variabel placeholder
+     * @param  \App\Models\Order  $order  Order object untuk mengambil data
+     * @return string Template yang sudah di-parse
+     */
+    public function parseTemplateVariables(string $template, \App\Models\Order $order): string
+    {
+        $storeName = $this->getSetting('store_name', 'Toko Kami');
+
+        // SECURITY: Sanitize user-controlled data untuk mencegah injection
+        $variables = [
+            '{customer_name}' => $this->sanitizeForTemplate($order->customer_name),
+            '{order_number}' => $this->sanitizeForTemplate($order->order_number),
+            '{total}' => 'Rp '.number_format($order->total, 0, ',', '.'),
+            '{store_name}' => $this->sanitizeForTemplate($storeName),
+            '{cancellation_reason}' => $order->cancellation_reason
+                ? 'Alasan: '.$this->sanitizeForTemplate($order->cancellation_reason)
+                : '',
+        ];
+
+        return str_replace(array_keys($variables), array_values($variables), $template);
+    }
+
+    /**
+     * Sanitize string untuk digunakan dalam template
+     * Mencegah injection attacks dengan menghapus karakter berbahaya
+     *
+     * SECURITY: A03:2021 - Injection Prevention
+     *
+     * @param  string|null  $value  Value yang akan di-sanitize
+     * @return string Sanitized value
+     */
+    private function sanitizeForTemplate(?string $value): string
+    {
+        if ($value === null) {
+            return '';
+        }
+
+        // Remove null bytes dan control characters (kecuali newline dan tab)
+        $value = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $value) ?? $value;
+
+        // Limit length untuk mencegah buffer overflow
+        $value = mb_substr($value, 0, 500);
+
+        // Escape karakter khusus yang bisa digunakan untuk injection
+        // Tidak di-HTML escape karena ini untuk WhatsApp text, bukan HTML
+        // Tapi tetap escape backslash dan kurung kurawal untuk template safety
+        $value = str_replace(['\\', '{', '}'], ['\\\\', '\\{', '\\}'], $value);
+
+        return $value;
+    }
+
+    /**
+     * Daftar variabel yang tersedia untuk WhatsApp template
+     * digunakan untuk menampilkan tombol insert variable di UI
+     *
+     * @return array<string, string> Mapping variabel ke deskripsi
+     */
+    public static function getAvailableTemplateVariables(): array
+    {
+        return [
+            '{customer_name}' => 'Nama Customer',
+            '{order_number}' => 'Nomor Pesanan',
+            '{total}' => 'Total Pesanan',
+            '{store_name}' => 'Nama Toko',
+            '{cancellation_reason}' => 'Alasan Pembatalan',
+        ];
+    }
+
+    /**
+     * Daftar icon yang tersedia untuk timeline
+     * Subset dari Lucide icons yang relevan untuk order status
+     *
+     * @return array<string, string> Mapping icon name ke label
+     */
+    public static function getAvailableTimelineIcons(): array
+    {
+        return [
+            // Time related
+            'Clock' => 'Jam',
+            'Timer' => 'Timer',
+            'Hourglass' => 'Jam Pasir',
+            'CalendarClock' => 'Kalender Jam',
+
+            // Check/Success
+            'CheckCircle2' => 'Centang Lingkaran',
+            'CircleCheck' => 'Lingkaran Centang',
+            'Check' => 'Centang',
+            'CircleCheckBig' => 'Centang Besar',
+            'BadgeCheck' => 'Badge Centang',
+
+            // Processing/Cooking
+            'ChefHat' => 'Topi Chef',
+            'Utensils' => 'Alat Makan',
+            'Flame' => 'Api',
+            'CookingPot' => 'Panci',
+            'Loader' => 'Loading',
+            'RefreshCw' => 'Proses',
+
+            // Package/Ready
+            'Package' => 'Paket',
+            'Box' => 'Kotak',
+            'Gift' => 'Hadiah',
+            'Archive' => 'Arsip',
+            'PackageCheck' => 'Paket Centang',
+
+            // Delivery
+            'Truck' => 'Truk',
+            'Car' => 'Mobil',
+            'Bike' => 'Sepeda',
+            'Send' => 'Kirim',
+            'Navigation' => 'Navigasi',
+
+            // Cancel/Error
+            'XCircle' => 'X Lingkaran',
+            'X' => 'X',
+            'Ban' => 'Larangan',
+            'CircleX' => 'Lingkaran X',
+            'AlertCircle' => 'Alert Lingkaran',
+
+            // Other
+            'ShoppingBag' => 'Tas Belanja',
+            'ShoppingCart' => 'Keranjang',
+            'Receipt' => 'Struk',
+            'FileText' => 'Dokumen',
+            'Star' => 'Bintang',
+            'Heart' => 'Hati',
+            'ThumbsUp' => 'Jempol',
+        ];
     }
 }

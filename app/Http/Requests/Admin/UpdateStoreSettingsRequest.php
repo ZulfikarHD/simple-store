@@ -130,6 +130,25 @@ class UpdateStoreSettingsRequest extends FormRequest
             // Order Settings - Auto Cancel
             'auto_cancel_enabled' => ['required', 'boolean'],
             'auto_cancel_minutes' => ['required', 'integer', 'min:5', 'max:1440'],
+
+            // WhatsApp Message Templates
+            // SECURITY: Validasi untuk mencegah template injection
+            'whatsapp_template_confirmed' => ['nullable', 'string', 'max:2000', $this->templateSafetyRule()],
+            'whatsapp_template_preparing' => ['nullable', 'string', 'max:2000', $this->templateSafetyRule()],
+            'whatsapp_template_ready' => ['nullable', 'string', 'max:2000', $this->templateSafetyRule()],
+            'whatsapp_template_delivered' => ['nullable', 'string', 'max:2000', $this->templateSafetyRule()],
+            'whatsapp_template_cancelled' => ['nullable', 'string', 'max:2000', $this->templateSafetyRule()],
+
+            // Timeline Icons
+            // SECURITY: Validasi icon names against whitelist (A03:2021 - Injection)
+            'timeline_icons' => ['nullable', 'array'],
+            'timeline_icons.created' => ['nullable', 'string', 'max:50', $this->allowedIconsRule()],
+            'timeline_icons.pending' => ['nullable', 'string', 'max:50', $this->allowedIconsRule()],
+            'timeline_icons.confirmed' => ['nullable', 'string', 'max:50', $this->allowedIconsRule()],
+            'timeline_icons.preparing' => ['nullable', 'string', 'max:50', $this->allowedIconsRule()],
+            'timeline_icons.ready' => ['nullable', 'string', 'max:50', $this->allowedIconsRule()],
+            'timeline_icons.delivered' => ['nullable', 'string', 'max:50', $this->allowedIconsRule()],
+            'timeline_icons.cancelled' => ['nullable', 'string', 'max:50', $this->allowedIconsRule()],
         ];
     }
 
@@ -166,6 +185,16 @@ class UpdateStoreSettingsRequest extends FormRequest
             'auto_cancel_minutes.integer' => 'Durasi auto-cancel harus berupa angka.',
             'auto_cancel_minutes.min' => 'Durasi auto-cancel minimal 5 menit.',
             'auto_cancel_minutes.max' => 'Durasi auto-cancel maksimal 1440 menit (24 jam).',
+
+            // WhatsApp Templates
+            'whatsapp_template_confirmed.max' => 'Template konfirmasi maksimal 2000 karakter.',
+            'whatsapp_template_preparing.max' => 'Template diproses maksimal 2000 karakter.',
+            'whatsapp_template_ready.max' => 'Template siap maksimal 2000 karakter.',
+            'whatsapp_template_delivered.max' => 'Template dikirim maksimal 2000 karakter.',
+            'whatsapp_template_cancelled.max' => 'Template dibatalkan maksimal 2000 karakter.',
+
+            // Timeline Icons
+            'timeline_icons.*.max' => 'Nama icon maksimal 50 karakter.',
         ];
     }
 
@@ -191,6 +220,119 @@ class UpdateStoreSettingsRequest extends FormRequest
             'minimum_order' => 'minimum order',
             'auto_cancel_enabled' => 'status auto-cancel',
             'auto_cancel_minutes' => 'durasi auto-cancel',
+
+            // WhatsApp Templates
+            'whatsapp_template_confirmed' => 'template konfirmasi',
+            'whatsapp_template_preparing' => 'template diproses',
+            'whatsapp_template_ready' => 'template siap',
+            'whatsapp_template_delivered' => 'template dikirim',
+            'whatsapp_template_cancelled' => 'template dibatalkan',
+
+            // Timeline Icons
+            'timeline_icons' => 'icon timeline',
+            'timeline_icons.created' => 'icon pesanan dibuat',
+            'timeline_icons.pending' => 'icon pending',
+            'timeline_icons.confirmed' => 'icon dikonfirmasi',
+            'timeline_icons.preparing' => 'icon diproses',
+            'timeline_icons.ready' => 'icon siap',
+            'timeline_icons.delivered' => 'icon dikirim',
+            'timeline_icons.cancelled' => 'icon dibatalkan',
         ];
+    }
+
+    /**
+     * SECURITY: A03:2021 - Injection Prevention
+     * Whitelist icon names yang diperbolehkan untuk timeline
+     * Mencegah component injection dengan hanya mengizinkan icon names yang valid
+     *
+     * @return \Closure Validation rule closure
+     */
+    private function allowedIconsRule(): \Closure
+    {
+        return function (string $attribute, mixed $value, \Closure $fail): void {
+            if ($value === null || $value === '') {
+                return;
+            }
+
+            // Whitelist of allowed Lucide icon names
+            $allowedIcons = [
+                'Clock', 'Timer', 'Hourglass', 'CalendarClock',
+                'CheckCircle2', 'CircleCheck', 'Check', 'CircleCheckBig', 'BadgeCheck',
+                'ChefHat', 'Utensils', 'Flame', 'CookingPot', 'Loader', 'RefreshCw',
+                'Package', 'Box', 'Gift', 'Archive', 'PackageCheck',
+                'Truck', 'Car', 'Bike', 'Send', 'Navigation',
+                'XCircle', 'X', 'Ban', 'CircleX', 'AlertCircle',
+                'ShoppingBag', 'ShoppingCart', 'Receipt', 'FileText',
+                'Star', 'Heart', 'ThumbsUp',
+            ];
+
+            if (! in_array($value, $allowedIcons, true)) {
+                $fail('Icon yang dipilih tidak valid. Silakan pilih dari daftar icon yang tersedia.');
+            }
+        };
+    }
+
+    /**
+     * SECURITY: A03:2021 - Injection Prevention
+     * Validasi template untuk mencegah injection attacks
+     * Mendeteksi pola berbahaya seperti script tags, event handlers, dll.
+     *
+     * @return \Closure Validation rule closure
+     */
+    private function templateSafetyRule(): \Closure
+    {
+        return function (string $attribute, mixed $value, \Closure $fail): void {
+            if ($value === null || $value === '') {
+                return;
+            }
+
+            // Pola berbahaya yang tidak diperbolehkan dalam template
+            $dangerousPatterns = [
+                '/<script/i',           // Script tags
+                '/javascript:/i',       // JavaScript protocol
+                '/on\w+\s*=/i',         // Event handlers (onclick, onerror, etc.)
+                '/<iframe/i',           // Iframe injection
+                '/<object/i',           // Object injection
+                '/<embed/i',            // Embed injection
+                '/<form/i',             // Form injection
+                '/data:/i',             // Data URI scheme
+                '/vbscript:/i',         // VBScript protocol
+                '/expression\s*\(/i',   // CSS expression
+                '/url\s*\(/i',          // CSS url()
+                '/@import/i',           // CSS import
+                '/<!--/i',              // HTML comments (potential for comment-based attacks)
+                '/\x00/',               // Null bytes
+            ];
+
+            foreach ($dangerousPatterns as $pattern) {
+                if (preg_match($pattern, $value)) {
+                    $fail('Template mengandung konten yang tidak diperbolehkan untuk alasan keamanan.');
+
+                    return;
+                }
+            }
+
+            // Validasi bahwa variabel yang digunakan valid
+            $allowedVariables = [
+                '{customer_name}',
+                '{order_number}',
+                '{total}',
+                '{store_name}',
+                '{cancellation_reason}',
+            ];
+
+            // Cari semua variabel dalam template
+            preg_match_all('/\{[^}]+\}/', $value, $matches);
+
+            if (! empty($matches[0])) {
+                foreach ($matches[0] as $variable) {
+                    if (! in_array($variable, $allowedVariables, true)) {
+                        $fail("Variabel '{$variable}' tidak valid. Variabel yang tersedia: ".implode(', ', $allowedVariables));
+
+                        return;
+                    }
+                }
+            }
+        };
     }
 }

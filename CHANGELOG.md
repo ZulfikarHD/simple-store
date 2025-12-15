@@ -19,6 +19,93 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.0] - 2025-12-15
+
+### Added - Customizable WhatsApp Templates & Timeline Icons
+
+#### WhatsApp Message Templates
+- **Template Editor di Admin Settings**
+  - Admin dapat mengkustomisasi template pesan WhatsApp untuk setiap status pesanan
+  - Status yang didukung: Confirmed, Preparing, Ready, Delivered, Cancelled
+  - Tab-based UI untuk navigasi antar template status
+  - Support variabel dinamis yang akan diganti dengan data order
+
+- **Available Variables**
+  - `{customer_name}` - Nama customer
+  - `{order_number}` - Nomor pesanan
+  - `{total}` - Total pesanan (formatted Rupiah)
+  - `{store_name}` - Nama toko
+  - `{cancellation_reason}` - Alasan pembatalan (untuk cancelled status)
+
+- **Template Features**
+  - Insert variable buttons untuk kemudahan input
+  - Live preview dengan sample data
+  - Reset ke default template
+  - Validasi maksimal 2000 karakter per template
+
+#### Timeline Icons Customization
+- **Icon Picker Component**
+  - Admin dapat mengubah icon timeline untuk setiap status pesanan
+  - Grid view dengan 35+ Lucide icons yang relevan
+  - Kategori icons: Waktu, Sukses, Proses, Paket, Pengiriman, Batal, Lainnya
+  - Search dan filter berdasarkan kategori
+
+- **Status Icons yang Dapat Diubah**
+  - Created/Pending: default Clock
+  - Confirmed: default CheckCircle2
+  - Preparing: default ChefHat
+  - Ready: default Package
+  - Delivered: default Truck
+  - Cancelled: default XCircle
+
+- **Icon Picker Features**
+  - iOS-style design dengan animasi
+  - Preview icon terpilih
+  - Reset ke default icon per status
+  - Selected indicator dengan checkmark
+
+### Technical Implementation
+- **Backend**
+  - `StoreSettingService`: methods `getWhatsAppTemplate()`, `getAllWhatsAppTemplates()`, `getTimelineIcons()`, `parseTemplateVariables()`
+  - Default settings di `DEFAULT_SETTINGS` untuk templates dan icons
+  - Validation rules di `UpdateStoreSettingsRequest` untuk template fields
+  - Order model updated untuk menggunakan templates dari settings
+
+- **Frontend**
+  - `IconPicker.vue`: reusable icon picker component
+  - Settings page: WhatsApp Templates section dengan tab UI
+  - Settings page: Timeline Icons section dengan grid icons
+  - Order Show page: dynamic timeline icons dari props
+
+- **Database**
+  - Seeder updated dengan default templates dan icons
+  - New store_settings keys: `whatsapp_template_*`, `timeline_icons`
+
+### Changed
+- Order model `generateOwnerToCustomerMessage()` sekarang menggunakan templates dari settings
+- OrderController `show()` sekarang meneruskan `timelineIcons` ke frontend
+- Settings form dengan stagger delay yang diperbarui untuk sections baru
+
+### Security (OWASP Top 10 Compliance)
+- **A03:2021 - Injection Prevention**
+  - Input sanitization di `parseTemplateVariables()` untuk mencegah template injection
+  - Whitelist validation untuk timeline icon names
+  - Template content validation untuk mendeteksi pola berbahaya (script tags, event handlers, etc.)
+  - Variable validation untuk memastikan hanya variabel yang diizinkan yang digunakan
+
+- **Security Measures Implemented**
+  - `sanitizeForTemplate()`: Menghapus null bytes, control characters, dan escape special chars
+  - `allowedIconsRule()`: Whitelist validation untuk 35+ Lucide icons yang diperbolehkan
+  - `templateSafetyRule()`: Deteksi pola injection berbahaya (XSS, script injection, etc.)
+  - Length limiting untuk mencegah buffer overflow attacks
+
+### Notes
+- Default templates dan icons tetap sama dengan sebelumnya (backward compatible)
+- Templates kosong akan fallback ke default message
+- Icons yang tidak valid akan fallback ke default icon per status
+
+---
+
 ## [1.5.0] - 2025-12-15
 
 ### Added - Status Update Success Dialog & Favicon Settings

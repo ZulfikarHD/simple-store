@@ -107,6 +107,68 @@ class StoreSettingSeeder extends Seeder
                 'type' => 'integer',
                 'group' => 'delivery',
             ],
+
+            // Order Settings - Auto Cancel
+            [
+                'key' => 'auto_cancel_enabled',
+                'value' => '1',
+                'type' => 'boolean',
+                'group' => 'orders',
+            ],
+            [
+                'key' => 'auto_cancel_minutes',
+                'value' => '30',
+                'type' => 'integer',
+                'group' => 'orders',
+            ],
+
+            // WhatsApp Message Templates
+            [
+                'key' => 'whatsapp_template_confirmed',
+                'value' => "Halo *{customer_name}*! 👋\n\nPesanan Anda dengan nomor *#{order_number}* telah *DIKONFIRMASI*. ✅\n\nTotal: *{total}*\n\nPesanan sedang kami proses. Terima kasih telah berbelanja di {store_name}! 🙏",
+                'type' => 'text',
+                'group' => 'whatsapp_templates',
+            ],
+            [
+                'key' => 'whatsapp_template_preparing',
+                'value' => "Halo *{customer_name}*! 👋\n\nPesanan *#{order_number}* sedang *DIPROSES*. 🔄\n\nMohon tunggu sebentar ya. Terima kasih! 🙏",
+                'type' => 'text',
+                'group' => 'whatsapp_templates',
+            ],
+            [
+                'key' => 'whatsapp_template_ready',
+                'value' => "Halo *{customer_name}*! 👋\n\nPesanan *#{order_number}* sudah *SIAP*! 🎉\n\nSilakan ambil pesanan Anda atau tunggu pengiriman. Terima kasih! 🙏",
+                'type' => 'text',
+                'group' => 'whatsapp_templates',
+            ],
+            [
+                'key' => 'whatsapp_template_delivered',
+                'value' => "Halo *{customer_name}*! 👋\n\nPesanan *#{order_number}* telah *DIKIRIM/SELESAI*. ✅\n\nTerima kasih telah berbelanja di {store_name}! Semoga puas dengan pesanan Anda. 🙏",
+                'type' => 'text',
+                'group' => 'whatsapp_templates',
+            ],
+            [
+                'key' => 'whatsapp_template_cancelled',
+                'value' => "Halo *{customer_name}*,\n\nMohon maaf, pesanan *#{order_number}* telah *DIBATALKAN*. ❌\n\n{cancellation_reason}\n\nSilakan hubungi kami jika ada pertanyaan. Terima kasih. 🙏",
+                'type' => 'text',
+                'group' => 'whatsapp_templates',
+            ],
+
+            // Timeline Icons
+            [
+                'key' => 'timeline_icons',
+                'value' => json_encode([
+                    'created' => 'Clock',
+                    'pending' => 'Clock',
+                    'confirmed' => 'CheckCircle2',
+                    'preparing' => 'ChefHat',
+                    'ready' => 'Package',
+                    'delivered' => 'Truck',
+                    'cancelled' => 'XCircle',
+                ]),
+                'type' => 'json',
+                'group' => 'appearance',
+            ],
         ];
 
         foreach ($settings as $setting) {

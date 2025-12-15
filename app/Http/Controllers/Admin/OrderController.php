@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateOrderStatusRequest;
 use App\Models\Order;
 use App\Services\OrderService;
+use App\Services\StoreSettingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -50,7 +51,7 @@ class OrderController extends Controller
      * Menampilkan detail order dengan customer info, items, dan status timeline
      * serta WhatsApp URLs untuk mengirim template message ke customer
      */
-    public function show(Order $order): Response
+    public function show(Order $order, StoreSettingService $settingService): Response
     {
         $orderDetail = $this->orderService->getOrderDetail($order);
         $statuses = $this->orderService->getAvailableStatuses();
@@ -64,10 +65,14 @@ class OrderController extends Controller
             'cancelled' => $order->getWhatsAppToCustomerUrl('cancelled'),
         ];
 
+        // Get customizable timeline icons dari settings
+        $timelineIcons = $settingService->getTimelineIcons();
+
         return Inertia::render('Admin/Orders/Show', [
             'order' => $orderDetail,
             'statuses' => $statuses,
             'whatsappUrls' => $whatsappUrls,
+            'timelineIcons' => $timelineIcons,
         ]);
     }
 

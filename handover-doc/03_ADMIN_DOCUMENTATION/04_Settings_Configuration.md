@@ -48,6 +48,12 @@ Halaman Pengaturan Toko merupakan pusat konfigurasi untuk mengelola semua aspek 
 | `minimum_order` | integer | 0 | Minimum order (Rupiah) |
 | `auto_cancel_enabled` | boolean | true | Auto-cancel pesanan pending |
 | `auto_cancel_minutes` | integer | 30 | Durasi sebelum auto-cancel |
+| `whatsapp_template_confirmed` | text | (default) | Template pesan konfirmasi |
+| `whatsapp_template_preparing` | text | (default) | Template pesan diproses |
+| `whatsapp_template_ready` | text | (default) | Template pesan siap |
+| `whatsapp_template_delivered` | text | (default) | Template pesan dikirim |
+| `whatsapp_template_cancelled` | text | (default) | Template pesan dibatalkan |
+| `timeline_icons` | json | {...} | Mapping icon timeline per status |
 
 ---
 
@@ -260,6 +266,145 @@ Pesanan Anda #ORD-XXXXXX telah [Status].
 
 Terima kasih telah berbelanja di [Nama Toko]!
 ```
+
+---
+
+## Template Pesan WhatsApp (Customizable)
+
+### Overview
+
+Admin dapat mengkustomisasi template pesan WhatsApp yang dikirim ke customer saat status pesanan berubah. Fitur ini memungkinkan personalisasi pesan sesuai brand dan kebutuhan bisnis.
+
+### Cara Mengakses
+
+1. Buka halaman **Pengaturan Toko** (`/admin/settings`)
+2. Scroll ke section **"Template Pesan WhatsApp"**
+3. Pilih tab status yang ingin diedit
+
+### Status Template yang Tersedia
+
+| Status | Tab | Deskripsi |
+|--------|-----|-----------|
+| **Confirmed** | 🔵 Dikonfirmasi | Pesan saat pesanan dikonfirmasi |
+| **Preparing** | 🟡 Diproses | Pesan saat pesanan mulai diproses |
+| **Ready** | 🟢 Siap | Pesan saat pesanan siap diambil/dikirim |
+| **Delivered** | 🟢 Dikirim | Pesan saat pesanan selesai |
+| **Cancelled** | 🔴 Dibatalkan | Pesan saat pesanan dibatalkan |
+
+### Variabel yang Tersedia
+
+Gunakan variabel berikut dalam template untuk data dinamis:
+
+| Variabel | Deskripsi | Contoh Output |
+|----------|-----------|---------------|
+| `{customer_name}` | Nama customer | John Doe |
+| `{order_number}` | Nomor pesanan | ORD-20251215-ABC12 |
+| `{total}` | Total pesanan (formatted) | Rp 150.000 |
+| `{store_name}` | Nama toko | Simple Store |
+| `{cancellation_reason}` | Alasan pembatalan | Alasan: Stok habis |
+
+### Cara Mengedit Template
+
+1. Klik tab status yang ingin diedit
+2. Edit teks di textarea
+3. Klik tombol variabel untuk menyisipkan variabel
+4. Lihat preview di bawah textarea
+5. Klik **"Simpan Pengaturan"**
+
+### Fitur Template Editor
+
+- **Insert Variable Buttons**: Klik untuk menyisipkan variabel ke posisi cursor
+- **Live Preview**: Lihat hasil template dengan sample data
+- **Reset Default**: Kembalikan ke template default
+- **Max 2000 karakter** per template
+
+### Contoh Template Default
+
+**Konfirmasi Pesanan:**
+```
+Halo *{customer_name}*! 👋
+
+Pesanan Anda dengan nomor *#{order_number}* telah *DIKONFIRMASI*. ✅
+
+Total: *{total}*
+
+Pesanan sedang kami proses. Terima kasih telah berbelanja di {store_name}! 🙏
+```
+
+**Pesanan Dibatalkan:**
+```
+Halo *{customer_name}*,
+
+Mohon maaf, pesanan *#{order_number}* telah *DIBATALKAN*. ❌
+
+{cancellation_reason}
+
+Silakan hubungi kami jika ada pertanyaan. Terima kasih. 🙏
+```
+
+### Best Practices
+
+1. **Gunakan emoji** untuk membuat pesan lebih friendly
+2. **Bold text** dengan asterisk (*) untuk highlight penting
+3. **Sertakan variabel** `{store_name}` untuk branding
+4. **Keep it short** - pesan singkat lebih efektif
+5. **Test preview** sebelum menyimpan
+
+---
+
+## Icon Timeline Status (Customizable)
+
+### Overview
+
+Admin dapat mengkustomisasi icon yang ditampilkan di timeline status pesanan. Fitur ini memungkinkan personalisasi visual sesuai brand.
+
+### Cara Mengakses
+
+1. Buka halaman **Pengaturan Toko** (`/admin/settings`)
+2. Scroll ke section **"Icon Timeline Status"**
+3. Klik icon yang ingin diubah
+
+### Status Icon yang Dapat Diubah
+
+| Status | Default Icon | Deskripsi |
+|--------|--------------|-----------|
+| **Created** | Clock | Pesanan dibuat |
+| **Pending** | Clock | Menunggu konfirmasi |
+| **Confirmed** | CheckCircle2 | Dikonfirmasi |
+| **Preparing** | ChefHat | Sedang diproses |
+| **Ready** | Package | Siap diambil/dikirim |
+| **Delivered** | Truck | Selesai dikirim |
+| **Cancelled** | XCircle | Dibatalkan |
+
+### Icon Library
+
+Tersedia 35+ icon dari Lucide icons yang dikategorikan:
+
+| Kategori | Icon |
+|----------|------|
+| **Waktu** | Clock, Timer, Hourglass, CalendarClock |
+| **Sukses** | CheckCircle2, CircleCheck, Check, BadgeCheck |
+| **Proses** | ChefHat, Utensils, Flame, CookingPot, RefreshCw |
+| **Paket** | Package, Box, Gift, Archive, PackageCheck |
+| **Pengiriman** | Truck, Car, Bike, Send, Navigation |
+| **Batal** | XCircle, X, Ban, CircleX, AlertCircle |
+| **Lainnya** | ShoppingBag, ShoppingCart, Receipt, Star, Heart |
+
+### Cara Mengubah Icon
+
+1. Klik tombol **"Ubah"** di bawah icon status
+2. Icon Picker modal akan muncul
+3. Cari icon dengan search atau filter kategori
+4. Klik icon yang diinginkan
+5. Klik **"Pilih Icon"**
+6. Klik **"Simpan Pengaturan"**
+
+### Fitur Icon Picker
+
+- **Search**: Cari icon berdasarkan nama
+- **Category Filter**: Filter berdasarkan kategori
+- **Preview**: Lihat icon terpilih sebelum konfirmasi
+- **Reset**: Kembalikan ke default per status
 
 ---
 
@@ -513,7 +658,21 @@ Jika validasi gagal:
   "delivery_fee": 10000,
   "minimum_order": 50000,
   "auto_cancel_enabled": true,
-  "auto_cancel_minutes": 30
+  "auto_cancel_minutes": 30,
+  "whatsapp_template_confirmed": "Halo *{customer_name}*! ...",
+  "whatsapp_template_preparing": "Halo *{customer_name}*! ...",
+  "whatsapp_template_ready": "Halo *{customer_name}*! ...",
+  "whatsapp_template_delivered": "Halo *{customer_name}*! ...",
+  "whatsapp_template_cancelled": "Halo *{customer_name}*, ...",
+  "timeline_icons": {
+    "created": "Clock",
+    "pending": "Clock",
+    "confirmed": "CheckCircle2",
+    "preparing": "ChefHat",
+    "ready": "Package",
+    "delivered": "Truck",
+    "cancelled": "XCircle"
+  }
 }
 ```
 
@@ -524,3 +683,39 @@ Jika validasi gagal:
   "message": "Pengaturan berhasil disimpan."
 }
 ```
+
+---
+
+## Security (OWASP Compliance)
+
+### Template Validation
+
+Template pesan WhatsApp divalidasi untuk mencegah injection attacks:
+
+| Validasi | Deskripsi |
+|----------|-----------|
+| **Max Length** | Maksimal 2000 karakter per template |
+| **XSS Prevention** | Block `<script>`, `javascript:`, event handlers |
+| **Variable Validation** | Hanya variabel yang diizinkan yang dapat digunakan |
+| **Pattern Detection** | Deteksi pola berbahaya (iframe, object, embed, etc.) |
+
+### Icon Validation
+
+Icon timeline divalidasi dengan whitelist:
+
+| Validasi | Deskripsi |
+|----------|-----------|
+| **Whitelist** | Hanya 35+ icon dari Lucide yang diizinkan |
+| **Max Length** | Nama icon maksimal 50 karakter |
+| **Injection Prevention** | Mencegah component injection |
+
+### Data Sanitization
+
+Semua user data yang dimasukkan ke template di-sanitize:
+
+| Sanitization | Deskripsi |
+|--------------|-----------|
+| **Null Bytes** | Dihapus untuk mencegah injection |
+| **Control Characters** | Dihapus (kecuali newline, tab) |
+| **Length Limit** | Maksimal 500 karakter per variabel |
+| **Special Chars** | Escape backslash dan kurung kurawal |
