@@ -44,7 +44,7 @@ import {
 import { ref, computed } from 'vue'
 import { Motion } from 'motion-v'
 import { springPresets, staggerDelay } from '@/composables/useMotionV'
-import { COUNTRY_CONFIGS } from '@/composables/usePhoneFormat'
+import { COUNTRY_CONFIGS, getWhatsAppInputStatus, validateWhatsAppNumber } from '@/composables/usePhoneFormat'
 
 /**
  * Haptic feedback untuk iOS-like tactile response
@@ -115,8 +115,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 ]
 
 // Flash messages dari session
-const flashSuccess = computed(() => page.props.flash?.success as string | undefined)
-const flashError = computed(() => page.props.flash?.error as string | undefined)
+const flashSuccess = computed(() => (page.props.flash as { success?: string } | undefined)?.success)
+const flashError = computed(() => (page.props.flash as { error?: string } | undefined)?.error)
 
 // Label hari dalam Bahasa Indonesia
 const dayLabels: Record<string, string> = {
@@ -167,10 +167,30 @@ const errors = ref<Record<string, string>>({})
 const isSubmitting = ref(false)
 
 /**
+ * Computed untuk real-time WhatsApp number validation status
+ */
+const whatsappInputStatus = computed(() => {
+    return getWhatsAppInputStatus(form.value.whatsapp_number, form.value.phone_country_code)
+})
+
+/**
  * Trigger file input untuk logo upload
  */
 function triggerLogoUpload() {
     logoInput.value?.click()
+}
+
+/**
+ * Refresh CSRF cookie untuk menghindari token mismatch
+ */
+async function refreshCsrfCookie(): Promise<void> {
+    try {
+        await fetch('/sanctum/csrf-cookie', {
+            credentials: 'same-origin',
+        })
+    } catch (error) {
+        console.warn('Failed to refresh CSRF cookie:', error)
+    }
 }
 
 /**
@@ -200,16 +220,34 @@ async function handleLogoUpload(event: Event) {
     haptic.selection()
 
     try {
+        // Refresh CSRF cookie terlebih dahulu
+        await refreshCsrfCookie()
+
         const formData = new FormData()
         formData.append('logo', file)
+
+        // Ambil fresh CSRF token dari cookie
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+            || document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='))?.split('=')[1]
+            || ''
 
         const response = await fetch('/admin/settings/upload-logo', {
             method: 'POST',
             body: formData,
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'X-CSRF-TOKEN': decodeURIComponent(csrfToken),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
             },
+            credentials: 'same-origin',
         })
+
+        // Handle 419 CSRF token mismatch
+        if (response.status === 419) {
+            errors.value.store_logo = 'Sesi telah berakhir. Silakan refresh halaman.'
+            haptic.error()
+            return
+        }
 
         const data = await response.json()
 
@@ -261,10 +299,39 @@ function removeDeliveryArea(index: number) {
 }
 
 /**
+ * Validasi form sebelum submit
+ * @returns true jika valid, false jika ada error
+ */
+function validateForm(): boolean {
+    const newErrors: Record<string, string> = {}
+
+    // Validasi WhatsApp number
+    const waValidation = validateWhatsAppNumber(form.value.whatsapp_number, form.value.phone_country_code)
+    if (!waValidation.isValid) {
+        newErrors.whatsapp_number = waValidation.error || 'Format nomor WhatsApp tidak valid'
+    }
+
+    // Set errors jika ada
+    if (Object.keys(newErrors).length > 0) {
+        errors.value = newErrors
+        haptic.error()
+        return false
+    }
+
+    return true
+}
+
+/**
  * Submit form untuk menyimpan pengaturan toko
  */
 function submitForm() {
     haptic.medium()
+
+    // Validasi frontend terlebih dahulu
+    if (!validateForm()) {
+        return
+    }
+
     isSubmitting.value = true
     errors.value = {}
 
@@ -537,12 +604,23 @@ function submitForm() {
                                                 id="whatsapp_number"
                                                 v-model="form.whatsapp_number"
                                                 type="text"
-                                                placeholder="6281234567890"
+                                                placeholder="081234567890"
                                                 class="admin-input"
-                                                :class="{ 'border-destructive': errors.whatsapp_number }"
+                                                :class="{
+                                                    'border-destructive': errors.whatsapp_number || whatsappInputStatus.status === 'invalid',
+                                                    'border-green-500 focus-visible:ring-green-500': whatsappInputStatus.status === 'valid',
+                                                }"
                                             />
-                                            <p class="hint">
-                                                Format: Kode negara tanpa tanda + (contoh: 6281234567890)
+                                            <!-- Real-time validation hint -->
+                                            <p
+                                                class="text-sm"
+                                                :class="{
+                                                    'text-muted-foreground': whatsappInputStatus.status === 'empty' || whatsappInputStatus.status === 'typing',
+                                                    'text-green-600 dark:text-green-400': whatsappInputStatus.status === 'valid',
+                                                    'text-destructive': whatsappInputStatus.status === 'invalid',
+                                                }"
+                                            >
+                                                {{ whatsappInputStatus.message }}
                                             </p>
                                             <InputError :message="errors.whatsapp_number" />
                                         </div>

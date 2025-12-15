@@ -246,6 +246,22 @@ export function usePhoneFormat() {
         }))
     })
 
+    /**
+     * Validasi nomor WhatsApp dengan country code dari settings
+     */
+    function validatePhone(phone: string, forceCountry?: string): PhoneValidationResult {
+        const country = forceCountry || countryCode.value
+        return validateWhatsAppNumber(phone, country)
+    }
+
+    /**
+     * Get input status untuk real-time validation
+     */
+    function getInputStatus(phone: string, forceCountry?: string) {
+        const country = forceCountry || countryCode.value
+        return getWhatsAppInputStatus(phone, country)
+    }
+
     return {
         // State
         countryCode,
@@ -257,6 +273,8 @@ export function usePhoneFormat() {
         getWhatsAppUrl,
         openWhatsApp,
         formatPhoneForDisplay,
+        validatePhone,
+        getInputStatus,
 
         // Constants
         COUNTRY_CONFIGS,
@@ -288,5 +306,144 @@ export function formatPhoneToInternational(phone: string, countryCode: string = 
     }
 
     return cleanPhone
+}
+
+/**
+ * Interface untuk hasil validasi nomor telepon
+ */
+export interface PhoneValidationResult {
+    /** Apakah nomor valid */
+    isValid: boolean
+    /** Pesan error jika tidak valid */
+    error?: string
+    /** Nomor yang sudah di-clean (hanya digit) */
+    cleanedNumber: string
+    /** Nomor dalam format internasional (jika valid) */
+    internationalNumber?: string
+}
+
+/**
+ * Validasi nomor telepon WhatsApp
+ * Nomor harus dimulai dengan 0 (lokal) atau kode negara yang sesuai
+ *
+ * @param phone - Nomor telepon yang akan divalidasi
+ * @param countryCode - Kode negara untuk validasi
+ * @returns Hasil validasi dengan detail error jika ada
+ *
+ * @example
+ * validateWhatsAppNumber('08123456789', 'ID')
+ * // { isValid: true, cleanedNumber: '08123456789', internationalNumber: '628123456789' }
+ *
+ * validateWhatsAppNumber('628123456789', 'ID')
+ * // { isValid: true, cleanedNumber: '628123456789', internationalNumber: '628123456789' }
+ *
+ * validateWhatsAppNumber('123456789', 'ID')
+ * // { isValid: false, error: 'Nomor harus dimulai dengan 0 atau kode negara 62', cleanedNumber: '123456789' }
+ */
+export function validateWhatsAppNumber(phone: string, countryCode: string = DEFAULT_COUNTRY): PhoneValidationResult {
+    // Hapus semua karakter non-digit
+    const cleanPhone = phone.replace(/\D/g, '')
+
+    // Validasi minimal length
+    if (cleanPhone.length < 8) {
+        return {
+            isValid: false,
+            error: 'Nomor telepon terlalu pendek (minimal 8 digit)',
+            cleanedNumber: cleanPhone,
+        }
+    }
+
+    // Validasi maksimal length
+    if (cleanPhone.length > 15) {
+        return {
+            isValid: false,
+            error: 'Nomor telepon terlalu panjang (maksimal 15 digit)',
+            cleanedNumber: cleanPhone,
+        }
+    }
+
+    // Ambil konfigurasi negara
+    const config = COUNTRY_CONFIGS[countryCode] || COUNTRY_CONFIGS[DEFAULT_COUNTRY]
+    const { dialCode, localPrefix, name } = config
+
+    // Cek apakah nomor dimulai dengan dial code atau local prefix
+    const startsWithDialCode = cleanPhone.startsWith(dialCode)
+    const startsWithLocalPrefix = localPrefix && cleanPhone.startsWith(localPrefix)
+
+    // Jika tidak dimulai dengan keduanya, invalid
+    if (!startsWithDialCode && !startsWithLocalPrefix) {
+        const prefixHint = localPrefix
+            ? `0 atau kode negara ${dialCode}`
+            : `kode negara ${dialCode}`
+
+        return {
+            isValid: false,
+            error: `Nomor harus dimulai dengan ${prefixHint} untuk ${name}`,
+            cleanedNumber: cleanPhone,
+        }
+    }
+
+    // Format ke internasional
+    let internationalNumber = cleanPhone
+    if (startsWithLocalPrefix && !startsWithDialCode) {
+        internationalNumber = dialCode + cleanPhone.substring(localPrefix.length)
+    }
+
+    return {
+        isValid: true,
+        cleanedNumber: cleanPhone,
+        internationalNumber,
+    }
+}
+
+/**
+ * Validasi real-time untuk input nomor WhatsApp
+ * Mengembalikan pesan hint atau error berdasarkan input
+ *
+ * @param phone - Nomor telepon yang sedang diinput
+ * @param countryCode - Kode negara
+ * @returns Object dengan status dan pesan
+ */
+export function getWhatsAppInputStatus(phone: string, countryCode: string = DEFAULT_COUNTRY): {
+    status: 'empty' | 'typing' | 'valid' | 'invalid'
+    message: string
+} {
+    if (!phone || phone.trim() === '') {
+        return {
+            status: 'empty',
+            message: 'Masukkan nomor WhatsApp',
+        }
+    }
+
+    const cleanPhone = phone.replace(/\D/g, '')
+
+    // Jika masih mengetik (kurang dari 8 digit)
+    if (cleanPhone.length < 8) {
+        const config = COUNTRY_CONFIGS[countryCode] || COUNTRY_CONFIGS[DEFAULT_COUNTRY]
+        const { dialCode, localPrefix, name } = config
+        const hint = localPrefix
+            ? `Contoh: ${localPrefix}812xxx atau ${dialCode}812xxx`
+            : `Contoh: ${dialCode}812xxx`
+
+        return {
+            status: 'typing',
+            message: hint,
+        }
+    }
+
+    // Validasi lengkap
+    const validation = validateWhatsAppNumber(phone, countryCode)
+
+    if (validation.isValid) {
+        return {
+            status: 'valid',
+            message: `Format valid: +${validation.internationalNumber}`,
+        }
+    }
+
+    return {
+        status: 'invalid',
+        message: validation.error || 'Format nomor tidak valid',
+    }
 }
 

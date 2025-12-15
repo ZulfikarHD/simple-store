@@ -83,16 +83,25 @@ const latestOrder = computed(() => pendingOrders.value[0] ?? null)
 
 /**
  * Fetch pending orders dari API
+ * GET request tidak memerlukan CSRF token, tapi tetap perlu credentials
  */
 async function fetchPendingOrders(): Promise<void> {
     try {
         const response = await fetch('/admin/api/orders/pending', {
+            method: 'GET',
             headers: {
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
             },
             credentials: 'same-origin',
         })
+
+        // Handle session expired (401) atau CSRF mismatch (419)
+        if (response.status === 401 || response.status === 419) {
+            // Session expired, stop polling dan biarkan user refresh
+            stopPolling()
+            return
+        }
 
         if (!response.ok) return
 

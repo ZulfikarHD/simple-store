@@ -1,10 +1,24 @@
 import { qrCode, recoveryCodes, secretKey } from '@/routes/two-factor';
 import { computed, ref } from 'vue';
 
+/**
+ * Fetch JSON dengan proper credentials untuk session handling
+ * GET requests tidak memerlukan CSRF token tapi perlu credentials
+ */
 const fetchJson = async <T>(url: string): Promise<T> => {
     const response = await fetch(url, {
-        headers: { Accept: 'application/json' },
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        credentials: 'same-origin',
     });
+
+    // Handle session expired
+    if (response.status === 401 || response.status === 419) {
+        throw new Error('Session expired. Please refresh the page.');
+    }
 
     if (!response.ok) {
         throw new Error(`Failed to fetch: ${response.status}`);

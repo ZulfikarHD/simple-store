@@ -34,7 +34,59 @@ class UpdateStoreSettingsRequest extends FormRequest
             'store_phone' => ['nullable', 'string', 'max:50'],
 
             // WhatsApp Settings
-            'whatsapp_number' => ['required', 'string', 'max:20'],
+            'whatsapp_number' => [
+                'required',
+                'string',
+                'max:20',
+                'regex:/^[0-9]+$/', // Hanya digit
+                function ($attribute, $value, $fail) {
+                    $countryCode = $this->input('phone_country_code', 'ID');
+                    $cleanPhone = preg_replace('/\D/', '', $value);
+
+                    // Mapping dial codes
+                    $dialCodes = [
+                        'ID' => '62',
+                        'MY' => '60',
+                        'SG' => '65',
+                        'PH' => '63',
+                        'TH' => '66',
+                        'VN' => '84',
+                        'US' => '1',
+                        'AU' => '61',
+                    ];
+
+                    // Mapping local prefixes
+                    $localPrefixes = [
+                        'ID' => '0',
+                        'MY' => '0',
+                        'SG' => '',
+                        'PH' => '0',
+                        'TH' => '0',
+                        'VN' => '0',
+                        'US' => '',
+                        'AU' => '0',
+                    ];
+
+                    $dialCode = $dialCodes[$countryCode] ?? '62';
+                    $localPrefix = $localPrefixes[$countryCode] ?? '0';
+
+                    // Validasi: harus dimulai dengan dial code atau local prefix
+                    $startsWithDialCode = str_starts_with($cleanPhone, $dialCode);
+                    $startsWithLocalPrefix = $localPrefix && str_starts_with($cleanPhone, $localPrefix);
+
+                    if (! $startsWithDialCode && ! $startsWithLocalPrefix) {
+                        $hint = $localPrefix
+                            ? "0 atau kode negara {$dialCode}"
+                            : "kode negara {$dialCode}";
+                        $fail("Nomor WhatsApp harus dimulai dengan {$hint}.");
+                    }
+
+                    // Validasi minimal length
+                    if (strlen($cleanPhone) < 8) {
+                        $fail('Nomor WhatsApp terlalu pendek (minimal 8 digit).');
+                    }
+                },
+            ],
             'phone_country_code' => ['required', 'string', 'in:ID,MY,SG,PH,TH,VN,US,AU'],
 
             // Operating Hours - JSON format
@@ -96,6 +148,7 @@ class UpdateStoreSettingsRequest extends FormRequest
             'store_phone.max' => 'Nomor telepon maksimal 50 karakter.',
             'whatsapp_number.required' => 'Nomor WhatsApp wajib diisi.',
             'whatsapp_number.max' => 'Nomor WhatsApp maksimal 20 karakter.',
+            'whatsapp_number.regex' => 'Nomor WhatsApp hanya boleh berisi angka.',
             'phone_country_code.required' => 'Negara/region wajib dipilih.',
             'phone_country_code.in' => 'Negara/region yang dipilih tidak valid.',
             'operating_hours.required' => 'Jam operasional wajib diisi.',
