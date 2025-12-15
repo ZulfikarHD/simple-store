@@ -246,7 +246,7 @@ const snappyTransition = { type: 'spring' as const, ...springPresets.snappy }
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     </Head>
 
-    <div class="min-h-screen bg-background">
+    <div class="min-h-screen bg-background pb-16">
         <!-- Header Navigation dengan iOS Glass Effect (Fixed) -->
         <header class="ios-navbar fixed inset-x-0 top-0 z-50 border-b border-brand-blue-200/30 dark:border-brand-blue-800/30">
             <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">

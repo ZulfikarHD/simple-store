@@ -969,7 +969,7 @@ function makeCall(phone: string) {
         <!-- Mobile Sticky Bottom Action Bar -->
         <div
             v-if="nextStatus"
-            class="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:hidden"
+            class="fixed inset-x-0 bottom-12 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:hidden"
             style="padding-bottom: env(safe-area-inset-bottom)"
         >
             <div class="flex items-center gap-3 p-4">

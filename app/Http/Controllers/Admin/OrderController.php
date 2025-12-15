@@ -31,6 +31,7 @@ class OrderController extends Controller
      * - Search berdasarkan order number, nama customer, atau nomor telepon
      * - Filter berdasarkan status dan date range
      * - Status counts untuk quick filter tabs
+     * - WhatsApp URLs untuk setiap order pada mobile quick actions
      */
     public function index(Request $request): Response
     {
@@ -38,6 +39,27 @@ class OrderController extends Controller
         $orders = $this->orderService->getFilteredOrders($filters);
         $statuses = $this->orderService->getAvailableStatuses();
         $statusCounts = $this->orderService->getAllStatusCounts();
+
+        // Transform orders untuk menyertakan WhatsApp URLs untuk mobile quick actions
+        // Menggunakan setCollection dengan map untuk memastikan data di-serialize dengan benar
+        $transformedOrders = $orders->getCollection()->map(function ($order) {
+            // Handle both Order model and array (from previous transformation)
+            if ($order instanceof Order) {
+                $orderArray = $order->toArray();
+                $orderArray['whatsapp_urls'] = [
+                    'confirmed' => $order->getWhatsAppToCustomerUrl('confirmed'),
+                    'preparing' => $order->getWhatsAppToCustomerUrl('preparing'),
+                    'ready' => $order->getWhatsAppToCustomerUrl('ready'),
+                    'delivered' => $order->getWhatsAppToCustomerUrl('delivered'),
+                    'cancelled' => $order->getWhatsAppToCustomerUrl('cancelled'),
+                ];
+
+                return $orderArray;
+            }
+
+            return $order;
+        });
+        $orders->setCollection($transformedOrders);
 
         return Inertia::render('Admin/Orders/Index', [
             'orders' => $orders,

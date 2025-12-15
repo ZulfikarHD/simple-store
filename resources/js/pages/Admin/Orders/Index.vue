@@ -94,6 +94,14 @@ interface OrderItem {
  */
 type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled'
 
+interface WhatsAppUrls {
+    confirmed: string
+    preparing: string
+    ready: string
+    delivered: string
+    cancelled: string
+}
+
 interface Order {
     id: number
     order_number: string
@@ -105,6 +113,7 @@ interface Order {
     items: OrderItem[]
     created_at: string
     waiting_minutes?: number
+    whatsapp_urls?: WhatsAppUrls
 }
 
 interface PaginationLink {
@@ -662,6 +671,7 @@ function openWhatsApp(phone: string) {
                         :key="order.id"
                         :order="order"
                         :statuses="statuses"
+                        :whatsapp-urls="order.whatsapp_urls"
                     />
 
                     <!-- Mobile Empty State -->

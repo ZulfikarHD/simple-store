@@ -492,7 +492,7 @@ function cancel() {
 
         <!-- Mobile Sticky Submit Bar -->
         <div
-            class="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:hidden"
+            class="fixed inset-x-0 bottom-12 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:hidden"
             style="padding-bottom: env(safe-area-inset-bottom)"
         >
             <div class="flex gap-3 p-4">
