@@ -10,10 +10,12 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { router, usePage } from '@inertiajs/vue3'
 import { usePhoneFormat } from '@/composables/usePhoneFormat'
+import { useHapticFeedback } from '@/composables/useHapticFeedback'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import PriceDisplay from '@/components/store/PriceDisplay.vue'
 import PasswordConfirmDialog from '@/components/admin/PasswordConfirmDialog.vue'
+import StatusUpdateSuccessDialog from '@/components/admin/StatusUpdateSuccessDialog.vue'
 import {
     Bell,
     X,
@@ -29,6 +31,7 @@ import {
 
 /**
  * Interface untuk pending order data dari API
+ * termasuk WhatsApp URL yang sudah di-generate oleh backend dengan template dari settings
  */
 interface PendingOrder {
     id: number
@@ -39,6 +42,8 @@ interface PendingOrder {
     items_count: number
     created_at: string
     waiting_minutes: number
+    /** WhatsApp URL dengan template confirmed dari backend (StoreSettingService) */
+    whatsapp_url_confirmed: string
 }
 
 /**
@@ -58,12 +63,23 @@ const pollingInterval = ref<ReturnType<typeof setInterval> | null>(null)
 const showPasswordDialog = ref(false)
 const pendingConfirmOrderId = ref<number | null>(null)
 
+/**
+ * State untuk success dialog setelah konfirmasi berhasil
+ */
+const showSuccessDialog = ref(false)
+const confirmedOrder = ref<PendingOrder | null>(null)
+
 const page = usePage()
 
 /**
  * Phone format composable untuk WhatsApp integration
  */
 const { openWhatsApp: openWhatsAppComposable } = usePhoneFormat()
+
+/**
+ * Haptic feedback untuk iOS-like tactile response
+ */
+const haptic = useHapticFeedback()
 
 /**
  * Computed untuk menampilkan alert (ada pesanan pending dan belum di-dismiss)
@@ -135,13 +151,18 @@ function requestConfirmOrder(orderId: number): void {
 /**
  * Eksekusi konfirmasi order setelah password diverifikasi
  * menggunakan Inertia router untuk menghindari CSRF issues
+ * Setelah sukses akan menampilkan success dialog dengan opsi WhatsApp
  */
 function executeConfirmOrder(): void {
     if (pendingConfirmOrderId.value === null) return
 
     const orderId = pendingConfirmOrderId.value
+    // Simpan data order sebelum request untuk ditampilkan di success dialog
+    const orderToConfirm = pendingOrders.value.find(o => o.id === orderId) ?? null
+
     isConfirming.value = orderId
     showPasswordDialog.value = false
+    haptic.heavy()
 
     router.patch(
         `/admin/orders/${orderId}/status`,
@@ -149,10 +170,15 @@ function executeConfirmOrder(): void {
         {
             preserveScroll: true,
             onSuccess: () => {
+                haptic.success()
+                // Simpan order yang dikonfirmasi untuk success dialog
+                confirmedOrder.value = orderToConfirm
+                showSuccessDialog.value = true
                 // Refresh pending orders
                 fetchPendingOrders()
             },
             onError: (errors) => {
+                haptic.error()
                 console.error('Failed to confirm order:', errors)
             },
             onFinish: () => {
@@ -169,6 +195,36 @@ function executeConfirmOrder(): void {
 function handlePasswordDialogCancel(): void {
     showPasswordDialog.value = false
     pendingConfirmOrderId.value = null
+}
+
+/**
+ * Computed untuk mendapatkan WhatsApp URL dengan template dari backend
+ * URL di-generate oleh Order::getWhatsAppToCustomerUrl() yang menggunakan
+ * customizable templates dari StoreSettingService
+ */
+const successWhatsAppUrl = computed(() => {
+    if (!confirmedOrder.value) return ''
+
+    // Gunakan URL yang sudah di-generate backend dengan template dari settings
+    return confirmedOrder.value.whatsapp_url_confirmed ?? ''
+})
+
+/**
+ * Handle kirim WhatsApp dari success dialog
+ */
+function handleSuccessWhatsApp(): void {
+    haptic.medium()
+    if (successWhatsAppUrl.value) {
+        window.open(successWhatsAppUrl.value, '_blank')
+    }
+}
+
+/**
+ * Handle tutup success dialog
+ */
+function handleSuccessDialogClose(): void {
+    showSuccessDialog.value = false
+    confirmedOrder.value = null
 }
 
 /**
@@ -474,5 +530,17 @@ watch(
         confirm-label="Konfirmasi Pesanan"
         @confirm="executeConfirmOrder"
         @cancel="handlePasswordDialogCancel"
+    />
+
+    <!-- Success Dialog setelah konfirmasi berhasil -->
+    <StatusUpdateSuccessDialog
+        v-model:open="showSuccessDialog"
+        new-status="confirmed"
+        new-status-label="Dikonfirmasi"
+        :order-number="confirmedOrder?.order_number ?? ''"
+        :customer-name="confirmedOrder?.customer_name ?? ''"
+        :whatsapp-url="successWhatsAppUrl"
+        @close="handleSuccessDialogClose"
+        @send-whats-app="handleSuccessWhatsApp"
     />
 </template>

@@ -638,9 +638,9 @@ API endpoints untuk operasi AJAX di admin panel.
 ### Order API
 
 #### GET `/admin/api/orders/pending`
-Mendapatkan daftar order pending untuk real-time notification.
+Mendapatkan daftar order pending untuk real-time notification pada NewOrderAlert banner.
 
-**Controller**: `Api\OrderApiController@pending`  
+**Controller**: `Api\OrderApiController@pendingOrders`  
 **Route Name**: `admin.api.orders.pending`
 
 **Response**:
@@ -651,15 +651,37 @@ Mendapatkan daftar order pending untuk real-time notification.
       "id": 1,
       "order_number": "ORD-20251211-ABCDE",
       "customer_name": "John Doe",
+      "customer_phone": "081234567890",
       "total": 75000,
-      "status": "pending",
+      "items_count": 3,
       "created_at": "2025-12-11T10:30:00.000000Z",
-      "waiting_minutes": 15
+      "waiting_minutes": 15,
+      "whatsapp_url_confirmed": "https://wa.me/6281234567890?text=..."
     }
   ],
-  "count": 1
+  "total_pending": 1
 }
 ```
+
+**Response Fields**:
+| Field | Type | Description |
+|-------|------|-------------|
+| `orders` | array | Daftar pending orders (max 5) |
+| `orders[].id` | integer | Order ID |
+| `orders[].order_number` | string | Nomor pesanan |
+| `orders[].customer_name` | string | Nama customer |
+| `orders[].customer_phone` | string | Nomor telepon customer |
+| `orders[].total` | number | Total pesanan |
+| `orders[].items_count` | integer | Jumlah item dalam pesanan |
+| `orders[].created_at` | string | Timestamp pembuatan (ISO 8601) |
+| `orders[].waiting_minutes` | integer | Lama menunggu dalam menit |
+| `orders[].whatsapp_url_confirmed` | string | WhatsApp URL dengan template konfirmasi dari settings |
+| `total_pending` | integer | Total semua pending orders |
+
+**WhatsApp URL Integration**:
+- URL di-generate oleh `Order::getWhatsAppToCustomerUrl('confirmed')`
+- Menggunakan template dari `StoreSettingService::getWhatsAppTemplate()`
+- Template dapat dikustomisasi di Admin Settings > WhatsApp Templates
 
 ---
 

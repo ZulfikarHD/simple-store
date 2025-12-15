@@ -18,6 +18,7 @@ class OrderApiController extends Controller
     /**
      * Mendapatkan pending orders untuk alert banner
      * dengan informasi minimal yang diperlukan untuk display
+     * serta WhatsApp URL untuk konfirmasi langsung dengan template dari settings
      */
     public function pendingOrders(Request $request): JsonResponse
     {
@@ -34,6 +35,8 @@ class OrderApiController extends Controller
                 'items_count' => $order->items()->count(),
                 'created_at' => $order->created_at->toISOString(),
                 'waiting_minutes' => $order->created_at->diffInMinutes(now()),
+                // WhatsApp URL dengan template dari settings untuk konfirmasi
+                'whatsapp_url_confirmed' => $order->getWhatsAppToCustomerUrl('confirmed'),
             ]);
 
         return response()->json([
@@ -89,4 +92,3 @@ class OrderApiController extends Controller
         ]);
     }
 }
-

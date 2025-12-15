@@ -3,12 +3,14 @@
  * OrderCard Component
  * Card untuk menampilkan pesanan di mobile view dengan quick actions
  * dan urgency indicators berdasarkan waktu tunggu
+ * Dengan password confirmation dan success dialog untuk WhatsApp integration
  *
  * @author Zulfikar Hidayatullah
  */
 import { ref, computed } from 'vue'
 import { router, Link } from '@inertiajs/vue3'
 import { usePhoneFormat } from '@/composables/usePhoneFormat'
+import { useHapticFeedback } from '@/composables/useHapticFeedback'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -20,6 +22,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
+import PasswordConfirmDialog from '@/components/admin/PasswordConfirmDialog.vue'
+import StatusUpdateSuccessDialog from '@/components/admin/StatusUpdateSuccessDialog.vue'
 import PriceDisplay from '@/components/store/PriceDisplay.vue'
 import { OrderStatusBadge } from '@/components/store'
 import { show } from '@/routes/admin/orders'
@@ -60,9 +64,18 @@ interface Order {
     waiting_minutes?: number
 }
 
+interface WhatsAppUrls {
+    confirmed: string
+    preparing: string
+    ready: string
+    delivered: string
+    cancelled: string
+}
+
 interface Props {
     order: Order
     statuses: Record<string, string>
+    whatsappUrls?: WhatsAppUrls
 }
 
 const props = defineProps<Props>()
@@ -71,6 +84,11 @@ const props = defineProps<Props>()
  * Phone format composable untuk WhatsApp integration
  */
 const { openWhatsApp: openWhatsAppComposable } = usePhoneFormat()
+
+/**
+ * Haptic feedback untuk iOS-like tactile response
+ */
+const haptic = useHapticFeedback()
 
 const emit = defineEmits<{
     statusUpdated: [orderId: number, newStatus: string]
@@ -82,11 +100,12 @@ const emit = defineEmits<{
 const isUpdating = ref(false)
 
 /**
- * Computed untuk waktu tunggu dalam menit
+ * Computed untuk waktu tunggu dalam menit (integer, tanpa desimal)
  */
 const waitingMinutes = computed(() => {
     if (props.order.waiting_minutes !== undefined) {
-        return props.order.waiting_minutes
+        // Pastikan integer tanpa desimal
+        return Math.floor(props.order.waiting_minutes)
     }
     // Fallback: hitung dari created_at
     const created = new Date(props.order.created_at)
@@ -165,11 +184,23 @@ const errorMessage = ref<string | null>(null)
 const showConfirmModal = ref(false)
 
 /**
- * Open confirmation modal sebelum update status
+ * Password confirmation dialog state
+ */
+const showPasswordDialog = ref(false)
+
+/**
+ * Success dialog state
+ */
+const showSuccessDialog = ref(false)
+const successStatus = ref('')
+
+/**
+ * Open confirmation modal sebelum update status (tahap 1)
  * untuk mencegah aksi tidak sengaja oleh admin
  */
 function openConfirmModal(): void {
     if (!nextStatus.value || isUpdating.value) return
+    haptic.medium()
     showConfirmModal.value = true
 }
 
@@ -181,26 +212,41 @@ function closeConfirmModal(): void {
 }
 
 /**
- * Quick status update handler menggunakan Inertia router
- * untuk menghindari masalah CSRF token pada mobile
- * Dipanggil setelah user mengkonfirmasi melalui modal
+ * Lanjutkan ke password verification setelah konfirmasi (tahap 2)
  */
-function confirmUpdateStatus(): void {
+function proceedToPasswordVerification(): void {
+    showConfirmModal.value = false
+    showPasswordDialog.value = true
+}
+
+/**
+ * Eksekusi update status setelah password diverifikasi (tahap 3)
+ * Setelah sukses akan menampilkan success dialog dengan opsi WhatsApp
+ */
+function executeStatusUpdate(): void {
     if (!nextStatus.value || isUpdating.value) return
 
+    haptic.heavy()
     isUpdating.value = true
     errorMessage.value = null
-    showConfirmModal.value = false
+    showPasswordDialog.value = false
+
+    // Store target status untuk success dialog
+    const targetStatus = nextStatus.value.status
 
     router.patch(
         `/admin/orders/${props.order.id}/status`,
-        { status: nextStatus.value.status },
+        { status: targetStatus },
         {
             preserveScroll: true,
             onSuccess: () => {
-                emit('statusUpdated', props.order.id, nextStatus.value!.status)
+                // Set success state dan tampilkan success dialog
+                successStatus.value = targetStatus
+                showSuccessDialog.value = true
+                emit('statusUpdated', props.order.id, targetStatus)
             },
             onError: (errors) => {
+                haptic.error()
                 errorMessage.value = errors.status || 'Gagal mengubah status pesanan'
                 setTimeout(() => {
                     errorMessage.value = null
@@ -211,6 +257,36 @@ function confirmUpdateStatus(): void {
             },
         }
     )
+}
+
+/**
+ * Computed untuk mendapatkan WhatsApp URL berdasarkan successStatus
+ * URL dengan template message di-generate oleh backend (Order::getWhatsAppToCustomerUrl)
+ * yang menggunakan customizable templates dari StoreSettingService
+ */
+const successWhatsAppUrl = computed(() => {
+    if (!successStatus.value) return ''
+
+    // Ambil URL dari props yang sudah di-generate oleh backend dengan template dari settings
+    return props.whatsappUrls?.[successStatus.value as keyof WhatsAppUrls] ?? ''
+})
+
+/**
+ * Handle kirim WhatsApp dari success dialog
+ */
+function handleSuccessWhatsApp(): void {
+    haptic.medium()
+    if (successWhatsAppUrl.value) {
+        window.open(successWhatsAppUrl.value, '_blank')
+    }
+}
+
+/**
+ * Handle tutup success dialog
+ */
+function handleSuccessDialogClose(): void {
+    showSuccessDialog.value = false
+    successStatus.value = ''
 }
 
 /**
@@ -365,7 +441,7 @@ function openWhatsApp(): void {
         </CardContent>
     </Card>
 
-    <!-- Confirmation Modal untuk mencegah aksi tidak sengaja -->
+    <!-- Step 1: Confirmation Modal untuk mencegah aksi tidak sengaja -->
     <Dialog v-model:open="showConfirmModal">
         <DialogContent class="sm:max-w-md">
             <DialogHeader>
@@ -407,16 +483,36 @@ function openWhatsApp(): void {
                 </Button>
                 <Button
                     class="w-full sm:w-auto"
-                    :disabled="isUpdating"
-                    @click="confirmUpdateStatus"
+                    @click="proceedToPasswordVerification"
                 >
-                    <Loader2 v-if="isUpdating" class="mr-2 h-4 w-4 animate-spin" />
-                    <component :is="nextStatus?.icon" v-else class="mr-2 h-4 w-4" />
-                    Ya, {{ nextStatus?.label }}
+                    <component :is="nextStatus?.icon" class="mr-2 h-4 w-4" />
+                    Ya, Lanjutkan
                 </Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>
+
+    <!-- Step 2: Password Confirmation Dialog -->
+    <PasswordConfirmDialog
+        v-model:open="showPasswordDialog"
+        title="Verifikasi Password"
+        :description="`Masukkan password untuk mengubah status pesanan ${order.order_number} menjadi ${nextStatus ? getStatusLabel(nextStatus.status) : ''}.`"
+        confirm-label="Update Status"
+        :loading="isUpdating"
+        @confirm="executeStatusUpdate"
+    />
+
+    <!-- Step 3: Success Dialog dengan opsi WhatsApp -->
+    <StatusUpdateSuccessDialog
+        v-model:open="showSuccessDialog"
+        :new-status="successStatus"
+        :new-status-label="getStatusLabel(successStatus)"
+        :order-number="order.order_number"
+        :customer-name="order.customer_name"
+        :whatsapp-url="successWhatsAppUrl"
+        @close="handleSuccessDialogClose"
+        @send-whats-app="handleSuccessWhatsApp"
+    />
 </template>
 
 <style scoped>

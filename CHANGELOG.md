@@ -19,6 +19,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.1] - 2025-12-15
+
+### Added - Success Dialog WhatsApp Integration
+
+#### Status Update Success Dialog
+- **Success Dialog setelah Update Status**
+  - Dialog sukses dengan animasi iOS-style setelah update status pesanan
+  - Menampilkan informasi pesanan (nomor, customer, status baru)
+  - Tombol "Kirim via WhatsApp" yang prominent untuk langsung mengirim notifikasi
+  - Warna badge dinamis berdasarkan status (blue, purple, cyan, green, red)
+
+- **Integrasi pada OrderCard (Mobile)**
+  - Success dialog muncul setelah quick action (Konfirmasi, Proses, Siap Kirim, Selesai)
+  - WhatsApp URL menggunakan template dari StoreSettingService
+  - Haptic feedback untuk iOS-like tactile response
+
+- **Integrasi pada NewOrderAlert**
+  - Success dialog muncul setelah konfirmasi pesanan dari banner alert
+  - WhatsApp URL dengan template "confirmed" dari settings
+  - Animasi dan visual feedback yang konsisten
+
+#### API Enhancement
+- **GET `/admin/api/orders/pending`**
+  - Response sekarang menyertakan `whatsapp_url_confirmed` untuk setiap order
+  - URL di-generate oleh backend menggunakan template dari StoreSettingService
+  - Memastikan konsistensi template message di seluruh aplikasi
+
+### Changed
+- `OrderCard.vue`: Menggunakan `whatsappUrls` dari props untuk success dialog
+- `NewOrderAlert.vue`: Menambahkan StatusUpdateSuccessDialog dengan WhatsApp integration
+- `OrderApiController.php`: Menyertakan `whatsapp_url_confirmed` di response pending orders
+
+### Technical Implementation
+- **Backend**
+  - `OrderApiController::pendingOrders()` - menambahkan WhatsApp URL ke response
+  - Menggunakan `Order::getWhatsAppToCustomerUrl('confirmed')` untuk generate URL
+
+- **Frontend**
+  - `StatusUpdateSuccessDialog.vue` - reusable component untuk success feedback
+  - Computed property untuk reactive WhatsApp URL berdasarkan status
+  - Integrasi dengan `useHapticFeedback` composable
+
+### Integration Flow
+```
+Admin Update Status
+        ↓
+Password Verification
+        ↓
+Backend Update + Generate WhatsApp URL
+        ↓
+Success Dialog dengan tombol WhatsApp
+        ↓
+Customer menerima pesan dengan template dari Settings
+```
+
+---
+
 ## [1.6.0] - 2025-12-15
 
 ### Added - Customizable WhatsApp Templates & Timeline Icons

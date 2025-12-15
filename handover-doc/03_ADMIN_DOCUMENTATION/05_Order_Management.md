@@ -6,7 +6,8 @@
 |---------|--------|
 | **Nama Dokumen** | Panduan Manajemen Pesanan |
 | **Developer** | Zulfikar Hidayatullah (+62 857-1583-8733) |
-| **Versi** | 1.0.0 |
+| **Versi** | 1.1.0 |
+| **Terakhir Diperbarui** | 15 Desember 2025 |
 
 ---
 
@@ -486,7 +487,7 @@ Untuk pesanan Pending, sistem menampilkan:
 | `/admin/orders` | GET | Daftar pesanan (paginated) |
 | `/admin/orders/{id}` | GET | Detail pesanan |
 | `/admin/orders/{id}/status` | PATCH | Update status pesanan |
-| `/admin/api/orders/pending` | GET | Cek pending orders count |
+| `/admin/api/orders/pending` | GET | Pending orders untuk alert banner |
 | `/admin/api/orders/{id}/quick-status` | PATCH | Quick status update |
 
 ### Request Body (Update Status)
@@ -507,11 +508,88 @@ Untuk pesanan Pending, sistem menampilkan:
 }
 ```
 
-### Response
+### Response (Update Status)
 
 ```json
 {
   "message": "Status pesanan berhasil diperbarui."
 }
 ```
+
+### Response (Pending Orders API)
+
+```json
+{
+  "orders": [
+    {
+      "id": 1,
+      "order_number": "ORD-20251215-ABCDE",
+      "customer_name": "John Doe",
+      "customer_phone": "081234567890",
+      "total": 75000,
+      "items_count": 3,
+      "created_at": "2025-12-15T10:30:00.000000Z",
+      "waiting_minutes": 15,
+      "whatsapp_url_confirmed": "https://wa.me/6281234567890?text=..."
+    }
+  ],
+  "total_pending": 1
+}
+```
+
+> **Note**: Field `whatsapp_url_confirmed` berisi URL WhatsApp dengan template message yang sudah di-generate dari settings. URL ini digunakan oleh Success Dialog setelah konfirmasi pesanan dari NewOrderAlert banner.
+
+---
+
+## Integrasi WhatsApp Template
+
+### Arsitektur Integrasi
+
+Sistem menggunakan **single source of truth** untuk WhatsApp templates, yaitu: semua template disimpan di `StoreSettingService` dan digunakan secara konsisten di seluruh aplikasi.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                  WHATSAPP TEMPLATE FLOW                          │
+│                                                                  │
+│   Admin Settings                                                 │
+│   (Template Editor)                                              │
+│         │                                                        │
+│         ▼                                                        │
+│   StoreSettingService                                            │
+│   getWhatsAppTemplate()                                          │
+│         │                                                        │
+│         ▼                                                        │
+│   Order::getWhatsAppToCustomerUrl()                              │
+│         │                                                        │
+│    ┌────┴────┐                                                   │
+│    ▼         ▼                                                   │
+│ OrderCard  NewOrderAlert                                         │
+│ (Index)    (Banner)                                              │
+│    │         │                                                   │
+│    ▼         ▼                                                   │
+│ StatusUpdateSuccessDialog                                        │
+│ (WhatsApp Button)                                                │
+│         │                                                        │
+│         ▼                                                        │
+│   Customer WhatsApp                                              │
+│   (Customized Message)                                           │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Komponen yang Menggunakan Template
+
+| Komponen | Lokasi | Penggunaan |
+|----------|--------|------------|
+| **Order Detail Page** | `/admin/orders/{id}` | Update status manual + WhatsApp |
+| **OrderCard** | Mobile order list | Quick action + Success Dialog |
+| **NewOrderAlert** | Banner pending orders | Konfirmasi + Success Dialog |
+
+### Konsistensi Template
+
+Semua komponen menggunakan URL yang di-generate oleh backend:
+- **OrderCard**: `props.whatsappUrls[status]` dari OrderController
+- **NewOrderAlert**: `order.whatsapp_url_confirmed` dari OrderApiController
+- **Order Detail**: `whatsappUrls[status]` dari OrderController
+
+Dengan demikian, perubahan template di Settings akan langsung berlaku di seluruh aplikasi tanpa perlu update frontend.
 
