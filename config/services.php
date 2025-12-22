@@ -48,4 +48,19 @@ return [
         'phone_number' => env('WHATSAPP_PHONE_NUMBER', '6281234567890'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Google OAuth Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Konfigurasi untuk Google OAuth authentication
+    | Dapatkan credentials dari Google Cloud Console
+    |
+    */
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
+    ],
+
 ];

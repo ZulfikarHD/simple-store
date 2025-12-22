@@ -19,6 +19,142 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.0] - 2025-12-22
+
+### Added - Google OAuth Authentication
+
+#### Google Login Integration
+- **Login dengan Google**
+  - User dapat login menggunakan akun Google mereka
+  - One-click authentication tanpa perlu registrasi manual
+  - Email otomatis terverifikasi untuk user Google
+  - Avatar dari Google profile ditampilkan di aplikasi
+
+- **Auto-Registration untuk User Baru**
+  - User yang login dengan Google pertama kali otomatis dibuatkan akun
+  - Default role: customer
+  - Password tidak diperlukan untuk Google login
+  - Data profile (nama, email, avatar) diambil dari Google
+
+- **Link Akun Existing**
+  - User dengan email yang sudah terdaftar dapat link akun Google mereka
+  - Login berikutnya bisa menggunakan Google atau password
+  - Sinkronisasi avatar dari Google
+
+#### UI/UX Enhancements
+- **Tombol Google di Login Page**
+  - Tombol "Masuk dengan Google" dengan logo Google official
+  - iOS-style design konsisten dengan aplikasi
+  - Animasi smooth dengan motion-v
+  - Divider "Atau" untuk pemisah visual yang jelas
+
+- **Tombol Google di Register Page**
+  - Tombol "Daftar dengan Google" untuk registrasi cepat
+  - Konsisten styling dengan login page
+  - Haptic feedback untuk iOS-like experience
+
+### Technical Implementation
+
+#### Backend Changes
+- **Laravel Socialite Package**
+  - Installed `laravel/socialite` v5.24.0
+  - Configured Google OAuth driver
+
+- **Database Migration**
+  - Added `google_id` column (string, nullable, unique) to `users` table
+  - Added `avatar` column (string, nullable) to `users` table
+  - Modified `password` column to nullable (untuk support Google-only users)
+
+- **New Controller**
+  - `app/Http/Controllers/Auth/GoogleAuthController.php`
+    - `redirect()`: Redirect ke Google OAuth
+    - `callback()`: Handle callback dari Google dan login/register user
+
+- **Routes**
+  - `GET /auth/google`: Redirect ke Google OAuth
+  - `GET /auth/google/callback`: Callback dari Google
+
+- **User Model Updates**
+  - Added `google_id` and `avatar` to `$fillable`
+  - Support untuk user tanpa password (Google-only login)
+
+- **Configuration**
+  - `config/services.php`: Added Google OAuth configuration
+  - `.env.example`: Added Google credentials template
+
+#### Frontend Changes
+- **Login Page (`Login.vue`)**
+  - Added Google login button dengan official Google logo
+  - Divider "Atau" antara form login dan Google button
+  - Updated tabindex dan stagger delay untuk animasi
+
+- **Register Page (`Register.vue`)**
+  - Added Google register button
+  - Konsisten styling dengan login page
+  - Updated tabindex dan stagger delay
+
+### Security Features
+- **OAuth 2.0 Standard**
+  - Menggunakan Google OAuth 2.0 untuk authentication
+  - Secure token handling oleh Laravel Socialite
+  - CSRF protection pada callback route
+
+- **Email Verification**
+  - Email dari Google otomatis terverifikasi
+  - `email_verified_at` di-set saat registrasi via Google
+
+- **Data Privacy**
+  - Hanya meminta scope: email, profile, openid
+  - Tidak menyimpan Google access token
+  - Avatar URL disimpan untuk display purposes
+
+### Configuration Guide
+- **Setup Documentation**
+  - Created `GOOGLE_OAUTH_SETUP.md` dengan panduan lengkap
+  - Step-by-step Google Cloud Console setup
+  - Environment variables configuration
+  - Troubleshooting common issues
+
+- **Environment Variables**
+  ```env
+  GOOGLE_CLIENT_ID=your-client-id
+  GOOGLE_CLIENT_SECRET=your-client-secret
+  GOOGLE_REDIRECT_URI=${APP_URL}/auth/google/callback
+  ```
+
+### Features Summary
+- ✅ Login dengan Google
+- ✅ Registrasi otomatis untuk user baru
+- ✅ Link akun Google ke akun existing (by email)
+- ✅ Avatar dari Google profile
+- ✅ Email otomatis terverifikasi
+- ✅ Default role: customer
+- ✅ Support user tanpa password (Google-only)
+- ✅ iOS-style UI dengan animasi smooth
+- ✅ Haptic feedback untuk mobile experience
+
+### Testing
+- Manual testing untuk Google OAuth flow
+- Login dan register via Google berhasil
+- Link akun existing berhasil
+- Avatar dan data profile tersinkronisasi
+
+### Documentation
+- **New File**: `GOOGLE_OAUTH_SETUP.md`
+  - Panduan setup Google Cloud Console
+  - Konfigurasi OAuth consent screen
+  - Environment variables setup
+  - Troubleshooting guide
+  - Security best practices
+
+### Notes
+- Google OAuth memerlukan HTTPS di production
+- Development dapat menggunakan `http://localhost`
+- Pastikan redirect URI di Google Console sama dengan aplikasi
+- Client Secret harus dijaga kerahasiaannya
+
+---
+
 ## [1.7.0] - 2025-12-15
 
 ### Added - Checkout Name Validation Enhancement
