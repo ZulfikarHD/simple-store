@@ -124,8 +124,10 @@ class ProductCatalogTest extends TestCase
                 ->has('description')
                 ->has('price')
                 ->has('image')
+                ->has('stock')
                 ->has('category')
                 ->has('is_available')
+                ->has('stock_status')
             )
         );
     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreCategoryRequest;
 use App\Http\Requests\Admin\UpdateCategoryRequest;
+use App\Models\AuditLog;
 use App\Models\Category;
 use App\Services\CategoryService;
 use Illuminate\Http\RedirectResponse;
@@ -45,6 +46,7 @@ class CategoryController extends Controller
 
     /**
      * Menyimpan kategori baru ke database
+     * dengan audit logging untuk tracking pembuatan kategori
      */
     public function store(StoreCategoryRequest $request): RedirectResponse
     {
@@ -53,7 +55,15 @@ class CategoryController extends Controller
         // Set default value untuk is_active jika tidak dikirim
         $data['is_active'] = $request->boolean('is_active', true);
 
-        $this->categoryService->createCategory($data);
+        $category = $this->categoryService->createCategory($data);
+
+        // Audit log untuk category creation
+        AuditLog::log(
+            action: 'category.create',
+            modelType: Category::class,
+            modelId: $category->id,
+            newValues: $category->toArray()
+        );
 
         return redirect()
             ->route('admin.categories.index')
@@ -74,15 +84,26 @@ class CategoryController extends Controller
 
     /**
      * Mengupdate kategori di database
+     * dengan audit logging untuk tracking perubahan data
      */
     public function update(UpdateCategoryRequest $request, Category $category): RedirectResponse
     {
+        $oldValues = $category->toArray();
         $data = $request->validated();
 
         // Set default value untuk is_active jika tidak dikirim
         $data['is_active'] = $request->boolean('is_active', true);
 
         $this->categoryService->updateCategory($category, $data);
+
+        // Audit log untuk category update
+        AuditLog::log(
+            action: 'category.update',
+            modelType: Category::class,
+            modelId: $category->id,
+            oldValues: $oldValues,
+            newValues: $category->fresh()->toArray()
+        );
 
         return redirect()
             ->route('admin.categories.index')
@@ -91,10 +112,13 @@ class CategoryController extends Controller
 
     /**
      * Menghapus kategori dari database
-     * dengan validasi constraint (tidak bisa hapus jika masih ada produk)
+     * dengan validasi constraint dan audit logging untuk tracking deletion
      */
     public function destroy(Category $category): RedirectResponse
     {
+        // Simpan data sebelum dihapus untuk audit log
+        $categoryData = $category->toArray();
+
         $result = $this->categoryService->deleteCategory($category);
 
         if (! $result['success']) {
@@ -102,6 +126,14 @@ class CategoryController extends Controller
                 ->route('admin.categories.index')
                 ->with('error', $result['message']);
         }
+
+        // Audit log untuk category deletion
+        AuditLog::log(
+            action: 'category.delete',
+            modelType: Category::class,
+            modelId: $categoryData['id'],
+            oldValues: $categoryData
+        );
 
         return redirect()
             ->route('admin.categories.index')

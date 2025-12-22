@@ -35,8 +35,16 @@ class OrderController extends Controller
      */
     public function index(Request $request): Response
     {
-        $filters = $request->only(['search', 'status', 'start_date', 'end_date', 'per_page']);
-        $orders = $this->orderService->getFilteredOrders($filters);
+        // Validasi input untuk security dan data integrity
+        $validated = $request->validate([
+            'search' => ['nullable', 'string', 'min:2', 'max:50'],
+            'status' => ['nullable', 'string', 'in:pending,confirmed,preparing,ready,delivered,cancelled'],
+            'start_date' => ['nullable', 'date', 'before_or_equal:today'],
+            'end_date' => ['nullable', 'date', 'after_or_equal:start_date', 'before_or_equal:today'],
+            'per_page' => ['nullable', 'integer', 'min:10', 'max:100'],
+        ]);
+
+        $orders = $this->orderService->getFilteredOrders($validated);
         $statuses = $this->orderService->getAvailableStatuses();
         $statusCounts = $this->orderService->getAllStatusCounts();
 
@@ -64,7 +72,7 @@ class OrderController extends Controller
         return Inertia::render('Admin/Orders/Index', [
             'orders' => $orders,
             'statuses' => $statuses,
-            'filters' => $filters,
+            'filters' => $validated,
             'statusCounts' => $statusCounts,
         ]);
     }

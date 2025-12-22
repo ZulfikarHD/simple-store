@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Models\Product;
-use Illuminate\Support\Facades\DB;
 
 class DashboardService
 {
@@ -101,12 +100,13 @@ class DashboardService
     /**
      * Mengambil breakdown status order untuk analytics
      * dengan grouping berdasarkan status dan counting untuk visualisasi data
+     * menggunakan selectRaw untuk clarity dan keamanan query
      *
      * @return \Illuminate\Support\Collection Collection berisi count per status
      */
     protected function getOrderStatusBreakdown()
     {
-        return Order::select('status', DB::raw('count(*) as count'))
+        return Order::selectRaw('status, count(*) as count')
             ->groupBy('status')
             ->get()
             ->mapWithKeys(function ($item) {

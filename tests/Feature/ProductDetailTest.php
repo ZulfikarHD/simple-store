@@ -253,8 +253,10 @@ class ProductDetailTest extends TestCase
                 ->has('description')
                 ->has('price')
                 ->has('image')
+                ->has('stock')
                 ->has('is_available')
                 ->has('category')
+                ->has('stock_status')
             )
         );
     }
