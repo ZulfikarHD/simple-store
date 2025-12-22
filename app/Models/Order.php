@@ -20,11 +20,14 @@ class Order extends Model
 
     /**
      * The attributes that are mass assignable.
+     * Status dan timestamp fields tidak boleh mass-assignable
+     * untuk mencegah manipulation via request parameters
      *
      * @var list<string>
      */
     protected $fillable = [
         'order_number',
+        'access_ulid',
         'user_id',
         'customer_name',
         'customer_phone',
@@ -33,6 +36,15 @@ class Order extends Model
         'subtotal',
         'delivery_fee',
         'total',
+    ];
+
+    /**
+     * The attributes that aren't mass assignable.
+     * Protected fields yang hanya bisa diubah via explicit setters
+     *
+     * @var list<string>
+     */
+    protected $guarded = [
         'status',
         'confirmed_at',
         'preparing_at',
@@ -62,7 +74,7 @@ class Order extends Model
     }
 
     /**
-     * Boot method untuk auto-generate order number
+     * Boot method untuk auto-generate order number dan ULID
      */
     protected static function boot(): void
     {
@@ -71,6 +83,9 @@ class Order extends Model
         static::creating(function (Order $order) {
             if (empty($order->order_number)) {
                 $order->order_number = self::generateOrderNumber();
+            }
+            if (empty($order->access_ulid)) {
+                $order->access_ulid = (string) Str::ulid();
             }
         });
     }
@@ -130,58 +145,98 @@ class Order extends Model
 
     /**
      * Update status order ke confirmed
+     * menggunakan direct attribute assignment untuk bypass mass assignment protection
      */
     public function confirm(): bool
     {
-        return $this->update([
-            'status' => 'confirmed',
-            'confirmed_at' => now(),
-        ]);
+        $this->status = 'confirmed';
+        $this->confirmed_at = now();
+
+        return $this->save();
     }
 
     /**
      * Update status order ke preparing
+     * menggunakan direct attribute assignment untuk bypass mass assignment protection
      */
     public function startPreparing(): bool
     {
-        return $this->update([
-            'status' => 'preparing',
-            'preparing_at' => now(),
-        ]);
+        $this->status = 'preparing';
+        $this->preparing_at = now();
+
+        return $this->save();
     }
 
     /**
      * Update status order ke ready
+     * menggunakan direct attribute assignment untuk bypass mass assignment protection
      */
     public function markReady(): bool
     {
-        return $this->update([
-            'status' => 'ready',
-            'ready_at' => now(),
-        ]);
+        $this->status = 'ready';
+        $this->ready_at = now();
+
+        return $this->save();
     }
 
     /**
      * Update status order ke delivered
+     * menggunakan direct attribute assignment untuk bypass mass assignment protection
      */
     public function markDelivered(): bool
     {
-        return $this->update([
-            'status' => 'delivered',
-            'delivered_at' => now(),
-        ]);
+        $this->status = 'delivered';
+        $this->delivered_at = now();
+
+        return $this->save();
     }
 
     /**
      * Update status order ke cancelled
+     * menggunakan direct attribute assignment untuk bypass mass assignment protection
      */
     public function cancel(?string $reason = null): bool
     {
-        return $this->update([
-            'status' => 'cancelled',
-            'cancelled_at' => now(),
-            'cancellation_reason' => $reason,
-        ]);
+        $this->status = 'cancelled';
+        $this->cancelled_at = now();
+        $this->cancellation_reason = $reason;
+
+        return $this->save();
+    }
+
+    /**
+     * Cek apakah akses ULID sudah expired berdasarkan status order
+     * untuk mencegah akses ke order yang sudah selesai atau dibatalkan
+     */
+    public function isAccessExpired(): bool
+    {
+        return in_array($this->status, ['delivered', 'cancelled']);
+    }
+
+    /**
+     * Verifikasi nomor telepon customer untuk akses order via ULID
+     * dengan normalisasi format untuk membandingkan hanya angka
+     * dimana semua format dikonversi ke international format (62xxx)
+     */
+    public function verifyCustomerPhone(string $phone): bool
+    {
+        // Normalize input phone
+        $normalizedInput = preg_replace('/[^0-9]/', '', $phone);
+
+        // Convert 08xxx to 62xxx
+        if (str_starts_with($normalizedInput, '0')) {
+            $normalizedInput = '62'.substr($normalizedInput, 1);
+        }
+
+        // Normalize order phone
+        $normalizedOrder = preg_replace('/[^0-9]/', '', $this->customer_phone);
+
+        // Convert 08xxx to 62xxx
+        if (str_starts_with($normalizedOrder, '0')) {
+            $normalizedOrder = '62'.substr($normalizedOrder, 1);
+        }
+
+        return $normalizedInput === $normalizedOrder;
     }
 
     /**
@@ -194,7 +249,8 @@ class Order extends Model
 
     /**
      * Generate WhatsApp message dari customer ke owner
-     * dengan tone yang sesuai, nama customer, dan link ke admin order detail
+     * dengan tone yang sesuai, nama customer, dan ULID-based secure link
+     * untuk menghindari exposure admin panel structure
      */
     public function generateWhatsAppMessage(): string
     {
@@ -202,7 +258,8 @@ class Order extends Model
             return "- {$item->product_name} × {$item->quantity}";
         })->implode("\n");
 
-        $adminUrl = url("/admin/orders/{$this->id}");
+        // Gunakan ULID-based URL yang lebih secure
+        $orderUrl = route('orders.view', ['ulid' => $this->access_ulid]);
 
         return "Halo! Saya *{$this->customer_name}* ingin memesan.\n\n"
             ."*Invoice:* #{$this->order_number}\n\n"
@@ -210,7 +267,7 @@ class Order extends Model
             .'*Total:* Rp '.number_format($this->total, 0, ',', '.')."\n\n"
             .($this->customer_address ? "*Alamat:* {$this->customer_address}\n\n" : '')
             .($this->notes ? "*Catatan:* {$this->notes}\n\n" : '')
-            ."*Link Detail Pesanan:*\n{$adminUrl}\n\n"
+            ."*Link Detail Pesanan:*\n{$orderUrl}\n\n"
             .'Mohon konfirmasi pesanan saya. Terima kasih!';
     }
 

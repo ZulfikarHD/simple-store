@@ -51,10 +51,14 @@ class CartController extends Controller
 
     /**
      * Mengupdate quantity item di keranjang
-     * dengan validasi quantity minimal 1
+     * dengan validasi quantity minimal 1 dan ownership verification
+     * untuk mencegah IDOR attacks
      */
     public function update(UpdateCartItemRequest $request, CartItem $cartItem): RedirectResponse
     {
+        // Verifikasi bahwa cart item belongs to current session's cart
+        $this->authorize('update', $cartItem);
+
         $validated = $request->validated();
 
         $this->cartService->updateQuantity(
@@ -67,9 +71,13 @@ class CartController extends Controller
 
     /**
      * Menghapus item dari keranjang belanja
+     * dengan ownership verification untuk mencegah IDOR attacks
      */
     public function destroy(CartItem $cartItem): RedirectResponse
     {
+        // Verifikasi bahwa cart item belongs to current session's cart
+        $this->authorize('delete', $cartItem);
+
         $deleted = $this->cartService->removeItem($cartItem->id);
 
         if (! $deleted) {

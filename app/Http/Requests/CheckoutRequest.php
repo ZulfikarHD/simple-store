@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\IndonesianPhoneNumber;
 use App\Rules\ValidPersonName;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -46,7 +47,7 @@ class CheckoutRequest extends FormRequest
                 'max:50',
                 new ValidPersonName,
             ],
-            'customer_phone' => ['required', 'string', 'min:10', 'max:15', 'regex:/^[0-9+\-\s]+$/'],
+            'customer_phone' => ['required', 'string', new IndonesianPhoneNumber],
             'customer_address' => ['nullable', 'string', 'max:500'],
             'notes' => ['nullable', 'string', 'max:500'],
         ];
@@ -99,6 +100,27 @@ class CheckoutRequest extends FormRequest
             'customer_address' => 'alamat pengiriman',
             'notes' => 'catatan',
         ];
+    }
+
+    /**
+     * Prepare the data for validation.
+     * Normalize phone number ke international format sebelum validasi
+     */
+    protected function prepareForValidation(): void
+    {
+        if ($this->customer_phone) {
+            // Remove spaces, dashes, and other characters
+            $phone = preg_replace('/[^0-9+]/', '', $this->customer_phone);
+
+            // Normalize to international format (+62xxx)
+            if (str_starts_with($phone, '0')) {
+                $phone = '+62'.substr($phone, 1);
+            } elseif (str_starts_with($phone, '62')) {
+                $phone = '+'.$phone;
+            }
+
+            $this->merge(['customer_phone' => $phone]);
+        }
     }
 
     /**

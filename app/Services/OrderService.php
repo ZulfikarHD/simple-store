@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Order;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -63,17 +62,18 @@ class OrderService
             $total = $subtotal + $deliveryFee;
 
             // Buat order record dengan customer data dan user_id jika authenticated
-            $order = Order::create([
-                'user_id' => auth()->id(),
-                'customer_name' => $customerData['customer_name'],
-                'customer_phone' => $customerData['customer_phone'],
-                'customer_address' => $customerData['customer_address'],
-                'notes' => $customerData['notes'] ?? null,
-                'subtotal' => $subtotal,
-                'delivery_fee' => $deliveryFee,
-                'total' => $total,
-                'status' => 'pending',
-            ]);
+            // Status diset secara explicit untuk security (protected dari mass assignment)
+            $order = new Order;
+            $order->user_id = auth()->id();
+            $order->customer_name = $customerData['customer_name'];
+            $order->customer_phone = $customerData['customer_phone'];
+            $order->customer_address = $customerData['customer_address'];
+            $order->notes = $customerData['notes'] ?? null;
+            $order->subtotal = $subtotal;
+            $order->delivery_fee = $deliveryFee;
+            $order->total = $total;
+            $order->status = 'pending';
+            $order->save();
 
             // Copy cart items ke order items (snapshot harga saat pembelian)
             foreach ($cart->items as $cartItem) {
@@ -113,7 +113,7 @@ class OrderService
 
     /**
      * Mendapatkan data order yang diformat untuk frontend OrderSuccess page
-     * termasuk formatted prices dan items dengan subtotal
+     * termasuk formatted prices, items dengan subtotal, dan ULID untuk secure access
      *
      * @return array<string, mixed> Data order yang siap digunakan di frontend
      */
@@ -124,6 +124,7 @@ class OrderService
         return [
             'id' => $order->id,
             'order_number' => $order->order_number,
+            'access_ulid' => $order->access_ulid,
             'customer_name' => $order->customer_name,
             'customer_phone' => $order->customer_phone,
             'customer_address' => $order->customer_address,
@@ -166,8 +167,22 @@ class OrderService
             ->latest();
 
         // Filter pencarian berdasarkan order number, nama customer, atau nomor telepon
+        // dengan sanitization untuk mencegah SQL injection dan performance DoS
         if (! empty($filters['search'])) {
-            $search = $filters['search'];
+            $search = trim($filters['search']);
+
+            // Validasi search length untuk security
+            if (strlen($search) < 2) {
+                throw new \InvalidArgumentException('Pencarian harus minimal 2 karakter.');
+            }
+
+            if (strlen($search) > 50) {
+                throw new \InvalidArgumentException('Pencarian terlalu panjang (maksimal 50 karakter).');
+            }
+
+            // Escape special LIKE characters untuk mencegah wildcard abuse
+            $search = str_replace(['%', '_', '\\'], ['\\%', '\\_', '\\\\'], $search);
+
             $query->where(function ($q) use ($search) {
                 $q->where('order_number', 'like', "%{$search}%")
                     ->orWhere('customer_name', 'like', "%{$search}%")
@@ -273,36 +288,30 @@ class OrderService
     /**
      * Update status order dengan timestamp logging
      * dimana setiap perubahan status akan dicatat dengan waktu yang sesuai
+     * menggunakan explicit methods untuk bypass mass assignment protection
      *
      * @param  string|null  $reason  Alasan pembatalan (required jika status = cancelled)
      * @return array{success: bool, message: string}
      */
     public function updateOrderStatus(Order $order, string $status, ?string $reason = null): array
     {
-        $updateData = ['status' => $status];
-        $now = Carbon::now();
+        // Gunakan explicit methods dari Order model untuk bypass mass assignment protection
+        // Methods ini sudah handle status dan timestamp secara aman
+        $success = match ($status) {
+            'confirmed' => $order->confirm(),
+            'preparing' => $order->startPreparing(),
+            'ready' => $order->markReady(),
+            'delivered' => $order->markDelivered(),
+            'cancelled' => $order->cancel($reason),
+            default => false,
+        };
 
-        // Set timestamp berdasarkan status yang dipilih
-        switch ($status) {
-            case 'confirmed':
-                $updateData['confirmed_at'] = $now;
-                break;
-            case 'preparing':
-                $updateData['preparing_at'] = $now;
-                break;
-            case 'ready':
-                $updateData['ready_at'] = $now;
-                break;
-            case 'delivered':
-                $updateData['delivered_at'] = $now;
-                break;
-            case 'cancelled':
-                $updateData['cancelled_at'] = $now;
-                $updateData['cancellation_reason'] = $reason;
-                break;
+        if (! $success) {
+            return [
+                'success' => false,
+                'message' => 'Gagal mengupdate status pesanan.',
+            ];
         }
-
-        $order->update($updateData);
 
         return [
             'success' => true,

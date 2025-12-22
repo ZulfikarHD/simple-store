@@ -22,6 +22,7 @@ class CartService
     /**
      * Mendapatkan cart untuk session saat ini
      * dengan eager loading items dan products
+     * serta support untuk authenticated user carts
      */
     public function getCart(): Cart
     {
@@ -31,19 +32,85 @@ class CartService
         }
 
         $sessionId = Session::getId();
+        $userId = auth()->id();
+
+        // Jika user authenticated, prioritas cart berdasarkan user_id
+        // Jika tidak, gunakan session_id
         $cart = Cart::query()
-            ->where('session_id', $sessionId)
+            ->when($userId, function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }, function ($query) use ($sessionId) {
+                $query->where('session_id', $sessionId)
+                    ->whereNull('user_id');
+            })
             ->with(['items.product'])
             ->first();
 
         if (! $cart) {
             $cart = Cart::create([
                 'session_id' => $sessionId,
+                'user_id' => $userId,
             ]);
             $cart->load(['items.product']);
         }
 
         return $cart;
+    }
+
+    /**
+     * Merge guest cart dengan user cart setelah login
+     * untuk mencegah session fixation dan maintain cart items
+     * Call this method in LoginController after successful authentication
+     *
+     * @param  string  $guestSessionId  Session ID sebelum login
+     */
+    public function mergeGuestCart(string $guestSessionId): void
+    {
+        $userId = auth()->id();
+
+        if (! $userId) {
+            return;
+        }
+
+        // Find guest cart
+        $guestCart = Cart::where('session_id', $guestSessionId)
+            ->whereNull('user_id')
+            ->first();
+
+        if (! $guestCart || $guestCart->items->isEmpty()) {
+            return;
+        }
+
+        // Find or create user cart
+        $userCart = Cart::firstOrCreate([
+            'user_id' => $userId,
+        ], [
+            'session_id' => Session::getId(),
+        ]);
+
+        // Merge items dengan database transaction untuk atomic operation
+        \DB::transaction(function () use ($guestCart, $userCart) {
+            foreach ($guestCart->items as $guestItem) {
+                $existingItem = $userCart->items()
+                    ->where('product_id', $guestItem->product_id)
+                    ->first();
+
+                if ($existingItem) {
+                    // Jika item sudah ada, tambahkan quantity
+                    $existingItem->increment('quantity', $guestItem->quantity);
+                } else {
+                    // Jika item belum ada, buat baru
+                    $userCart->items()->create([
+                        'product_id' => $guestItem->product_id,
+                        'quantity' => $guestItem->quantity,
+                    ]);
+                }
+            }
+
+            // Delete guest cart setelah merge
+            $guestCart->items()->delete();
+            $guestCart->delete();
+        });
     }
 
     /**

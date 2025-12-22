@@ -99,6 +99,17 @@ class OrderController extends Controller
     }
 
     /**
+     * Menampilkan detail order berdasarkan ULID
+     * untuk admin access via ULID-based secure URL
+     */
+    public function showByUlid(string $ulid, StoreSettingService $settingService): Response
+    {
+        $order = Order::where('access_ulid', $ulid)->firstOrFail();
+
+        return $this->show($order, $settingService);
+    }
+
+    /**
      * Update status order dengan timestamp logging
      * dimana setiap perubahan status akan dicatat dengan waktu yang sesuai
      */

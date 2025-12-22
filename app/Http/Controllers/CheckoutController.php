@@ -67,6 +67,7 @@ class CheckoutController extends Controller
     /**
      * Memproses checkout dan membuat order baru
      * dengan redirect ke WhatsApp untuk konfirmasi
+     * serta proper error handling untuk security
      */
     public function store(CheckoutRequest $request): RedirectResponse
     {
@@ -76,13 +77,29 @@ class CheckoutController extends Controller
             $order = $this->orderService->createOrder($validated);
             $whatsappUrl = $this->orderService->generateWhatsAppUrl($order);
 
-            // Store WhatsApp URL in session untuk redirect dari halaman success
+            // Store WhatsApp URL dan ULID in session untuk security verification
             session()->flash('whatsapp_url', $whatsappUrl);
+            session()->put('checkout_order_ulid', $order->access_ulid);
+            session()->put('checkout_order_created_at', now());
 
             return redirect()->route('checkout.success', ['order' => $order->id]);
-        } catch (\Exception $e) {
+        } catch (\InvalidArgumentException $e) {
+            // Business logic errors - safe to show user
             return back()->withErrors([
                 'checkout' => $e->getMessage(),
+            ])->withInput();
+        } catch (\Exception $e) {
+            // Log full error untuk debugging tanpa expose ke user
+            \Log::error('Checkout failed', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'input' => $request->except(['_token']),
+            ]);
+
+            // Show generic error message untuk security
+            return back()->withErrors([
+                'checkout' => 'Terjadi kesalahan saat memproses pesanan. Silakan coba lagi atau hubungi customer service.',
             ])->withInput();
         }
     }
@@ -110,18 +127,32 @@ class CheckoutController extends Controller
 
     /**
      * Menampilkan halaman sukses setelah order berhasil dibuat
-     * dengan detail pesanan dan link WhatsApp
+     * dengan detail pesanan dan link WhatsApp menggunakan ULID verification untuk security
      */
     public function success(Order $order): Response|RedirectResponse
     {
-        // Pastikan order milik session yang sama atau baru dibuat
-        // Untuk keamanan, kita hanya tampilkan jika ada flash whatsapp_url
-        // atau order dibuat dalam 1 jam terakhir
-        $isRecentOrder = $order->created_at->diffInHours(now()) < 1;
+        $user = auth()->user();
 
-        if (! session()->has('whatsapp_url') && ! $isRecentOrder) {
+        // Validasi akses order dengan beberapa metode untuk security:
+        // 1. Check session ULID (untuk immediate access setelah checkout)
+        // 2. Check jika authenticated user adalah pemilik order
+        // 3. Session timeout 15 menit untuk security
+
+        $sessionUlid = session('checkout_order_ulid');
+        $sessionCreatedAt = session('checkout_order_created_at');
+
+        // Validate session-based access
+        $isSessionOrder = $sessionUlid === $order->access_ulid
+            && $sessionCreatedAt
+            && now()->diffInMinutes($sessionCreatedAt) < 15;
+
+        // Validate user ownership
+        $isUserOrder = $user && $order->user_id === $user->id;
+
+        // Deny access jika tidak memenuhi kondisi keamanan
+        if (! $isSessionOrder && ! $isUserOrder) {
             return redirect()->route('home')
-                ->with('error', 'Pesanan tidak ditemukan atau sudah kedaluwarsa.');
+                ->with('error', 'Akses ke halaman ini tidak diizinkan. Silakan gunakan link yang dikirim via WhatsApp.');
         }
 
         $order->load('items');

@@ -7,7 +7,6 @@ use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 /**
  * AccountController untuk halaman akun user
@@ -69,14 +68,14 @@ class AccountController extends Controller
 
     /**
      * Menampilkan detail pesanan user
-     * dengan validasi kepemilikan order
+     * dengan strict validation kepemilikan order untuk mencegah IDOR
+     * dan unauthorized access ke guest orders
      */
     public function orderShow(Request $request, Order $order): Response
     {
-        $user = $request->user();
-
-        // Pastikan order milik user yang sedang login
-        abort_unless($order->user_id === $user->id, HttpResponse::HTTP_FORBIDDEN);
+        // Gunakan policy untuk strict authorization check
+        // Policy akan memastikan order memiliki user_id dan belongs to current user
+        $this->authorize('view', $order);
 
         return Inertia::render('Account/OrderDetail', [
             'order' => $this->orderService->getOrderDetail($order),

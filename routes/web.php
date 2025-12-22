@@ -12,6 +12,7 @@ use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\PublicOrderController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [ProductController::class, 'index'])->name('home');
@@ -20,6 +21,17 @@ Route::get('/products/{product:slug}', [ProductController::class, 'show'])->name
 // Google OAuth routes
 Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->name('auth.google');
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('auth.google.callback');
+
+// Public order view routes dengan ULID-based access dan phone verification
+// untuk secure order viewing tanpa expose admin panel structure
+Route::get('/orders/{ulid}', [PublicOrderController::class, 'show'])
+    ->name('orders.view')
+    ->where('ulid', '[0-9A-HJKMNP-TV-Z]{26}');
+
+Route::post('/orders/{ulid}/verify', [PublicOrderController::class, 'verify'])
+    ->name('orders.verify')
+    ->middleware('throttle:5,15')
+    ->where('ulid', '[0-9A-HJKMNP-TV-Z]{26}');
 
 // Cart routes untuk operasi keranjang belanja dengan rate limiting
 Route::get('/cart', [CartController::class, 'show'])->name('cart.show');
@@ -56,6 +68,11 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     // Order management routes untuk admin
     Route::resource('orders', OrderController::class)->only(['index', 'show']);
     Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+
+    // Admin access order via ULID untuk secure URL sharing
+    Route::get('orders/ulid/{ulid}', [OrderController::class, 'showByUlid'])
+        ->name('orders.showByUlid')
+        ->where('ulid', '[0-9A-HJKMNP-TV-Z]{26}');
 
     // Store settings routes untuk konfigurasi toko
     Route::get('/settings', [StoreSettingController::class, 'index'])->name('settings.index');

@@ -52,6 +52,7 @@ class Product extends Model
 
     /**
      * Boot method untuk auto-generate slug dari name
+     * dan sanitize input untuk mencegah XSS attacks
      */
     protected static function boot(): void
     {
@@ -68,6 +69,28 @@ class Product extends Model
                 $product->slug = Str::slug($product->name);
             }
         });
+    }
+
+    /**
+     * Set name attribute dengan sanitization untuk mencegah XSS
+     * Strip semua HTML tags dari product name
+     */
+    public function setNameAttribute($value): void
+    {
+        $this->attributes['name'] = strip_tags($value);
+    }
+
+    /**
+     * Set description attribute dengan sanitization untuk mencegah XSS
+     * Allow hanya safe HTML tags untuk formatting text
+     */
+    public function setDescriptionAttribute($value): void
+    {
+        // Allow hanya tags yang aman untuk formatting
+        $this->attributes['description'] = strip_tags(
+            $value,
+            '<p><br><strong><em><ul><ol><li><b><i>'
+        );
     }
 
     /**
