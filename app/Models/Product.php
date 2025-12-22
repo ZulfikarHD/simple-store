@@ -159,6 +159,7 @@ class Product extends Model
     /**
      * Scope untuk pencarian produk berdasarkan nama dan deskripsi
      * dengan case-insensitive matching menggunakan LIKE operator
+     * serta escape wildcard characters untuk mencegah wildcard injection
      *
      * @param  \Illuminate\Database\Eloquent\Builder<Product>  $query
      * @param  string  $term  Kata kunci pencarian
@@ -166,9 +167,13 @@ class Product extends Model
      */
     public function scopeSearch($query, string $term)
     {
-        return $query->where(function ($q) use ($term) {
-            $q->where('name', 'like', "%{$term}%")
-                ->orWhere('description', 'like', "%{$term}%");
+        // Escape wildcard characters untuk mencegah wildcard injection attacks
+        // dimana % dan _ di-escape menjadi \% dan \_ untuk keamanan
+        $escapedTerm = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $term);
+
+        return $query->where(function ($q) use ($escapedTerm) {
+            $q->where('name', 'like', "%{$escapedTerm}%")
+                ->orWhere('description', 'like', "%{$escapedTerm}%");
         });
     }
 

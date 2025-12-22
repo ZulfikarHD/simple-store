@@ -47,17 +47,40 @@ class SecurityHeaders
 
         // Content-Security-Policy: Kontrol resource loading
         // Konfigurasi untuk Laravel + Vite + Inertia + Vue
-        $csp = implode('; ', [
-            "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://rsms.me", // unsafe-eval untuk Vue dev
-            "style-src 'self' 'unsafe-inline' https://rsms.me", // unsafe-inline untuk inline styles
-            "img-src 'self' data: https:", // Allow images dari HTTPS dan data URIs
-            "font-src 'self' https://rsms.me data:", // Allow fonts dari rsms.me (Inter font)
-            "connect-src 'self' https://wa.me", // Allow WhatsApp API
-            "frame-ancestors 'self'", // Sama dengan X-Frame-Options
-            "base-uri 'self'", // Restrict base tag
-            "form-action 'self'", // Restrict form submissions
-        ]);
+        // NOTE: unsafe-inline dan unsafe-eval digunakan untuk development
+        // Untuk production, implementasikan nonce-based CSP (lihat dokumentasi)
+        $isProduction = app()->environment('production');
+
+        if ($isProduction) {
+            // Production CSP - lebih ketat tanpa unsafe-inline/eval
+            // TODO: Implement nonce generation dan injection via Vite
+            $csp = implode('; ', [
+                "default-src 'self'",
+                "script-src 'self' https://rsms.me",
+                "style-src 'self' https://rsms.me",
+                "img-src 'self' data: https:",
+                "font-src 'self' https://rsms.me data:",
+                "connect-src 'self' https://wa.me",
+                "frame-ancestors 'self'",
+                "base-uri 'self'",
+                "form-action 'self'",
+                'upgrade-insecure-requests',
+            ]);
+        } else {
+            // Development CSP - permissive untuk hot reload
+            $csp = implode('; ', [
+                "default-src 'self'",
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://rsms.me",
+                "style-src 'self' 'unsafe-inline' https://rsms.me",
+                "img-src 'self' data: https:",
+                "font-src 'self' https://rsms.me data:",
+                "connect-src 'self' https://wa.me ws: wss:",
+                "frame-ancestors 'self'",
+                "base-uri 'self'",
+                "form-action 'self'",
+            ]);
+        }
+
         $response->headers->set('Content-Security-Policy', $csp);
 
         return $response;

@@ -21,6 +21,10 @@ class User extends Authenticatable
 
     /**
      * The attributes that are mass assignable.
+     * Role dihapus dari $fillable untuk mencegah privilege escalation
+     * dimana attacker tidak dapat mengubah role via mass assignment
+     *
+     * SECURITY NOTE: Role harus di-set secara eksplisit, tidak via mass assignment
      *
      * @var list<string>
      */
@@ -28,7 +32,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',
         'phone',
         'address',
         'google_id',

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateStoreSettingsRequest;
+use App\Models\AuditLog;
 use App\Services\ImageService;
 use App\Services\StoreSettingService;
 use Illuminate\Http\JsonResponse;
@@ -45,10 +46,19 @@ class StoreSettingController extends Controller
     /**
      * Update pengaturan toko dengan validasi request
      * dan redirect kembali ke halaman settings dengan flash message
+     * serta audit logging untuk tracking perubahan settings
      */
     public function update(UpdateStoreSettingsRequest $request): RedirectResponse
     {
+        $oldSettings = $this->settingService->getAllSettings();
         $result = $this->settingService->updateSettings($request->validated());
+
+        // Audit log untuk settings update
+        AuditLog::log(
+            action: 'settings.update',
+            oldValues: $oldSettings,
+            newValues: $request->validated()
+        );
 
         return redirect()
             ->back()
@@ -79,6 +89,13 @@ class StoreSettingController extends Controller
 
             // Upload dan optimasi logo baru ke direktori 'branding'
             $path = $this->imageService->uploadAndOptimize($request->file('logo'), 'branding');
+
+            // Audit log untuk logo upload
+            AuditLog::log(
+                action: 'settings.upload_logo',
+                oldValues: ['old_logo' => $oldLogo],
+                newValues: ['new_logo' => $path]
+            );
 
             return response()->json([
                 'success' => true,
@@ -117,6 +134,13 @@ class StoreSettingController extends Controller
 
             // Upload dan optimasi favicon baru ke direktori 'branding'
             $path = $this->imageService->uploadAndOptimize($request->file('favicon'), 'branding');
+
+            // Audit log untuk favicon upload
+            AuditLog::log(
+                action: 'settings.upload_favicon',
+                oldValues: ['old_favicon' => $oldFavicon],
+                newValues: ['new_favicon' => $path]
+            );
 
             return response()->json([
                 'success' => true,

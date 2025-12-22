@@ -29,22 +29,30 @@ class ImageService
     /**
      * Upload dan optimasi image produk
      * dengan resize ke max dimension dan compress quality
+     * serta validasi extension dan MIME type untuk keamanan
      *
      * @param  UploadedFile  $file  File image yang diupload
      * @param  string  $directory  Direktori tujuan storage
      * @return string Path image yang tersimpan
+     *
+     * @throws \InvalidArgumentException Jika file extension atau MIME type tidak valid
      */
     public function uploadAndOptimize(UploadedFile $file, string $directory = 'products'): string
     {
+        // Validasi extension dengan whitelist untuk mencegah upload file berbahaya
+        $this->validateFileExtension($file);
+
         $filename = $this->generateFilename($file);
 
-        // Dapatkan image dimensions
+        // Dapatkan image dimensions dan validasi MIME type
         $imageInfo = getimagesize($file->getRealPath());
 
         if ($imageInfo === false) {
-            // Jika bukan image valid, simpan langsung tanpa processing
-            return $file->storeAs($directory, $filename, 'public');
+            throw new \InvalidArgumentException('File bukan image valid.');
         }
+
+        // Validasi MIME type matches dengan extension untuk mencegah double extension attacks
+        $this->validateMimeType($file, $imageInfo['mime']);
 
         $width = $imageInfo[0];
         $height = $imageInfo[1];
@@ -79,11 +87,54 @@ class ImageService
     }
 
     /**
-     * Generate filename unik untuk image
+     * Validasi file extension dengan whitelist
+     * untuk mencegah upload file berbahaya seperti PHP scripts
+     *
+     * @throws \InvalidArgumentException Jika extension tidak diizinkan
+     */
+    private function validateFileExtension(UploadedFile $file): void
+    {
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+        $extension = strtolower($file->getClientOriginalExtension());
+
+        if (! in_array($extension, $allowedExtensions, true)) {
+            throw new \InvalidArgumentException('File extension tidak diizinkan. Hanya JPG, PNG, WEBP, dan GIF yang diperbolehkan.');
+        }
+    }
+
+    /**
+     * Validasi MIME type sesuai dengan extension
+     * untuk mencegah double extension attacks (e.g., malicious.php.jpg)
+     *
+     * @throws \InvalidArgumentException Jika MIME type tidak sesuai
+     */
+    private function validateMimeType(UploadedFile $file, string $actualMimeType): void
+    {
+        $extension = strtolower($file->getClientOriginalExtension());
+
+        $expectedMimes = [
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'webp' => 'image/webp',
+            'gif' => 'image/gif',
+        ];
+
+        if (! isset($expectedMimes[$extension])) {
+            throw new \InvalidArgumentException('Extension tidak dikenali.');
+        }
+
+        if ($actualMimeType !== $expectedMimes[$extension]) {
+            throw new \InvalidArgumentException('MIME type tidak sesuai dengan extension file. Kemungkinan file berbahaya.');
+        }
+    }
+
+    /**
+     * Generate filename unik untuk image dengan extension yang sudah divalidasi
      */
     private function generateFilename(UploadedFile $file): string
     {
-        $extension = $file->getClientOriginalExtension();
+        $extension = strtolower($file->getClientOriginalExtension());
 
         // Konversi ke webp jika browser support (optional)
         // Untuk simplicity, keep original extension
