@@ -14,17 +14,11 @@
 
 ## 📋 About
 
-Simple Store is a full-featured e-commerce platform designed for small to medium businesses. Built with modern technologies and security best practices, it provides a seamless shopping experience for customers and powerful management tools for administrators.
+A friend needed an e-commerce site for their shop, so I built this. It's a straightforward online store system with product management, shopping cart, and WhatsApp-based checkout. Nothing fancy, just the essentials that work.
 
-### ✨ Key Highlights
+Built with Laravel and Vue because that's what I'm comfortable with. Added some nice touches like iOS-style animations and Google login to make it feel modern. The admin panel lets you manage products, orders, and customize WhatsApp messages for customers.
 
-- 🎨 **iOS-like Design** - Beautiful, modern UI with spring physics animations
-- 🔒 **Security First** - OWASP compliant with comprehensive security measures
-- 📱 **Mobile Optimized** - Mobile-first responsive design
-- 🚀 **Modern Stack** - Laravel 12, Vue 3, TypeScript, Tailwind CSS 4
-- 💬 **WhatsApp Integration** - Direct customer communication
-- 🌐 **Multi-region Support** - Phone formatting for 8 countries
-- 🔐 **Google OAuth** - One-click authentication
+It's production-ready and has decent security (OWASP compliant), but always review the code yourself before using it for real business.
 
 ---
 
@@ -331,19 +325,6 @@ php artisan test --coverage
 
 ---
 
-## 🔒 Security
-
-Security is a top priority. This project implements:
-
-- OWASP security best practices
-- Rate limiting on sensitive endpoints
-- CSRF protection
-- XSS prevention
-- SQL injection prevention
-- Password hashing with bcrypt
-- Two-Factor Authentication
-- Email verification
-
 ### Reporting Vulnerabilities
 
 If you discover a security vulnerability, please email:
@@ -351,19 +332,6 @@ If you discover a security vulnerability, please email:
 
 ---
 
-## 🗺️ Roadmap
-
-- [ ] Multi-language support
-- [ ] Payment gateway integration (Midtrans, Xendit)
-- [ ] Email notifications
-- [ ] Product reviews and ratings
-- [ ] Wishlist functionality
-- [ ] Advanced search and filters
-- [ ] Export orders to PDF/Excel
-- [ ] Inventory management
-- [ ] Discount/coupon system
-
----
 
 ## 🤝 Contributing
 
@@ -393,6 +361,20 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
+
+### ⚠️ Important Security Reminder
+
+**Please read this carefully:**
+
+- 🔐 **Never share your private information** like API keys, database credentials, or any sensitive data
+- 🔍 **Don't blindly trust any open-source project** - including this one
+- ✅ **Always review the security yourself** before using in production
+- 🐛 **I'm continuously learning** - your feedback on security issues and bugs is highly appreciated
+
+This project is shared with good intentions, but security is a shared responsibility. Always do your due diligence.
+
+---
+
 ## 🙏 Acknowledgments
 
 - [Laravel](https://laravel.com) - The PHP Framework
@@ -411,7 +393,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 📖 Documentation: [docs/](docs/)
 
 ---
-
-**Made with ❤️ in Indonesia**
 
 Version 1.9.0 | Production Ready

@@ -14,64 +14,58 @@
 
 ## 📋 Tentang
 
-Simple Store adalah platform e-commerce lengkap yang dirancang untuk bisnis kecil hingga menengah. Dibangun dengan teknologi modern dan praktik keamanan terbaik, aplikasi ini menyediakan pengalaman belanja yang mulus untuk pelanggan dan alat manajemen yang powerful untuk administrator.
+Teman saya butuh website e-commerce untuk tokonya, jadi saya buatin ini. Sistem toko online yang straightforward dengan product management, shopping cart, dan checkout via WhatsApp. Tidak terlalu kompleks, fokus ke fitur-fitur essential yang memang dibutuhkan.
 
-### ✨ Keunggulan Utama
+Dibangun dengan Laravel dan Vue karena stack yang saya familiar. Ada beberapa sentuhan seperti iOS-style animations dan Google OAuth untuk memberikan user experience yang lebih modern. Admin panel-nya cukup lengkap untuk manage products, orders, dan customize WhatsApp message templates.
 
-- 🎨 **Desain ala iOS** - UI modern dan indah dengan animasi spring physics
-- 🔒 **Keamanan Utama** - Compliant dengan OWASP dengan langkah keamanan komprehensif
-- 📱 **Optimasi Mobile** - Desain responsif mobile-first
-- 🚀 **Stack Modern** - Laravel 12, Vue 3, TypeScript, Tailwind CSS 4
-- 💬 **Integrasi WhatsApp** - Komunikasi langsung dengan pelanggan
-- 🌐 **Dukungan Multi-region** - Format telepon untuk 8 negara
-- 🔐 **Google OAuth** - Autentikasi one-click
+Sudah production-ready dengan security yang cukup solid (OWASP compliant), tapi tetap saya sarankan untuk review code-nya sendiri sebelum deploy untuk bisnis yang serius.
 
 ---
 
-## 🎯 Fitur
+## 🎯 Features
 
-### ✨ Fitur Pelanggan
+### ✨ Customer Features
 
-- 🛍️ Katalog produk dengan filter kategori dan pencarian
-- 🛒 Keranjang belanja dengan persistensi sesi
-- 💳 Checkout dengan integrasi WhatsApp
-- 🔐 Autentikasi Google OAuth
-- 📧 Autentikasi email/password
+- 🛍️ Product catalog dengan category filtering dan search
+- 🛒 Shopping cart dengan session persistence
+- 💳 Checkout dengan WhatsApp integration
+- 🔐 Google OAuth authentication
+- 📧 Email/password authentication
 - 🔒 Two-Factor Authentication (2FA/TOTP)
-- 📦 Pelacakan dan riwayat pesanan
-- 👤 Manajemen akun pengguna
+- 📦 Order tracking dan history
+- 👤 User account management
 
-### 👨‍💼 Fitur Admin
+### 👨‍💼 Admin Features
 
-- 📊 Dashboard dengan statistik real-time
-- 📦 Manajemen produk (CRUD)
-- 🏷️ Manajemen kategori (CRUD)
-- 📋 Manajemen pesanan dengan alur status
-- 🎨 Branding toko (logo, tagline, favicon)
-- 💬 Kustomisasi template pesan WhatsApp
-- 🎯 Kustomisasi ikon timeline
-- 🌍 Format telepon multi-region (8 negara)
-- 🔔 Notifikasi browser untuk pesanan baru
+- 📊 Dashboard dengan real-time statistics
+- 📦 Product management (CRUD)
+- 🏷️ Category management (CRUD)
+- 📋 Order management dengan status workflow
+- 🎨 Store branding (logo, tagline, favicon)
+- 💬 Customizable WhatsApp message templates
+- 🎯 Customizable timeline icons
+- 🌍 Multi-region phone formatting (8 negara)
+- 🔔 Browser notifications untuk order baru
 
-### 🔒 Fitur Keamanan (Compliant OWASP)
+### 🔒 Security Features (OWASP Compliant)
 
 - ⏱️ Rate limiting (cart, checkout, upload, password)
-- 🛡️ Proteksi CSRF
-- 🚫 Pencegahan XSS
-- 💉 Pencegahan SQL injection
-- 📝 Pencegahan template injection
+- 🛡️ CSRF protection
+- 🚫 XSS prevention
+- 💉 SQL injection prevention
+- 📝 Template injection prevention
 - 🔐 Password hashing (bcrypt)
-- ✉️ Verifikasi email
+- ✉️ Email verification
 - 🔑 2FA dengan recovery codes
 
-### 🎨 Fitur UI/UX
+### 🎨 UI/UX Features
 
-- 📱 Sistem desain ala iOS
-- 🎭 Animasi spring physics
-- 🌓 Dukungan dark mode
-- 📲 Desain responsif mobile-first
-- ⚡ Simulasi haptic feedback
-- 🎯 Efek press feedback
+- 📱 iOS-like design system
+- 🎭 Spring physics animations
+- 🌓 Dark mode support
+- 📲 Mobile-first responsive design
+- ⚡ Haptic feedback simulation
+- 🎯 Press feedback effects
 
 ---
 
@@ -79,44 +73,44 @@ Simple Store adalah platform e-commerce lengkap yang dirancang untuk bisnis keci
 
 ### Backend
 
-| Teknologi | Versi | Kegunaan |
-|-----------|-------|----------|
-| **PHP** | 8.4.14 | Bahasa server-side |
-| **Laravel** | 12.43.1 | Framework aplikasi web |
-| **MySQL** | 8.0+ | Sistem manajemen database |
-| **Inertia Laravel** | 2.0.16 | Bridge SPA |
-| **Laravel Fortify** | 1.33.0 | Scaffolding autentikasi |
-| **Laravel Socialite** | 5.24.0 | Autentikasi OAuth |
-| **Laravel Wayfinder** | 0.1.12 | Routing type-safe |
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **PHP** | 8.4.14 | Server-side language |
+| **Laravel** | 12.43.1 | Web application framework |
+| **MySQL** | 8.0+ | Database management system |
+| **Inertia Laravel** | 2.0.16 | SPA bridge |
+| **Laravel Fortify** | 1.33.0 | Authentication scaffolding |
+| **Laravel Socialite** | 5.24.0 | OAuth authentication |
+| **Laravel Wayfinder** | 0.1.12 | Type-safe routing |
 
 ### Frontend
 
-| Teknologi | Versi | Kegunaan |
-|-----------|-------|----------|
-| **Vue.js** | 3.5.22 | Framework JavaScript progresif |
-| **Inertia Vue** | 2.2.7 | Adapter Vue untuk Inertia.js |
-| **TypeScript** | 5.2.2 | JavaScript dengan tipe |
-| **TailwindCSS** | 4.1.14 | Framework CSS utility-first |
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **Vue.js** | 3.5.22 | Progressive JavaScript framework |
+| **Inertia Vue** | 2.2.7 | Vue adapter untuk Inertia.js |
+| **TypeScript** | 5.2.2 | Typed JavaScript |
+| **TailwindCSS** | 4.1.14 | Utility-first CSS framework |
 | **Vite** | 7.0.4 | Build tool |
-| **Reka UI** | 2.4.1 | Komponen UI headless |
-| **Lucide Vue Next** | 0.468.0 | Library ikon |
-| **Motion V** | 1.7.4 | Library animasi |
-| **VueUse Core** | 12.8.2 | Utilitas komposisi Vue |
+| **Reka UI** | 2.4.1 | Headless UI components |
+| **Lucide Vue Next** | 0.468.0 | Icon library |
+| **Motion V** | 1.7.4 | Animation library |
+| **VueUse Core** | 12.8.2 | Vue composition utilities |
 
 ### Development Tools
 
-| Tool | Versi | Kegunaan |
-|------|-------|----------|
-| **PHPUnit** | 11.5.46 | Framework testing PHP |
-| **Laravel Pint** | 1.26.0 | Formatter kode PHP |
-| **ESLint** | 9.37.0 | Linter JavaScript |
-| **Prettier** | 3.6.2 | Formatter kode |
+| Tool | Version | Purpose |
+|------|---------|---------|
+| **PHPUnit** | 11.5.46 | PHP testing framework |
+| **Laravel Pint** | 1.26.0 | PHP code formatter |
+| **ESLint** | 9.37.0 | JavaScript linter |
+| **Prettier** | 3.6.2 | Code formatter |
 
 ---
 
-## 📦 Prasyarat
+## 📦 Prerequisites
 
-Sebelum memulai, pastikan Anda memiliki:
+Sebelum memulai, pastikan sudah terinstall:
 
 - **PHP** 8.2 atau lebih tinggi
 - **Composer** (versi terbaru)
@@ -126,7 +120,7 @@ Sebelum memulai, pastikan Anda memiliki:
 
 ---
 
-## 🔧 Instalasi
+## 🔧 Installation
 
 ### 1. Clone repository
 
@@ -135,26 +129,26 @@ git clone https://github.com/ZulfikarHD/simple-store.git
 cd simple-store
 ```
 
-### 2. Install dependensi PHP
+### 2. Install PHP dependencies
 
 ```bash
 composer install
 ```
 
-### 3. Install dependensi JavaScript
+### 3. Install JavaScript dependencies
 
 ```bash
 yarn install
 ```
 
-### 4. Setup environment
+### 4. Environment setup
 
 ```bash
 cp .env.example .env
 php artisan key:generate
 ```
 
-### 5. Konfigurasi file `.env` Anda
+### 5. Configure file `.env`
 
 ```env
 APP_NAME="Simple Store"
@@ -167,28 +161,28 @@ DB_DATABASE=simple_store
 DB_USERNAME=root
 DB_PASSWORD=
 
-# Google OAuth (opsional)
+# Google OAuth (optional)
 GOOGLE_CLIENT_ID=your_client_id
 GOOGLE_CLIENT_SECRET=your_client_secret
 GOOGLE_REDIRECT_URI="${APP_URL}/auth/google/callback"
 ```
 
-### 6. Setup database
+### 6. Database setup
 
 ```bash
 php artisan migrate --seed
 ```
 
-### 7. Setup storage
+### 7. Storage setup
 
 ```bash
 php artisan storage:link
 ```
 
-### 8. Jalankan development server
+### 8. Run development server
 
 ```bash
-# Menggunakan composer script (direkomendasikan - menjalankan semua service)
+# Menggunakan composer script (recommended - runs all services)
 composer dev
 
 # Atau manual
@@ -196,71 +190,71 @@ php artisan serve
 yarn dev
 ```
 
-Kunjungi `http://localhost:8000` di browser Anda.
+Buka `http://localhost:8000` di browser.
 
 ---
 
-## ⚙️ Konfigurasi
+## ⚙️ Configuration
 
 ### Environment Variables
 
-| Variable | Deskripsi | Default |
-|----------|-----------|---------|
-| `APP_NAME` | Nama aplikasi | Simple Store |
-| `APP_URL` | URL aplikasi | http://localhost |
-| `DB_CONNECTION` | Driver database | mysql |
-| `GOOGLE_CLIENT_ID` | Client ID Google OAuth | - |
-| `GOOGLE_CLIENT_SECRET` | Secret Google OAuth | - |
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `APP_NAME` | Application name | Simple Store |
+| `APP_URL` | Application URL | http://localhost |
+| `DB_CONNECTION` | Database driver | mysql |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID | - |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth secret | - |
 
-### Setup Google OAuth
+### Google OAuth Setup
 
-Untuk konfigurasi Google OAuth yang detail, lihat [GOOGLE_OAUTH_SETUP.md](docs/GOOGLE_OAUTH_SETUP.md)
+Untuk setup Google OAuth yang lengkap, lihat [GOOGLE_OAUTH_SETUP.md](docs/GOOGLE_OAUTH_SETUP.md)
 
 ---
 
-## 🎮 Penggunaan
+## 🎮 Usage
 
-### Kredensial Default
+### Default Credentials
 
-Setelah seeding, Anda dapat login dengan:
+Setelah seeding, bisa login dengan:
 
-**Akun Admin:**
+**Admin Account:**
 - Email: `admin@example.com`
 - Password: `password`
 
-**Akun User:**
+**User Account:**
 - Email: `user@example.com`
 - Password: `password`
 
-### Panel Admin
+### Admin Panel
 
-Akses panel admin di `/admin` setelah login sebagai admin.
+Akses admin panel di `/admin` setelah login sebagai admin.
 
 ---
 
 ## 🏗️ Development
 
-### Struktur Proyek
+### Project Structure
 
 ```
 simple-store/
-├── app/                    # Aplikasi inti
+├── app/                    # Core application
 │   ├── Http/Controllers/  # Request handlers
-│   ├── Models/            # Model Eloquent
+│   ├── Models/            # Eloquent models
 │   ├── Services/          # Business logic
-│   └── Policies/          # Otorisasi
+│   └── Policies/          # Authorization
 ├── resources/
 │   └── js/
-│       ├── pages/         # Halaman Inertia
-│       ├── components/    # Komponen Vue
-│       └── composables/   # Fungsi komposisi
+│       ├── pages/         # Inertia pages
+│       ├── components/    # Vue components
+│       └── composables/   # Composition functions
 ├── database/
-│   ├── migrations/        # Migrasi database
-│   └── seeders/           # Seeder database
-└── tests/                 # Testing PHPUnit
+│   ├── migrations/        # Database migrations
+│   └── seeders/           # Database seeders
+└── tests/                 # PHPUnit tests
 ```
 
-### Standar Coding
+### Coding Standards
 
 **PHP (Laravel Pint):**
 ```bash
@@ -273,7 +267,7 @@ yarn lint
 yarn format
 ```
 
-### Menjalankan Tests
+### Running Tests
 
 ```bash
 # PHP tests
@@ -298,32 +292,32 @@ php artisan route:cache
 php artisan view:cache
 ```
 
-Untuk instruksi deployment yang detail, lihat [Panduan Deployment](docs/04_TECHNICAL_DOCUMENTATION/06_Deployment_Guide.md)
+Untuk deployment guide yang lebih detail, lihat [Deployment Guide](docs/04_TECHNICAL_DOCUMENTATION/06_Deployment_Guide.md)
 
 ---
 
-## 📖 Dokumentasi
+## 📖 Documentation
 
-Dokumentasi komprehensif tersedia di direktori `/docs`:
+Documentation lengkap tersedia di directory `/docs`:
 
-- [Manual Pengguna](docs/02_USER_DOCUMENTATION/01_User_Manual.md)
-- [Panduan Admin](docs/03_ADMIN_DOCUMENTATION/01_Admin_Guide.md)
-- [Dokumentasi Teknis](docs/04_TECHNICAL_DOCUMENTATION/)
-- [Dokumentasi API](docs/04_TECHNICAL_DOCUMENTATION/03_API_Documentation.md)
-- [Dokumentasi Keamanan](docs/04_TECHNICAL_DOCUMENTATION/05_Security_Documentation.md)
+- [User Manual](docs/02_USER_DOCUMENTATION/01_User_Manual.md)
+- [Admin Guide](docs/03_ADMIN_DOCUMENTATION/01_Admin_Guide.md)
+- [Technical Documentation](docs/04_TECHNICAL_DOCUMENTATION/)
+- [API Documentation](docs/04_TECHNICAL_DOCUMENTATION/03_API_Documentation.md)
+- [Security Documentation](docs/04_TECHNICAL_DOCUMENTATION/05_Security_Documentation.md)
 
 ---
 
 ## 🧪 Testing
 
 ```bash
-# Jalankan semua tests
+# Run all tests
 php artisan test
 
-# Jalankan test suite spesifik
+# Run specific test suite
 php artisan test --testsuite=Feature
 
-# Jalankan dengan coverage
+# Run dengan coverage
 php artisan test --coverage
 ```
 
@@ -331,87 +325,71 @@ php artisan test --coverage
 
 ---
 
-## 🔒 Keamanan
+### Reporting Vulnerabilities
 
-Keamanan adalah prioritas utama. Proyek ini mengimplementasikan:
-
-- Praktik keamanan terbaik OWASP
-- Rate limiting pada endpoint sensitif
-- Proteksi CSRF
-- Pencegahan XSS
-- Pencegahan SQL injection
-- Password hashing dengan bcrypt
-- Two-Factor Authentication
-- Verifikasi email
-
-### Melaporkan Kerentanan
-
-Jika Anda menemukan kerentanan keamanan, silakan email ke:
+Jika menemukan security vulnerability, silakan email ke:
 **zulfikar.h@diasection.org**
 
 ---
 
-## 🗺️ Roadmap
+## 🤝 Contributing
 
-- [ ] Dukungan multi-bahasa
-- [ ] Integrasi payment gateway (Midtrans, Xendit)
-- [ ] Notifikasi email
-- [ ] Review dan rating produk
-- [ ] Fitur wishlist
-- [ ] Pencarian dan filter lanjutan
-- [ ] Export pesanan ke PDF/Excel
-- [ ] Manajemen inventori
-- [ ] Sistem diskon/kupon
+Contributions sangat diterima! Silakan ikuti langkah berikut:
 
----
-
-## 🤝 Kontribusi
-
-Kontribusi sangat diterima! Silakan ikuti langkah berikut:
-
-1. Fork repository
-2. Buat feature branch (`git checkout -b feature/FiturKeren`)
-3. Commit perubahan Anda (`git commit -m 'Tambah fitur keren'`)
-4. Push ke branch (`git push origin feature/FiturKeren`)
+1. Fork repository ini
+2. Buat feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push ke branch (`git push origin feature/AmazingFeature`)
 5. Buka Pull Request
 
 ---
 
-## 📄 Lisensi
+## 📄 License
 
-Proyek ini dilisensikan di bawah MIT License - lihat file [LICENSE](LICENSE) untuk detail.
+Project ini menggunakan MIT License - lihat file [LICENSE](LICENSE) untuk detail.
 
 ---
 
-## 👨‍💻 Pembuat
+### ⚠️ Catatan Penting Soal Security
+
+**Mohon dibaca dengan seksama:**
+
+- 🔐 **Jangan share informasi sensitif** - API keys, database credentials, atau data penting lainnya jangan pernah di-commit ke repository
+- 🔍 **Jangan langsung percaya sama open-source project manapun** - termasuk yang ini. Always review the code yourself
+- ✅ **Review security implementation sendiri** sebelum deploy ke production
+- 🐛 **Saya juga masih terus belajar** - jadi kalau menemukan bug atau security issue, feedback-nya sangat saya hargai
+
+Project ini saya share dengan niat baik, tapi security adalah tanggung jawab bersama. Selalu lakukan due diligence sendiri sebelum menggunakan code orang lain di production.
+
+---
+
+## 👨‍💻 Author
 
 **Zulfikar Hidayatullah**
 
 - 📧 Email: zulfikar.h@diasection.org
-- 📱 Telepon: +62 857-1583-8733
+- 📱 Phone: +62 857-1583-8733
 - 🐙 GitHub: [@ZulfikarHD](https://github.com/ZulfikarHD)
 
 ---
 
-## 🙏 Penghargaan
+## 🙏 Acknowledgments
 
-- [Laravel](https://laravel.com) - Framework PHP
-- [Vue.js](https://vuejs.org) - Framework JavaScript Progresif
-- [Inertia.js](https://inertiajs.com) - Pendekatan monolith modern
-- [TailwindCSS](https://tailwindcss.com) - Framework CSS utility-first
-- [Reka UI](https://reka-ui.com) - Library komponen Vue
-- Semua kontributor yang membantu meningkatkan proyek ini
+- [Laravel](https://laravel.com) - The PHP Framework
+- [Vue.js](https://vuejs.org) - The Progressive JavaScript Framework
+- [Inertia.js](https://inertiajs.com) - Modern monolith approach
+- [TailwindCSS](https://tailwindcss.com) - Utility-first CSS framework
+- [Reka UI](https://reka-ui.com) - Vue component library
+- All contributors yang membantu improve project ini
 
 ---
 
-## 📞 Dukungan
+## 📞 Support
 
 - 📧 Email: zulfikar.h@diasection.org
 - 💬 Issues: [GitHub Issues](https://github.com/ZulfikarHD/simple-store/issues)
-- 📖 Dokumentasi: [docs/](docs/)
+- 📖 Documentation: [docs/](docs/)
 
 ---
 
-**Dibuat dengan ❤️ di Indonesia**
-
-Versi 1.9.0 | Production Ready
+Version 1.9.0 | Production Ready
